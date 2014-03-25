@@ -6,6 +6,7 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
+import java.util.Random;
 
 public class Broadcast {
 
@@ -39,7 +40,7 @@ public class Broadcast {
 			}
 		}).start();
 
-		new BroadcastSender(IDENTITY).start();
+		new BroadcastSender(new Random().toString()).start();
 	}
 
 }

@@ -6,7 +6,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 
 public class BroadcastSender extends Thread implements Runnable {
-	private static final long SEND_INTERVAL = 1000;
+	private static final long SEND_INTERVAL = 10000;
 	private final DatagramPacket packet; 
 	
 	public BroadcastSender(final String id) throws SocketException {
