@@ -6,16 +6,17 @@ import java.net.DatagramSocket;
 
 public class BroadcastListener extends Thread implements Runnable {
 	private final BroadcastResponseHandler handler;
-	private static final int bufferSize = 100;
+	private static final int BUFFER_SIZE = 100;
 
 	public BroadcastListener(final BroadcastResponseHandler handler) {
 		this.handler = handler;
 	}
 
 	public void run() {
-		byte[] smallBuffer = new byte[bufferSize];
+		byte[] smallBuffer = new byte[BUFFER_SIZE];
+		DatagramSocket ds = null;
 		try {
-			final DatagramSocket ds = new DatagramSocket(Broadcast.BROADCAST_PORT);
+			ds = new DatagramSocket(Broadcast.BROADCAST_PORT, Broadcast.getBroadcastAddress());
 			final DatagramPacket packet = new DatagramPacket(smallBuffer, smallBuffer.length);
 			for (;;) {
 				ds.receive(packet);
@@ -23,6 +24,11 @@ public class BroadcastListener extends Thread implements Runnable {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		finally {
+			if (ds != null) {
+				ds.close();
+			}
 		}
 	}
 

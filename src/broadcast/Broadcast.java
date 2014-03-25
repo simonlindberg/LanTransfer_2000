@@ -9,7 +9,8 @@ import java.util.Enumeration;
 
 public class Broadcast {
 
-	static final int BROADCAST_PORT = 6666;
+	final static int BROADCAST_PORT = 6666;
+	final static String IDENTITY = "FIRAS";
 
 	public static InetAddress getBroadcastAddress() throws SocketException {
 		final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
@@ -38,7 +39,7 @@ public class Broadcast {
 			}
 		}).start();
 
-		new BroadcastSender("Simon").start();
+		new BroadcastSender(IDENTITY).start();
 	}
 
 }
