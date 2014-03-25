@@ -3,7 +3,6 @@ package broadcast;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.MulticastSocket;
 
 public class BroadcastListener extends Thread implements Runnable {
 	private final BroadcastResponseHandler handler;
@@ -13,26 +12,21 @@ public class BroadcastListener extends Thread implements Runnable {
 		this.handler = handler;
 	}
 
+	@SuppressWarnings("resource")
+	@Override
 	public void run() {
 		byte[] inBuf = new byte[BUFFER_SIZE];
-		MulticastSocket ms = null;
 		try {
-			ms = new MulticastSocket(Broadcast.BROADCAST_PORT);
-			// ms.joinGroup(Broadcast.getBroadcastAddress());
-			DatagramPacket packet;
+			final DatagramSocket ds = new DatagramSocket(Broadcast.BROADCAST_PORT);
+			final DatagramPacket packet = new DatagramPacket(inBuf, BUFFER_SIZE);
 
 			for (;;) {
-				packet = new DatagramPacket(inBuf, inBuf.length);
-				ms.receive(packet);
+				ds.receive(packet);
 
 				handler.handle(packet);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			if (ms != null) {
-				ms.close();
-			}
 		}
 	}
 

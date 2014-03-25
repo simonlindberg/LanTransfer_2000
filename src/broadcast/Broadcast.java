@@ -5,13 +5,13 @@ import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Random;
 
 public class Broadcast {
 
 	final static int BROADCAST_PORT = 6666;
-	final static String IDENTITY = "FIRAS";
 
 	public static InetAddress getBroadcastAddress() throws SocketException {
 		final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
@@ -25,6 +25,7 @@ public class Broadcast {
 					final InetAddress address = interfaceAddr.getBroadcast();
 
 					if (address != null) {
+						System.out.println(address);
 						return address;
 					}
 				}
@@ -33,7 +34,7 @@ public class Broadcast {
 		throw new SocketException("No broadcast address found!");
 	}
 
-	public static void main(String a[]) throws SocketException {
+	public static void main(String a[]) throws SocketException, UnknownHostException {
 		new BroadcastListener(new BroadcastResponseHandler() {
 
 			@Override
