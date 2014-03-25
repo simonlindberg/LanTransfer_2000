@@ -35,12 +35,14 @@ public class Broadcast {
 
 	public static void main(String a[]) throws SocketException {
 		new BroadcastListener(new BroadcastResponseHandler() {
+
+			@Override
 			public void handle(final DatagramPacket packet) {
 				System.out.println(new String(packet.getData()) + " -> " + packet.getAddress() + ":" + packet.getPort());
 			}
 		}).start();
 
-		new BroadcastSender(new Random().toString()).start();
+		new BroadcastSender(new Random().nextInt() + "").start();
 	}
 
 }

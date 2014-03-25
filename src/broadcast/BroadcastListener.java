@@ -18,14 +18,13 @@ public class BroadcastListener extends Thread implements Runnable {
 		MulticastSocket ms = null;
 		try {
 			ms = new MulticastSocket(Broadcast.BROADCAST_PORT);
-//			ms.joinGroup(Broadcast.getBroadcastAddress());
+			// ms.joinGroup(Broadcast.getBroadcastAddress());
 			DatagramPacket packet;
 
 			for (;;) {
 				packet = new DatagramPacket(inBuf, inBuf.length);
 				ms.receive(packet);
-		        String msg = new String(inBuf, 0, packet.getLength());
-		        System.out.println("From " + packet.getAddress() + " Msg : " + msg);
+
 				handler.handle(packet);
 			}
 		} catch (IOException e) {
