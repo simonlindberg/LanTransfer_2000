@@ -80,4 +80,8 @@ System.out.println(data);
 		new BroadcastSender(System.getProperty("user.name")).start();
 	}
 
+	public static void resetUserlist() {
+		users.clear();
+	}
+
 }

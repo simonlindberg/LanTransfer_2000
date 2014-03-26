@@ -24,7 +24,6 @@ public class BroadcastSender extends Thread implements Runnable {
 			defaultMessage[i + 1] = idBytes[i];
 			forcedMessage[i + 1] = idBytes[i];
 		}
-
 		ds = new DatagramSocket();
 		ds.setBroadcast(true); // Behövs defacto inte, men why not.
 		ds.connect(Broadcast.BROADCAST_ADDR, Broadcast.BROADCAST_PORT);
@@ -36,6 +35,7 @@ public class BroadcastSender extends Thread implements Runnable {
 	public void run() {
 		try {
 			for (;;) {
+				resetUserlist();
 				ds.send(dp);
 				Thread.sleep(SEND_INTERVAL);
 			}
@@ -63,6 +63,12 @@ public class BroadcastSender extends Thread implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private static void resetUserlist() {
+		// Clear the gui
+		GUI.clearGUI();
+		Broadcast.resetUserlist();
 	}
 
 }
