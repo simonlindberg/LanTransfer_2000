@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import GUI.GUI;
+import Protocol.Protocol;
 
 public class Broadcast {
 
@@ -58,26 +59,26 @@ public class Broadcast {
 			@Override
 			public void handle(final DatagramPacket packet) {
 				// Payload
-				String data[] = new String(packet.getData(), 0,
-						packet.getLength()).split(Protocol.DELIMITER);
-				for (String d : data) {
-					String[] partData = d.split("=");
+				String data = new String(packet.getData(), 0,
+						packet.getLength());
+				BroadcastData[] bd = BroadcastData.parse(data
+						.split(Protocol.DELIMITER));
+				for (BroadcastData d : bd) {
 					// First item will be the protocol
-					switch (partData[0]) {
-					case Protocol.FORCE_BROADCAST_MSG:
+					switch (d.getProtocol()) {
+					case Protocol.FORCE_BROADCAST:
 						System.out.println("SOMEONE FORCED ME!");
 						BroadcastSender.forceResponse();
 						break;
 					default:
 						// remove first slash
-						String otherIp = packet.getAddress().toString()
-								.substring(1);
+						String otherIp = packet.getAddress().getHostAddress();
 						if (!ip.equals(otherIp)) {
-							users.add(new User(partData[1], otherIp, packet
+							users.add(new User(d.getValue(), otherIp, packet
 									.getPort()));
 							GUI.populateGUI(users);
-							System.out.println(partData[0] + "=" + partData[1] + " -> " + otherIp + ":"
-									+ packet.getPort());
+							System.out.println(d.toString() + " -> " + otherIp
+									+ ":" + packet.getPort());
 						}
 					}
 				}
@@ -85,6 +86,10 @@ public class Broadcast {
 		}).start();
 
 		new BroadcastSender(System.getProperty("user.name")).start();
+	}
+
+	public static void resetUserlist() {
+		users.clear();
 	}
 
 }
