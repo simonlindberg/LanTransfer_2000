@@ -6,7 +6,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.net.SocketException;
 import java.util.Set;
 
 import javax.swing.Box;
@@ -24,8 +23,8 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
-import broadcast.Broadcast;
 import broadcast.BroadcastSender;
 import broadcast.User;
 
@@ -36,7 +35,10 @@ public class GUI extends JFrame {
 	private static JTable clientTable;
 
 	public GUI() {
-		addComponents();
+	}
+
+	public GUI(final TableModel model) {
+		addComponents(model);
 
 		setTitle("LANTRANSFER_2000 (ALPHA)");
 		setSize(700, 400);
@@ -46,32 +48,20 @@ public class GUI extends JFrame {
 		setVisible(true);
 	}
 
-	private void addComponents() {
+	private void addComponents(final TableModel model) {
 		final JTabbedPane tabbedPane = new JTabbedPane();
 
 		final JComponent clientListTab = new JPanel(new GridLayout());
-		tabbedPane.addTab("Client list", null, clientListTab,
-				"See all available clients");
+		tabbedPane.addTab("Client list", null, clientListTab, "See all available clients");
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 		// add table
-		final String[] columnNames = { "Name", "IP", "Port" };
+
 		clientTable = new JTable();
 		clientTable.setDragEnabled(false);
 		clientTable.setFillsViewportHeight(true);
 		clientTable.getTableHeader().setReorderingAllowed(false);
 
-		DefaultTableModel clientTableModel = new DefaultTableModel(null,
-				columnNames) {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public boolean isCellEditable(int row, int column) {
-				// all cells false
-				return false;
-			}
-		};
-
-		clientTable.setModel(clientTableModel);
+		clientTable.setModel(model);
 
 		final JScrollPane jsp = new JScrollPane(clientTable);
 		clientListTab.add(jsp);
@@ -131,37 +121,8 @@ public class GUI extends JFrame {
 		});
 	}
 
-	public static void main(String[] args) {
-		new GUI();
-
-		try {
-			Broadcast.start(); // should fire instantly
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			showError(
-					"An error occured while trying to broadcast. The program will now terminate.",
-					"ERROR");
-			System.exit(1);
-		}
-	}
-
-	public static void showError(String title, String message) {
-		JOptionPane.showMessageDialog(null, message, title,
-				JOptionPane.ERROR_MESSAGE);
-	}
-
-	public static void clearGUI() {
-		DefaultTableModel model = (DefaultTableModel) clientTable.getModel();
-		model.setRowCount(0);
-	}
-
-	public static void populateGUI(Set<User> users) {
-		clearGUI();
-		DefaultTableModel model = (DefaultTableModel) clientTable.getModel();
-		for (User u : users) {
-			model.addRow(new Object[] { u.getUsername(), u.getIP(), u.getPort() });
-		}
+	public static void showError(final String title, final String message) {
+		JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);
 	}
 
 }

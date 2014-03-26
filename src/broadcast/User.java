@@ -2,18 +2,21 @@ package broadcast;
 
 public class User {
 
-	private String ip;
-	private int port;
-	private String username;
+	private final String ip;
+	private final String username;
+	private final long arrived;
+	private long latest;
+	private int where;
 
-	public User(String username, String ip, int port) {
+	public User(String username, String ip) {
 		this.ip = ip;
-		this.port = port;
 		this.username = username;
+		arrived = System.currentTimeMillis();
+		latest = arrived;
 	}
 
 	public String toString() {
-		return username + ": " + ip + ":" + port;
+		return username + ": " + ip;
 	}
 
 	@Override
@@ -21,31 +24,17 @@ public class User {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((ip == null) ? 0 : ip.hashCode());
-		result = prime * result
-				+ ((username == null) ? 0 : username.hashCode());
+		result = prime * result + ((username == null) ? 0 : username.hashCode());
 		return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		User other = (User) obj;
-		if (ip == null) {
-			if (other.ip != null)
-				return false;
-		} else if (!ip.equals(other.ip))
-			return false;
-		if (username == null) {
-			if (other.username != null)
-				return false;
-		} else if (!username.equals(other.username))
-			return false;
-		return true;
+		if (obj instanceof User) {
+			User other = (User) obj;
+			return ip.equals(other.ip);
+		}
+		return false;
 	}
 
 	public String getUsername() {
@@ -56,8 +45,19 @@ public class User {
 		return ip;
 	}
 
-	public int getPort() {
-		return port;
+	public void refresh() {
+		latest = System.currentTimeMillis();
 	}
 
+	public long getLatest() {
+		return latest;
+	}
+
+	public void setWhere(int where) {
+		this.where = where;
+	}
+
+	public int getWhere() {
+		return where;
+	}
 }
