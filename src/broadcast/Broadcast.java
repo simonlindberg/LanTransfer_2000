@@ -8,7 +8,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 
 import GUI.GUI;
@@ -59,10 +58,7 @@ public class Broadcast {
 			@Override
 			public void handle(final DatagramPacket packet) {
 				// Payload
-//				byte[] raw = packet.getData();
-//				String data = new String(raw, 1, packet.getLength() - 1);
 				String data = new String(packet.getData(), 0, packet.getLength());
-				
 				String otherIp = packet.getAddress().getHostAddress();
 
 				if (!ownIp.equals(otherIp)) {
@@ -71,6 +67,8 @@ public class Broadcast {
 					System.out.println("RECEIVE: " + data + " -> " + otherIp
 							+ ":" + packet.getPort());
 				}
+				
+				System.out.println(users);
 			}
 		}).start();
 
