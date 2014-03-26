@@ -23,6 +23,9 @@ public class BroadcastListener extends Thread implements Runnable {
 			final DatagramPacket packet = new DatagramPacket(inBuf, BUFFER_SIZE);
 
 			for (;;) {
+				if (packet.getData()[0] == 1) { // FORCED
+					// reply
+				}
 				ds.receive(packet);
 				handler.handle(packet);
 			}
@@ -31,5 +34,4 @@ public class BroadcastListener extends Thread implements Runnable {
 			GUI.showError("Fatal error", "Unable to receive data");
 		}
 	}
-
 }
