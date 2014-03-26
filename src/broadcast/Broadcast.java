@@ -34,7 +34,8 @@ public class Broadcast {
 		throw new SocketException("No broadcast address found!");
 	}
 
-	public static void main(String a[]) throws SocketException, UnknownHostException {
+	public static void start() throws SocketException {
+		// TODO Auto-generated method stub
 		new BroadcastListener(new BroadcastResponseHandler() {
 
 			@Override

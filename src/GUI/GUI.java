@@ -3,7 +3,10 @@ package GUI;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.net.SocketException;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -11,6 +14,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -18,8 +22,9 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
-import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+
+import broadcast.Broadcast;
 
 public class GUI extends JFrame {
 
@@ -82,7 +87,15 @@ public class GUI extends JFrame {
 		final JComponent buttonPane = new JPanel(null);
 		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.PAGE_AXIS));
 		
-		final JButton testButton = new JButton("Simon");
+		final JButton testButton = new JButton("Refresh list");
+		testButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				System.out.println("OK");
+			}
+		});
+		
 		final JButton testButton1 = new JButton("är");
 		final JButton testButton2 = new JButton("en");
 		final JButton testButton3 = new JButton("noob");
@@ -114,6 +127,19 @@ public class GUI extends JFrame {
 	}
 
 	public static void main(String[] args) {
+		try {
+			Broadcast.start();
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			JOptionPane
+					.showMessageDialog(
+							null,
+							"An error occured while trying to broadcast. The program will now terminate.",
+							"ERROR", JOptionPane.ERROR_MESSAGE);
+			System.exit(1);
+		}
+		
 		new GUI();
 	}
 
