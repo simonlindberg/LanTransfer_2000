@@ -90,7 +90,7 @@ public class GUI extends JFrame {
 		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.PAGE_AXIS));
 		
 		final JButton refreshButton = new JButton("Refresh list");
-		final JButton testButton1 = new JButton("är");
+		final JButton testButton1 = new JButton("a");
 		final JButton testButton2 = new JButton("en");
 		final JButton testButton3 = new JButton("noob");
 
