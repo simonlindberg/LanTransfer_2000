@@ -15,7 +15,8 @@ public class BroadcastSender extends Thread implements Runnable {
 	private static DatagramPacket dp;
 
 	public BroadcastSender(final String id) throws SocketException {
-		BroadcastData[] defaultData = { new BroadcastData(Protocol.BROADCAST, id) };
+		BroadcastData[] defaultData = { new BroadcastData(Protocol.BROADCAST,
+				id) };
 		defaultMessage = Protocol.format(defaultData).getBytes();
 		ds = new DatagramSocket();
 		ds.setBroadcast(true); // Behövs defacto inte, men why not.
@@ -28,6 +29,7 @@ public class BroadcastSender extends Thread implements Runnable {
 	public void run() {
 		try {
 			for (;;) {
+				resetUserlist();
 				ds.send(dp);
 				Thread.sleep(SEND_INTERVAL);
 			}
@@ -39,6 +41,7 @@ public class BroadcastSender extends Thread implements Runnable {
 
 	public static void forceBroadcast() {
 		try {
+			resetUserlist();
 			String msg = new BroadcastData(Protocol.FORCE_BROADCAST, null)
 					.toString();
 			final DatagramPacket packet = new DatagramPacket(msg.getBytes(),
@@ -59,7 +62,13 @@ public class BroadcastSender extends Thread implements Runnable {
 		}
 	}
 
+	private static void resetUserlist() {
+		// Clear the gui
+		GUI.clearGUI();
+		Broadcast.resetUserlist();
+	}
+
 	public static void sendTestFile() {
-// does nothing atm
+		// does nothing atm
 	}
 }
