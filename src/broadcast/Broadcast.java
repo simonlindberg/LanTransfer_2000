@@ -8,6 +8,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 import GUI.GUI;
@@ -60,8 +61,9 @@ public class Broadcast {
 				// Payload
 				byte[] raw = packet.getData();
 				String data = new String(raw, 1, packet.getLength() - 1);
-				System.out.println("RECEIVE RAW: " + data);
+				
 				String otherIp = packet.getAddress().getHostAddress();
+				
 				if (!ownIp.equals(otherIp)) {
 					users.add(new User(data, otherIp, packet.getPort()));
 					GUI.populateGUI(users);
@@ -71,7 +73,7 @@ public class Broadcast {
 			}
 		}).start();
 
-		new BroadcastSender(System.getProperty("user.name")).start();
+		new BroadcastSender(System.getProperty("user.name") + new Random()).start();
 	}
 
 	public static void resetUserlist() {

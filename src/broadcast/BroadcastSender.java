@@ -35,11 +35,13 @@ public class BroadcastSender extends Thread implements Runnable {
 	public void run() {
 		try {
 			for (;;) {
-				Broadcast.resetUserlist();
-				ds.send(dp);
+//				Broadcast.resetUserlist();
+//				ds.send(dp);
+				// Always force...?
+				forceBroadcast();
 				Thread.sleep(SEND_INTERVAL);
 			}
-		} catch (IOException | InterruptedException e) {
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 			GUI.showError("Fatal error", "Unable to send data");
 		}
