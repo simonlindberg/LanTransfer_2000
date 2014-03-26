@@ -17,7 +17,7 @@ public class Broadcast {
 	final protected static int BROADCAST_PORT = 6666;
 	protected static InetAddress BROADCAST_ADDR;
 	protected static Set<User> users;
-	protected static String ip;
+	protected static String ownIp;
 
 	private static InetAddress getBroadcastAddress() throws SocketException {
 		final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface
@@ -47,7 +47,7 @@ public class Broadcast {
 		users = new HashSet<User>();
 
 		try {
-			ip = InetAddress.getLocalHost().getHostAddress();
+			ownIp = InetAddress.getLocalHost().getHostAddress();
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			GUI.showError("Fatal error", "Unable to fetch ip");
@@ -59,11 +59,10 @@ public class Broadcast {
 			public void handle(final DatagramPacket packet) {
 				// Payload
 				byte[] raw = packet.getData();
-				String data = new String(raw, 0, packet.getLength());
+				String data = new String(raw, 1, packet.getLength() - 1);
 System.out.println(data);
-				// forced
 				String otherIp = packet.getAddress().getHostAddress();
-				if (!ip.equals(otherIp)) {
+				if (!ownIp.equals(otherIp)) {
 					users.add(new User(data, otherIp, packet.getPort()));
 					GUI.populateGUI(users);
 					System.out.println(data + " -> " + otherIp + ":"
