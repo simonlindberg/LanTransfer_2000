@@ -58,7 +58,7 @@ public class Broadcast {
 			@Override
 			public void handle(final DatagramPacket packet) {
 				// Payload
-				String data = new String(packet.getData(), 0, packet.getLength());
+				String data = new String(packet.getData(), 1, packet.getLength() - 1);
 				String otherIp = packet.getAddress().getHostAddress();
 
 				if (!ownIp.equals(otherIp)) {

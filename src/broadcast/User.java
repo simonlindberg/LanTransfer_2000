@@ -48,8 +48,16 @@ public class User {
 		return true;
 	}
 
-	public String getUsername() { return username; }
-	public String getIP() { return ip; }
-	public int getPort() { return port; }
-	
+	public String getUsername() {
+		return username;
+	}
+
+	public String getIP() {
+		return ip;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
 }
