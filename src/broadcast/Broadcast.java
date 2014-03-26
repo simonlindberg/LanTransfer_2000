@@ -45,7 +45,7 @@ public class Broadcast {
 		users = new HashSet<User>();
 		
 		try {
-			ip = InetAddress.getLocalHost().toString().split("/")[1];
+			ip = InetAddress.getLocalHost().getHostAddress();
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			GUI.showError("Fatal error", "Unable to fetch ip");
@@ -64,7 +64,7 @@ public class Broadcast {
 					break;
 				default:
 					// remove first slash
-					String otherIp = packet.getAddress().toString().substring(1);
+					String otherIp = packet.getAddress().getHostAddress();
 					if (!ip.equals(otherIp)) {
 						users.add(new User(data, otherIp, packet.getPort()));
 						GUI.populateGUI(users);
