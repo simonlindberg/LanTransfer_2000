@@ -52,13 +52,12 @@ public class GUI extends JFrame {
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 		// add table
 		final String[] columnNames = { "Name", "IP", "Port" };
-		final Object[][] data = { { "FIRAS", "192.168.0.1", "1337" } };
 		final JTable clientTable = new JTable();
 		clientTable.setDragEnabled(false);
 		clientTable.setFillsViewportHeight(true);
 		clientTable.getTableHeader().setReorderingAllowed(false);
 
-		DefaultTableModel clientTableModel = new DefaultTableModel(data,
+		DefaultTableModel clientTableModel = new DefaultTableModel(null,
 				columnNames) {
 			private static final long serialVersionUID = 1L;
 

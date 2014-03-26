@@ -24,7 +24,6 @@ public class BroadcastListener extends Thread implements Runnable {
 
 			for (;;) {
 				ds.receive(packet);
-
 				handler.handle(packet);
 			}
 		} catch (IOException e) {
