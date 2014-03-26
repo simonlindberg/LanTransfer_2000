@@ -25,10 +25,12 @@ import javax.swing.border.BevelBorder;
 import javax.swing.table.DefaultTableModel;
 
 import broadcast.Broadcast;
+import broadcast.BroadcastSender;
 
 public class GUI extends JFrame {
 
 	private static final long serialVersionUID = 1L;
+	private JLabel statusLabel;
 
 	public GUI() {
 		addComponents();
@@ -87,21 +89,13 @@ public class GUI extends JFrame {
 		final JComponent buttonPane = new JPanel(null);
 		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.PAGE_AXIS));
 		
-		final JButton testButton = new JButton("Refresh list");
-		testButton.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				System.out.println("OK");
-			}
-		});
-		
+		final JButton refreshButton = new JButton("Refresh list");
 		final JButton testButton1 = new JButton("är");
 		final JButton testButton2 = new JButton("en");
 		final JButton testButton3 = new JButton("noob");
 
 		buttonPane.add(Box.createRigidArea(new Dimension(20, 20)));
-		buttonPane.add(testButton);
+		buttonPane.add(refreshButton);
 		buttonPane.add(Box.createRigidArea(new Dimension(20, 10)));
 		buttonPane.add(testButton1);
 		buttonPane.add(Box.createRigidArea(new Dimension(20, 10)));
@@ -119,11 +113,22 @@ public class GUI extends JFrame {
 		
 		statusPanel.setPreferredSize(new Dimension(getWidth(), 24));
 		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
-		JLabel statusLabel = new JLabel("Everything is a-ok!");
+		statusLabel = new JLabel("Everything is a-ok!");
 		statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		statusPanel.add(statusLabel);
 		
 		add(statusPanel, BorderLayout.SOUTH);
+		
+		// Actionlisteners
+		refreshButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				statusLabel.setText("Refreshing client list...");
+				BroadcastSender.forceBroadcast();
+				statusLabel.setText("Done!");
+			}
+		});
 	}
 
 	public static void main(String[] args) {

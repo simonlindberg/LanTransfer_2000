@@ -12,6 +12,7 @@ import java.util.Random;
 public class Broadcast {
 
 	final static int BROADCAST_PORT = 6666;
+	final static String FORCE_BROADCAST = "FORCE_BROADCAST"; // Poblem om användaren heter just detta.
 
 	public static InetAddress getBroadcastAddress() throws SocketException {
 		final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
@@ -40,11 +41,18 @@ public class Broadcast {
 
 			@Override
 			public void handle(final DatagramPacket packet) {
-				System.out.println(new String(packet.getData()) + " -> " + packet.getAddress() + ":" + packet.getPort());
+				String data = "" + packet.getData();
+				switch (data) {
+				case FORCE_BROADCAST:
+					System.out.println("SOMEONE FORCED ME!");
+					break;
+				default:
+					System.out.println(new String(packet.getData()) + " -> " + packet.getAddress() + ":" + packet.getPort());
+				}
 			}
 		}).start();
 
-		new BroadcastSender(new Random().nextInt() + "").start();
+		new BroadcastSender(System.getProperty("user.name")).start();
 	}
 
 }
