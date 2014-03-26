@@ -17,9 +17,9 @@ public class BroadcastSender extends Thread implements Runnable {
 		bytes = id.getBytes();
 		ds = new DatagramSocket();
 		ds.setBroadcast(true); // Behövs defacto inte, men why not.
-		ds.connect(Broadcast.getBroadcastAddress(), Broadcast.BROADCAST_PORT);
-		dp = new DatagramPacket(bytes, bytes.length,
-				Broadcast.getBroadcastAddress(), Broadcast.BROADCAST_PORT);
+		ds.connect(Broadcast.BROADCAST_ADDR, Broadcast.BROADCAST_PORT);
+		dp = new DatagramPacket(bytes, bytes.length, Broadcast.BROADCAST_ADDR,
+				Broadcast.BROADCAST_PORT);
 	}
 
 	@Override
@@ -40,7 +40,7 @@ public class BroadcastSender extends Thread implements Runnable {
 			final DatagramPacket packet = new DatagramPacket(
 					Broadcast.FORCE_BROADCAST_MSG.getBytes(),
 					Broadcast.FORCE_BROADCAST_MSG.getBytes().length,
-					Broadcast.getBroadcastAddress(), Broadcast.BROADCAST_PORT);
+					Broadcast.BROADCAST_ADDR, Broadcast.BROADCAST_PORT);
 			ds.send(packet);
 		} catch (IOException e) {
 			e.printStackTrace();

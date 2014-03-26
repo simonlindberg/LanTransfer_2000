@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.net.SocketException;
+import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -26,11 +27,13 @@ import javax.swing.table.DefaultTableModel;
 
 import broadcast.Broadcast;
 import broadcast.BroadcastSender;
+import broadcast.User;
 
 public class GUI extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JLabel statusLabel;
+	private static JTable clientTable;
 
 	public GUI() {
 		addComponents();
@@ -52,7 +55,7 @@ public class GUI extends JFrame {
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 		// add table
 		final String[] columnNames = { "Name", "IP", "Port" };
-		final JTable clientTable = new JTable();
+		clientTable = new JTable();
 		clientTable.setDragEnabled(false);
 		clientTable.setFillsViewportHeight(true);
 		clientTable.getTableHeader().setReorderingAllowed(false);
@@ -129,6 +132,8 @@ public class GUI extends JFrame {
 	}
 
 	public static void main(String[] args) {
+		new GUI();
+		
 		try {
 			Broadcast.start();
 		} catch (SocketException e) {
@@ -139,8 +144,6 @@ public class GUI extends JFrame {
 					"ERROR");
 			System.exit(1);
 		}
-
-		new GUI();
 	}
 
 	public static void showError(String title, String message) {
@@ -148,4 +151,12 @@ public class GUI extends JFrame {
 				JOptionPane.ERROR_MESSAGE);
 	}
 
+	public static void populateGUI(Set<User> users) {
+		DefaultTableModel model = (DefaultTableModel) clientTable.getModel();
+	    model.setRowCount(0);
+	    for (User u : users) {
+	    	model.addRow(new Object[]{ u.getUsername(), u.getIP(), u.getPort() });
+	    }
+	}
+	
 }
