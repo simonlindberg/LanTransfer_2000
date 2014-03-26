@@ -14,7 +14,7 @@ import GUI.GUI;
 
 public class Broadcast {
 
-	final protected static int BROADCAST_PORT = 6666;
+	final protected static int BROADCAST_PORT = 31173;
 	protected static InetAddress BROADCAST_ADDR;
 	protected static Set<User> users;
 	protected static String ownIp;
