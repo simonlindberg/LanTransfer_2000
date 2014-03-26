@@ -16,7 +16,6 @@ public class Broadcast {
 
 	final protected static int BROADCAST_PORT = 6666;
 	protected static InetAddress BROADCAST_ADDR;
-	final protected static String FORCE_BROADCAST_MSG = "FORCE_BROADCAST"; // Poblem om anv�ndaren heter just detta.
 	protected static Set<User> users;
 	protected static String ip;
 
@@ -51,24 +50,28 @@ public class Broadcast {
 			GUI.showError("Fatal error", "Unable to fetch ip");
 		}
 		
-		// TODO Auto-generated method stub
 		new BroadcastListener(new BroadcastResponseHandler() {
 
 			@Override
 			public void handle(final DatagramPacket packet) {
-				String data = new String(packet.getData(), 0, packet.getLength());
-				switch (data) {
-				case FORCE_BROADCAST_MSG:
-					System.out.println("SOMEONE FORCED ME!");
-					BroadcastSender.forceResponse();
-					break;
-				default:
-					// remove first slash
-					String otherIp = packet.getAddress().toString().substring(1);
-					if (!ip.equals(otherIp)) {
-						users.add(new User(data, otherIp, packet.getPort()));
-						GUI.populateGUI(users);
-						System.out.println(data + " -> " + otherIp + ":" + packet.getPort());
+				// Payload
+				String data[] = new String(packet.getData(), 0, packet.getLength()).split(Protocol.DELIMITER);
+				for (String d : data) {
+					String[] partData = d.split("=");
+					// First item will be the protocol
+					switch (partData[0]) {
+					case Protocol.FORCE_BROADCAST_MSG:
+						System.out.println("SOMEONE FORCED ME!");
+						BroadcastSender.forceResponse();
+						break;
+					default:
+						// remove first slash
+						String otherIp = packet.getAddress().toString().substring(1);
+						if (!ip.equals(otherIp)) {
+							users.add(new User(partData[1], otherIp, packet.getPort()));
+							GUI.populateGUI(users);
+							System.out.println(data + " -> " + otherIp + ":" + packet.getPort());
+						}
 					}
 				}
 			}
