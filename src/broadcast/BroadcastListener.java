@@ -19,12 +19,14 @@ public class BroadcastListener extends Thread implements Runnable {
 	public void run() {
 		byte[] inBuf = new byte[BUFFER_SIZE];
 		try {
-			final DatagramSocket ds = new DatagramSocket(Broadcast.BROADCAST_PORT);
+			final DatagramSocket ds = new DatagramSocket(
+					Broadcast.BROADCAST_PORT);
 			final DatagramPacket packet = new DatagramPacket(inBuf, BUFFER_SIZE);
 
 			for (;;) {
 				ds.receive(packet);
-				if (packet.getData()[0] == 1) { // FORCED
+				byte[] raw = packet.getData();
+				if (raw[0] == 1) { // FORCED
 					System.out.println("I was forced!");
 					BroadcastSender.forceResponse();
 				}
