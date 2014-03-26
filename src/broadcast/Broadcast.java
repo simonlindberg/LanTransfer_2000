@@ -59,11 +59,12 @@ public class Broadcast {
 			@Override
 			public void handle(final DatagramPacket packet) {
 				// Payload
-				byte[] raw = packet.getData();
-				String data = new String(raw, 1, packet.getLength() - 1);
+//				byte[] raw = packet.getData();
+//				String data = new String(raw, 1, packet.getLength() - 1);
+				String data = new String(packet.getData(), 0, packet.getLength());
 				
 				String otherIp = packet.getAddress().getHostAddress();
-				
+
 				if (!ownIp.equals(otherIp)) {
 					users.add(new User(data, otherIp, packet.getPort()));
 					GUI.populateGUI(users);
@@ -73,7 +74,7 @@ public class Broadcast {
 			}
 		}).start();
 
-		new BroadcastSender(System.getProperty("user.name") + new Random()).start();
+		new BroadcastSender(System.getProperty("user.name")).start();
 	}
 
 	public static void resetUserlist() {
