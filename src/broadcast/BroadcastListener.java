@@ -23,7 +23,6 @@ public class BroadcastListener extends Thread implements Runnable {
 			final DatagramPacket packet = new DatagramPacket(inBuf, BUFFER_SIZE);
 
 			for (;;) {
-				Broadcast.resetUserlist();
 				ds.receive(packet);
 				if (packet.getData()[0] == 1) { // FORCED
 					BroadcastSender.forceResponse();

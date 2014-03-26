@@ -63,6 +63,7 @@ public class Broadcast {
 				System.out.println("RECEIVE RAW: " + data);
 				String otherIp = packet.getAddress().getHostAddress();
 				if (!ownIp.equals(otherIp)) {
+					resetUserlist();
 					users.add(new User(data, otherIp, packet.getPort()));
 					GUI.populateGUI(users);
 					System.out.println("RECEIVE: " + data + " -> " + otherIp
@@ -74,7 +75,7 @@ public class Broadcast {
 		new BroadcastSender(System.getProperty("user.name")).start();
 	}
 
-	public static void resetUserlist() {
+	private static void resetUserlist() {
 		GUI.clearGUI();
 		users.clear();
 	}
