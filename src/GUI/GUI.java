@@ -90,14 +90,14 @@ public class GUI extends JFrame {
 		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.PAGE_AXIS));
 
 		final JButton refreshButton = new JButton("Refresh list");
-		final JButton testButton1 = new JButton("a");
+		final JButton sendFile = new JButton("Send file (test)");
 		final JButton testButton2 = new JButton("en");
 		final JButton testButton3 = new JButton("noob");
 
 		buttonPane.add(Box.createRigidArea(new Dimension(20, 20)));
 		buttonPane.add(refreshButton);
 		buttonPane.add(Box.createRigidArea(new Dimension(20, 10)));
-		buttonPane.add(testButton1);
+		buttonPane.add(sendFile);
 		buttonPane.add(Box.createRigidArea(new Dimension(20, 10)));
 		buttonPane.add(testButton2);
 		buttonPane.add(Box.createRigidArea(new Dimension(20, 10)));
@@ -127,6 +127,14 @@ public class GUI extends JFrame {
 				statusLabel.setText("Refreshing client list...");
 				BroadcastSender.forceBroadcast();
 				statusLabel.setText("Done!");
+			}
+		});
+		
+		sendFile.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				BroadcastSender.sendTestFile();
 			}
 		});
 	}

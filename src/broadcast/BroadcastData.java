@@ -1,24 +1,53 @@
 package broadcast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class BroadcastData {
 
-	private String key;
+	private String protocol;
 	private String value;
 
-	public BroadcastData(String key, String value) {
-		this.key = key;
+	public BroadcastData(String protocol, String value) {
+		this.protocol = protocol;
 		this.value = value;
 	}
 
 	public String toString() {
-		return key + "=" + value;
+		return protocol + "=" + value;
+	}
+
+	public String getProtocol() {
+		return protocol;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public static BroadcastData[] parse(String[] data) {
+		List<BroadcastData> bd = new ArrayList<BroadcastData>();
+		for (String s : data) {
+			if (s.matches("^[^;=]+=[^;=]+$")) {
+				String[] partData = s.split("=");
+				bd.add(new BroadcastData(partData[0], partData[1]));
+//			} else if (s.matches("^[^;=]+$")) { // required for force_broadcast which has no value
+//				bd.add(new BroadcastData(s, null));
+			}
+			else {
+				throw new RuntimeException("Broadcast data bad format" + s);
+			}
+		}
+
+		return bd.toArray(new BroadcastData[bd.size()]);
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((key == null) ? 0 : key.hashCode());
+		result = prime * result
+				+ ((protocol == null) ? 0 : protocol.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
@@ -32,10 +61,10 @@ public class BroadcastData {
 		if (getClass() != obj.getClass())
 			return false;
 		BroadcastData other = (BroadcastData) obj;
-		if (key == null) {
-			if (other.key != null)
+		if (protocol == null) {
+			if (other.protocol != null)
 				return false;
-		} else if (!key.equals(other.key))
+		} else if (!protocol.equals(other.protocol))
 			return false;
 		if (value == null) {
 			if (other.value != null)

@@ -6,21 +6,22 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 
 import GUI.GUI;
+import Protocol.Protocol;
 
 public class BroadcastSender extends Thread implements Runnable {
 	private static final long SEND_INTERVAL = 10000;
-	private byte[] bytes;
+	private byte[] defaultMessage;
 	private static DatagramSocket ds;
 	private static DatagramPacket dp;
 
 	public BroadcastSender(final String id) throws SocketException {
 		BroadcastData[] defaultData = { new BroadcastData(Protocol.BROADCAST, id) };
-		bytes = Protocol.format(defaultData).getBytes();
+		defaultMessage = Protocol.format(defaultData).getBytes();
 		ds = new DatagramSocket();
 		ds.setBroadcast(true); // Behövs defacto inte, men why not.
 		ds.connect(Broadcast.BROADCAST_ADDR, Broadcast.BROADCAST_PORT);
-		dp = new DatagramPacket(bytes, bytes.length, Broadcast.BROADCAST_ADDR,
-				Broadcast.BROADCAST_PORT);
+		dp = new DatagramPacket(defaultMessage, defaultMessage.length,
+				Broadcast.BROADCAST_ADDR, Broadcast.BROADCAST_PORT);
 	}
 
 	@Override
@@ -38,10 +39,11 @@ public class BroadcastSender extends Thread implements Runnable {
 
 	public static void forceBroadcast() {
 		try {
-			final DatagramPacket packet = new DatagramPacket(
-					Protocol.FORCE_BROADCAST_MSG.getBytes(),
-					Protocol.FORCE_BROADCAST_MSG.getBytes().length,
-					Broadcast.BROADCAST_ADDR, Broadcast.BROADCAST_PORT);
+			String msg = new BroadcastData(Protocol.FORCE_BROADCAST, null)
+					.toString();
+			final DatagramPacket packet = new DatagramPacket(msg.getBytes(),
+					msg.getBytes().length, Broadcast.BROADCAST_ADDR,
+					Broadcast.BROADCAST_PORT);
 			ds.send(packet);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -55,5 +57,9 @@ public class BroadcastSender extends Thread implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static void sendTestFile() {
+// does nothing atm
 	}
 }
