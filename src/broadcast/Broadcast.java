@@ -60,13 +60,13 @@ public class Broadcast {
 				// Payload
 				byte[] raw = packet.getData();
 				String data = new String(raw, 1, packet.getLength() - 1);
-System.out.println(data);
+				System.out.println("RECEIVE RAW: " + data);
 				String otherIp = packet.getAddress().getHostAddress();
 				if (!ownIp.equals(otherIp)) {
 					users.add(new User(data, otherIp, packet.getPort()));
 					GUI.populateGUI(users);
-					System.out.println(data + " -> " + otherIp + ":"
-							+ packet.getPort());
+					System.out.println("RECEIVE: " + data + " -> " + otherIp
+							+ ":" + packet.getPort());
 				}
 			}
 		}).start();
