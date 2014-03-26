@@ -129,19 +129,11 @@ public class GUI extends JFrame {
 				statusLabel.setText("Done!");
 			}
 		});
-		
-		sendFile.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				BroadcastSender.sendTestFile();
-			}
-		});
 	}
 
 	public static void main(String[] args) {
 		new GUI();
-		
+
 		try {
 			Broadcast.start();
 			BroadcastSender.forceBroadcast();
@@ -160,12 +152,17 @@ public class GUI extends JFrame {
 				JOptionPane.ERROR_MESSAGE);
 	}
 
-	public static void populateGUI(Set<User> users) {
+	public static void clearGUI() {
 		DefaultTableModel model = (DefaultTableModel) clientTable.getModel();
-	    model.setRowCount(0);
-	    for (User u : users) {
-	    	model.addRow(new Object[]{ u.getUsername(), u.getIP(), u.getPort() });
-	    }
+		model.setRowCount(0);
 	}
-	
+
+	public static void populateGUI(Set<User> users) {
+		clearGUI();
+		DefaultTableModel model = (DefaultTableModel) clientTable.getModel();
+		for (User u : users) {
+			model.addRow(new Object[] { u.getUsername(), u.getIP(), u.getPort() });
+		}
+	}
+
 }

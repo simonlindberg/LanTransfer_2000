@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import GUI.GUI;
-import Protocol.Protocol;
 
 public class Broadcast {
 
@@ -59,27 +58,20 @@ public class Broadcast {
 			@Override
 			public void handle(final DatagramPacket packet) {
 				// Payload
-				String data = new String(packet.getData(), 0,
-						packet.getLength());
-				BroadcastData[] bd = BroadcastData.parse(data
-						.split(Protocol.DELIMITER));
-				for (BroadcastData d : bd) {
-					// First item will be the protocol
-					switch (d.getProtocol()) {
-					case Protocol.FORCE_BROADCAST:
-						System.out.println("SOMEONE FORCED ME!");
-						BroadcastSender.forceResponse();
-						break;
-					default:
-						// remove first slash
-						String otherIp = packet.getAddress().getHostAddress();
-						if (!ip.equals(otherIp)) {
-							users.add(new User(d.getValue(), otherIp, packet
-									.getPort()));
-							GUI.populateGUI(users);
-							System.out.println(d.toString() + " -> " + otherIp
-									+ ":" + packet.getPort());
-						}
+				byte[] raw = packet.getData();
+				String data = new String(raw, 0, packet.getLength());
+System.out.println(data);
+				// forced
+				if (raw[0] == 1) {
+					System.out.println("SOMEONE FORCED ME!");
+					BroadcastSender.forceResponse();
+				} else {
+					String otherIp = packet.getAddress().getHostAddress();
+					if (!ip.equals(otherIp)) {
+						users.add(new User(data, otherIp, packet.getPort()));
+						GUI.populateGUI(users);
+						System.out.println(data + " -> " + otherIp + ":"
+								+ packet.getPort());
 					}
 				}
 			}

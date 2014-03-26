@@ -6,17 +6,25 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 
 import GUI.GUI;
-import Protocol.Protocol;
 
 public class BroadcastSender extends Thread implements Runnable {
 	private static final long SEND_INTERVAL = 10000;
-	private byte[] defaultMessage;
 	private static DatagramSocket ds;
 	private static DatagramPacket dp;
+	private byte[] defaultMessage;
+	private static byte[] forcedMessage;
 
 	public BroadcastSender(final String id) throws SocketException {
-		BroadcastData[] defaultData = { new BroadcastData(Protocol.BROADCAST, id) };
-		defaultMessage = Protocol.format(defaultData).getBytes();
+		byte[] idBytes = id.getBytes();
+		defaultMessage = new byte[idBytes.length + 1];
+		forcedMessage = new byte[idBytes.length + 1];
+		defaultMessage[0] = 0;
+		forcedMessage[1] = 1;
+		for (int i = 0; i < idBytes.length; i++) {
+			defaultMessage[i + 1] = idBytes[i];
+			forcedMessage[i + 1] = idBytes[i];
+		}
+
 		ds = new DatagramSocket();
 		ds.setBroadcast(true); // Behövs defacto inte, men why not.
 		ds.connect(Broadcast.BROADCAST_ADDR, Broadcast.BROADCAST_PORT);
@@ -39,10 +47,8 @@ public class BroadcastSender extends Thread implements Runnable {
 
 	public static void forceBroadcast() {
 		try {
-			String msg = new BroadcastData(Protocol.FORCE_BROADCAST, null)
-					.toString();
-			final DatagramPacket packet = new DatagramPacket(msg.getBytes(),
-					msg.getBytes().length, Broadcast.BROADCAST_ADDR,
+			final DatagramPacket packet = new DatagramPacket(forcedMessage,
+					forcedMessage.length, Broadcast.BROADCAST_ADDR,
 					Broadcast.BROADCAST_PORT);
 			ds.send(packet);
 		} catch (IOException e) {
@@ -59,7 +65,4 @@ public class BroadcastSender extends Thread implements Runnable {
 		}
 	}
 
-	public static void sendTestFile() {
-// does nothing atm
-	}
 }
