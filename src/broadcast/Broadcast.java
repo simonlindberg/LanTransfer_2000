@@ -62,17 +62,12 @@ public class Broadcast {
 				String data = new String(raw, 0, packet.getLength());
 System.out.println(data);
 				// forced
-				if (raw[0] == 1) {
-					System.out.println("SOMEONE FORCED ME!");
-					BroadcastSender.forceResponse();
-				} else {
-					String otherIp = packet.getAddress().getHostAddress();
-					if (!ip.equals(otherIp)) {
-						users.add(new User(data, otherIp, packet.getPort()));
-						GUI.populateGUI(users);
-						System.out.println(data + " -> " + otherIp + ":"
-								+ packet.getPort());
-					}
+				String otherIp = packet.getAddress().getHostAddress();
+				if (!ip.equals(otherIp)) {
+					users.add(new User(data, otherIp, packet.getPort()));
+					GUI.populateGUI(users);
+					System.out.println(data + " -> " + otherIp + ":"
+							+ packet.getPort());
 				}
 			}
 		}).start();

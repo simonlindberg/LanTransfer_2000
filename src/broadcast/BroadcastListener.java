@@ -24,9 +24,8 @@ public class BroadcastListener extends Thread implements Runnable {
 
 			for (;;) {
 				ds.receive(packet);
-				
 				if (packet.getData()[0] == 1) { // FORCED
-					// reply
+					BroadcastSender.forceResponse();
 				}
 				handler.handle(packet);
 			}
