@@ -3,10 +3,8 @@ package GUI;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -22,23 +20,14 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-
-import broadcast.BroadcastSender;
-import broadcast.User;
 
 public class GUI extends JFrame {
 
 	private static final long serialVersionUID = 1L;
-	private JLabel statusLabel;
-	private static JTable clientTable;
 
-	public GUI() {
-	}
-
-	public GUI(final TableModel model) {
-		addComponents(model);
+	public GUI(final TableModel model, final ActionListener refresher) {
+		addComponents(model, refresher);
 
 		setTitle("LANTRANSFER_2000 (ALPHA)");
 		setSize(700, 400);
@@ -48,7 +37,7 @@ public class GUI extends JFrame {
 		setVisible(true);
 	}
 
-	private void addComponents(final TableModel model) {
+	private void addComponents(final TableModel model, final ActionListener refresher) {
 		final JTabbedPane tabbedPane = new JTabbedPane();
 
 		final JComponent clientListTab = new JPanel(new GridLayout());
@@ -56,7 +45,7 @@ public class GUI extends JFrame {
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 		// add table
 
-		clientTable = new JTable();
+		final JTable clientTable = new JTable();
 		clientTable.setDragEnabled(false);
 		clientTable.setFillsViewportHeight(true);
 		clientTable.getTableHeader().setReorderingAllowed(false);
@@ -80,6 +69,7 @@ public class GUI extends JFrame {
 		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.PAGE_AXIS));
 
 		final JButton refreshButton = new JButton("Refresh list");
+		refreshButton.addActionListener(refresher);
 		final JButton sendFile = new JButton("Send file (test)");
 		final JButton testButton2 = new JButton("en");
 		final JButton testButton3 = new JButton("noob");
@@ -103,22 +93,13 @@ public class GUI extends JFrame {
 
 		statusPanel.setPreferredSize(new Dimension(getWidth(), 24));
 		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
-		statusLabel = new JLabel("Everything is a-ok!");
+
+		final JLabel statusLabel = new JLabel("Everything is a-ok!");
 		statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		statusPanel.add(statusLabel);
 
 		add(statusPanel, BorderLayout.SOUTH);
 
-		// Actionlisteners
-		refreshButton.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				statusLabel.setText("Refreshing client list...");
-				BroadcastSender.forceBroadcast();
-				statusLabel.setText("Done!");
-			}
-		});
 	}
 
 	public static void showError(final String title, final String message) {

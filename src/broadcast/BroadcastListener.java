@@ -4,41 +4,41 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.util.Arrays;
 
 import GUI.GUI;
 
 public class BroadcastListener extends BroadcastThread implements Runnable {
 	private final BroadcastResponseHandler handler;
-	private static final int BUFFER_SIZE = 100;
+	private static final int BUFFER_SIZE = 20;
 
-	public BroadcastListener(final String id, final BroadcastResponseHandler handler) throws SocketException {
-		super(id);
+	public BroadcastListener(final DatagramSocket sendSocket, final DatagramPacket sendPacket, final BroadcastResponseHandler handler) {
+		super(sendSocket, sendPacket);
 		this.handler = handler;
 	}
 
 	@SuppressWarnings("resource")
 	@Override
 	public void run() {
-		byte[] inBuf = new byte[BUFFER_SIZE];
+		final byte[] data = new byte[BUFFER_SIZE];
 		try {
-			final DatagramSocket ds = new DatagramSocket(BROADCAST_PORT);
-			final DatagramPacket packet = new DatagramPacket(inBuf, BUFFER_SIZE);
+			final DatagramSocket reciveSocket = new DatagramSocket(BROADCAST_PORT);
+			final DatagramPacket recivePacket = new DatagramPacket(data, BUFFER_SIZE);
 
 			for (;;) {
-				ds.receive(packet);
+				reciveSocket.receive(recivePacket);
 
-				if (!InetAddress.getLocalHost().equals(packet.getAddress())) {
+				if (InetAddress.getLocalHost().equals(recivePacket.getAddress())) {
 
-					final byte[] data = packet.getData();
-
-					if (data[0] == 1) { // FORCED
-						sendSocket.send(sendPacket);
+					System.out.println("recive: " + Arrays.toString(data));
+					if (data[0] == 1) { // I WAS FORCED!
+						System.out.println("I WAS FORCED!");
 					}
 
-					packet.setData(data, 1, data.length - 1);
-					handler.handle(packet);
+					recivePacket.setData(Arrays.copyOfRange(data, 1, data.length));
+					handler.handle(recivePacket);
+					recivePacket.setData(data);
+
 				}
 			}
 		} catch (IOException e) {

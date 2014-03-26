@@ -10,28 +10,19 @@ import java.util.Enumeration;
 
 public abstract class BroadcastThread extends Thread {
 
-	protected final static int BROADCAST_PORT = 31173;
+	public final static int BROADCAST_PORT = 31173;
 	private static InetAddress BROADCAST_ADDR;
 
 	// protected message;
 	protected final DatagramSocket sendSocket;
 	protected final DatagramPacket sendPacket;
 
-	public BroadcastThread(final String id) throws SocketException {
-		final byte[] idBytes = id.getBytes();
-
-		final byte[] message = new byte[idBytes.length + 1];
-		message[0] = 0; // NOT FORCED!
-		System.arraycopy(idBytes, 0, message, 1, idBytes.length);
-
-		sendSocket = new DatagramSocket();
-		sendSocket.setBroadcast(true); // Behövs defacto inte, men why not.
-		sendSocket.connect(getBroadcastAddress(), BROADCAST_PORT);
-
-		sendPacket = new DatagramPacket(message, message.length);
+	public BroadcastThread(final DatagramSocket sendSocket, final DatagramPacket sendPacket) {
+		this.sendPacket = sendPacket;
+		this.sendSocket = sendSocket;
 	}
 
-	protected static InetAddress getBroadcastAddress() throws SocketException {
+	public static InetAddress getBroadcastAddress() throws SocketException {
 		if (BROADCAST_ADDR == null) {
 			BROADCAST_ADDR = actuallyGetBroadcastAddress();
 		}
