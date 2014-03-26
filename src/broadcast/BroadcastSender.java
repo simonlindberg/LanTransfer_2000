@@ -35,6 +35,7 @@ public class BroadcastSender extends Thread implements Runnable {
 	public void run() {
 		try {
 			for (;;) {
+				Broadcast.resetUserlist();
 				ds.send(dp);
 				Thread.sleep(SEND_INTERVAL);
 			}
@@ -46,6 +47,7 @@ public class BroadcastSender extends Thread implements Runnable {
 
 	public static void forceBroadcast() {
 		try {
+			Broadcast.resetUserlist();
 			final DatagramPacket packet = new DatagramPacket(forcedMessage,
 					forcedMessage.length, Broadcast.BROADCAST_ADDR,
 					Broadcast.BROADCAST_PORT);
@@ -61,6 +63,7 @@ public class BroadcastSender extends Thread implements Runnable {
 			ds.send(dp);
 		} catch (IOException e) {
 			e.printStackTrace();
+			GUI.showError("Fatal error", "Unable to send data");
 		}
 	}
 
