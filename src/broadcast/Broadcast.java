@@ -76,7 +76,7 @@ public class Broadcast {
 							users.add(new User(partData[1], otherIp, packet
 									.getPort()));
 							GUI.populateGUI(users);
-							System.out.println(data + " -> " + otherIp + ":"
+							System.out.println(partData[0] + "=" + partData[1] + " -> " + otherIp + ":"
 									+ packet.getPort());
 						}
 					}
