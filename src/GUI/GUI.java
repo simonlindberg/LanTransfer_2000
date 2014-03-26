@@ -136,7 +136,6 @@ public class GUI extends JFrame {
 
 		try {
 			Broadcast.start(); // should fire instantly
-			BroadcastSender.forceBroadcast(); // required to force an update on start
 		} catch (SocketException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

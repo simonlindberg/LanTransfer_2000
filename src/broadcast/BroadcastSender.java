@@ -20,7 +20,7 @@ public class BroadcastSender extends Thread implements Runnable {
 		responseMessage = new byte[idBytes.length + 1];
 		requestMessage = new byte[idBytes.length + 1];
 		responseMessage[0] = 0;
-		requestMessage[1] = 1;
+		requestMessage[0] = 1;
 		for (int i = 0; i < idBytes.length; i++) {
 			responseMessage[i + 1] = idBytes[i];
 			requestMessage[i + 1] = idBytes[i];
@@ -62,6 +62,7 @@ public class BroadcastSender extends Thread implements Runnable {
 
 	public static void forceResponse() {
 		try {
+			System.out.println("sending response..");
 			ds.send(responsePacket);
 		} catch (IOException e) {
 			e.printStackTrace();
