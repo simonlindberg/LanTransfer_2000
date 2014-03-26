@@ -75,8 +75,8 @@ public class Broadcast {
 	}
 
 	public static void resetUserlist() {
-//		GUI.clearGUI();
-//		users.clear();
+		GUI.clearGUI();
+		users.clear();
 	}
 
 }
