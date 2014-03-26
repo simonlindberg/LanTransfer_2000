@@ -5,14 +5,12 @@ import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.Enumeration;
-import java.util.Random;
 
 public class Broadcast {
 
 	final static int BROADCAST_PORT = 6666;
-	final static String FORCE_BROADCAST = "FORCE_BROADCAST"; // Poblem om användaren heter just detta.
+	final static String FORCE_BROADCAST = "FORCE_BROADCAST"; // Poblem om anvï¿½ndaren heter just detta.
 
 	public static InetAddress getBroadcastAddress() throws SocketException {
 		final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
@@ -41,7 +39,7 @@ public class Broadcast {
 
 			@Override
 			public void handle(final DatagramPacket packet) {
-				String data = "" + packet.getData();
+				String data = new String(packet.getData(), 0, packet.getLength());
 				switch (data) {
 				case FORCE_BROADCAST:
 					System.out.println("SOMEONE FORCED ME!");

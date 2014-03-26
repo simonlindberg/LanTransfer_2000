@@ -7,7 +7,6 @@ import java.net.SocketException;
 
 public class BroadcastSender extends Thread implements Runnable {
 	private static final long SEND_INTERVAL = 10000;
-	private static DatagramPacket packet;
 	private byte[] bytes;
 	private static DatagramSocket ds;
 
@@ -18,12 +17,12 @@ public class BroadcastSender extends Thread implements Runnable {
 		ds.connect(Broadcast.getBroadcastAddress(), Broadcast.BROADCAST_PORT);
 	}
 
-	@SuppressWarnings("resource")
 	@Override
 	public void run() {
 		try {
-			DatagramPacket packet = new DatagramPacket(bytes, bytes.length, Broadcast.getBroadcastAddress(), Broadcast.BROADCAST_PORT);
-			
+			DatagramPacket packet = new DatagramPacket(bytes, bytes.length,
+					Broadcast.getBroadcastAddress(), Broadcast.BROADCAST_PORT);
+
 			for (;;) {
 				ds.send(packet);
 				Thread.sleep(SEND_INTERVAL);
@@ -32,12 +31,14 @@ public class BroadcastSender extends Thread implements Runnable {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void forceBroadcast() {
 		try {
 			String msg = "FORCE_BROADCAST";
-			DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.getBytes().length, Broadcast.getBroadcastAddress(), Broadcast.BROADCAST_PORT);
-			
+			DatagramPacket packet = new DatagramPacket(msg.getBytes(),
+					msg.getBytes().length, Broadcast.getBroadcastAddress(),
+					Broadcast.BROADCAST_PORT);
+
 			ds.send(packet);
 		} catch (IOException e) {
 			e.printStackTrace();
