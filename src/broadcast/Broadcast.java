@@ -9,8 +9,8 @@ import java.util.Enumeration;
 
 public class Broadcast {
 
-	final static int BROADCAST_PORT = 6666;
-	final static String FORCE_BROADCAST = "FORCE_BROADCAST"; // Poblem om anv�ndaren heter just detta.
+	final protected static int BROADCAST_PORT = 6666;
+	final protected static String FORCE_BROADCAST_MSG = "FORCE_BROADCAST"; // Poblem om anv�ndaren heter just detta.
 
 	public static InetAddress getBroadcastAddress() throws SocketException {
 		final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
@@ -41,8 +41,9 @@ public class Broadcast {
 			public void handle(final DatagramPacket packet) {
 				String data = new String(packet.getData(), 0, packet.getLength());
 				switch (data) {
-				case FORCE_BROADCAST:
+				case FORCE_BROADCAST_MSG:
 					System.out.println("SOMEONE FORCED ME!");
+					BroadcastSender.forceResponse();
 					break;
 				default:
 					System.out.println(new String(packet.getData()) + " -> " + packet.getAddress() + ":" + packet.getPort());

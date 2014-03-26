@@ -9,22 +9,22 @@ public class BroadcastSender extends Thread implements Runnable {
 	private static final long SEND_INTERVAL = 10000;
 	private byte[] bytes;
 	private static DatagramSocket ds;
+	private static DatagramPacket dp;
 
 	public BroadcastSender(final String id) throws SocketException {
 		bytes = id.getBytes();
 		ds = new DatagramSocket();
 		ds.setBroadcast(true); // Behövs defacto inte, men why not.
 		ds.connect(Broadcast.getBroadcastAddress(), Broadcast.BROADCAST_PORT);
+		dp = new DatagramPacket(bytes, bytes.length,
+				Broadcast.getBroadcastAddress(), Broadcast.BROADCAST_PORT);
 	}
 
 	@Override
 	public void run() {
 		try {
-			DatagramPacket packet = new DatagramPacket(bytes, bytes.length,
-					Broadcast.getBroadcastAddress(), Broadcast.BROADCAST_PORT);
-
 			for (;;) {
-				ds.send(packet);
+				ds.send(dp);
 				Thread.sleep(SEND_INTERVAL);
 			}
 		} catch (IOException | InterruptedException e) {
@@ -34,12 +34,19 @@ public class BroadcastSender extends Thread implements Runnable {
 
 	public static void forceBroadcast() {
 		try {
-			String msg = "FORCE_BROADCAST";
-			DatagramPacket packet = new DatagramPacket(msg.getBytes(),
-					msg.getBytes().length, Broadcast.getBroadcastAddress(),
-					Broadcast.BROADCAST_PORT);
-
+			final DatagramPacket packet = new DatagramPacket(
+					Broadcast.FORCE_BROADCAST_MSG.getBytes(),
+					Broadcast.FORCE_BROADCAST_MSG.getBytes().length,
+					Broadcast.getBroadcastAddress(), Broadcast.BROADCAST_PORT);
 			ds.send(packet);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void forceResponse() {
+		try {
+			ds.send(dp);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
