@@ -75,8 +75,8 @@ System.out.println(data);
 	}
 
 	public static void resetUserlist() {
-		GUI.clearGUI();
-		users.clear();
+//		GUI.clearGUI();
+//		users.clear();
 	}
 
 }
