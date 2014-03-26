@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
+import GUI.GUI;
+
 public class BroadcastListener extends Thread implements Runnable {
 	private final BroadcastResponseHandler handler;
 	private static final int BUFFER_SIZE = 100;
@@ -27,6 +29,7 @@ public class BroadcastListener extends Thread implements Runnable {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+			GUI.showError("Fatal error", "Unable to receive data");
 		}
 	}
 

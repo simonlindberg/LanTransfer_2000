@@ -5,6 +5,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 
+import GUI.GUI;
+
 public class BroadcastSender extends Thread implements Runnable {
 	private static final long SEND_INTERVAL = 10000;
 	private byte[] bytes;
@@ -29,6 +31,7 @@ public class BroadcastSender extends Thread implements Runnable {
 			}
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
+			GUI.showError("Fatal error", "Unable to send data");
 		}
 	}
 
@@ -41,6 +44,7 @@ public class BroadcastSender extends Thread implements Runnable {
 			ds.send(packet);
 		} catch (IOException e) {
 			e.printStackTrace();
+			GUI.showError("Fatal error", "Unable to send data");
 		}
 	}
 
