@@ -62,7 +62,6 @@ public class BroadcastSender extends Thread implements Runnable {
 
 	public static void forceResponse() {
 		try {
-			System.out.println("sending response..");
 			ds.send(responsePacket);
 		} catch (IOException e) {
 			e.printStackTrace();

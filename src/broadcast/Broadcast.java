@@ -67,8 +67,6 @@ public class Broadcast {
 					System.out.println("RECEIVE: " + data + " -> " + otherIp
 							+ ":" + packet.getPort());
 				}
-				
-				System.out.println(users);
 			}
 		}).start();
 
