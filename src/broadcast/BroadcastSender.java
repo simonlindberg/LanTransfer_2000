@@ -35,7 +35,7 @@ public class BroadcastSender extends Thread implements Runnable {
 	public void run() {
 		try {
 			for (;;) {
-				resetUserlist();
+				Broadcast.resetUserlist();
 				ds.send(dp);
 				Thread.sleep(SEND_INTERVAL);
 			}
@@ -63,12 +63,6 @@ public class BroadcastSender extends Thread implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	private static void resetUserlist() {
-		// Clear the gui
-		GUI.clearGUI();
-		Broadcast.resetUserlist();
 	}
 
 }
