@@ -96,7 +96,7 @@ public class GUI extends JFrame {
 			}
 		});
 		
-		final JButton testButton1 = new JButton("är");
+		final JButton testButton1 = new JButton("Ã¤r");
 		final JButton testButton2 = new JButton("en");
 		final JButton testButton3 = new JButton("noob");
 
