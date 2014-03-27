@@ -70,9 +70,14 @@ public class ChatFrame extends JFrame {
 
 		chatLog.setBackground(Color.WHITE);
 
-		// String startMessage = "Started chat with " + user.getUsername() +
-		// " at " + (new Date()).toString();
-		// chatLog.add(new JLabel(startMessage));
+		final Calendar cal = Calendar.getInstance();
+		final SimpleDateFormat sdf = new SimpleDateFormat("dd/mm/yyyy HH:mm:ss");
+		// Space is ugly but works..
+		String startMessage = " New chat started with " + user.getUsername() + " at " + sdf.format(cal.getTime());
+		final JLabel start = new JLabel(startMessage);
+		start.setForeground(INFO_TXT);
+
+		chatLog.add(start);
 		add(scrollChatLog, BorderLayout.CENTER);
 
 		final JPanel chatInput = new JPanel(new BorderLayout());
@@ -150,7 +155,7 @@ public class ChatFrame extends JFrame {
 			int height = (int) chatLog.getPreferredSize().getHeight();
 			Rectangle rect = new Rectangle(0, height, 10, 10);
 			scrollChatLog.scrollRectToVisible(rect);
-			
+
 			lastMessage = user;
 		}
 	}
