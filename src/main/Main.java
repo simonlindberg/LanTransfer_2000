@@ -21,8 +21,9 @@ import broadcast.BroadcastThread;
 import broadcast.User;
 
 public class Main {
-	private static final int TIMEOUT = 5000; // Time a user may have been
-												// unactive before he is kicked
+	private static final int CHECKER_TIMEOUT = 4000;// Time a user may have been
+													// unactive before he is
+													// kicked
 
 	@SuppressWarnings({ "serial" })
 	public static void main(String[] args) {
@@ -75,7 +76,7 @@ public class Main {
 							synchronized (users) {
 								final Set<User> toRemove = new HashSet<>();
 								for (final User user : users) {
-									if ((System.currentTimeMillis() - user.getLatest()) > TIMEOUT) {
+									if ((System.currentTimeMillis() - user.getLatest()) > CHECKER_TIMEOUT) {
 										model.removeRow(user.getWhere());
 										toRemove.add(user);
 									}
@@ -85,7 +86,7 @@ public class Main {
 									users.remove(user);
 								}
 							}
-							Thread.sleep(TIMEOUT);
+							Thread.sleep(CHECKER_TIMEOUT);
 						}
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
@@ -99,10 +100,11 @@ public class Main {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
 					System.out.println("sending force!");
-					message[0] = 1; // FORCE ON!
-					final DatagramPacket forcePacket = new DatagramPacket(message, message.length);
 					try {
-						sendSocket.send(forcePacket);
+						message[0] = 1; // FORCE ON!
+						sendSocket.send(sendPacket);
+						model.setRowCount(0);
+						users.clear();
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					} finally {
