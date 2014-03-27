@@ -5,8 +5,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 
-import GUI.GUI;
-
 public class BroadcastSender extends Thread implements Runnable {
 	private static final long SEND_INTERVAL = 10000;
 	private static DatagramSocket ds;

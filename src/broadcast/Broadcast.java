@@ -10,7 +10,6 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
-import GUI.GUI;
 import GUI.User;
 
 public class Broadcast {
