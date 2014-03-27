@@ -46,7 +46,6 @@ public class BroadcastSender extends Thread implements Runnable {
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-			GUI.showError("Fatal error", "Unable to send data");
 		}
 	}
 
@@ -56,7 +55,6 @@ public class BroadcastSender extends Thread implements Runnable {
 			ds.send(requestPacket);
 		} catch (IOException e) {
 			e.printStackTrace();
-			GUI.showError("Fatal error", "Unable to send data");
 		}
 	}
 
@@ -65,7 +63,6 @@ public class BroadcastSender extends Thread implements Runnable {
 			ds.send(responsePacket);
 		} catch (IOException e) {
 			e.printStackTrace();
-			GUI.showError("Fatal error", "Unable to send data");
 		}
 	}
 

@@ -2,40 +2,33 @@ package GUI;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.net.SocketException;
-import java.util.Set;
+import java.awt.FlowLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.table.DefaultTableModel;
-
-import broadcast.Broadcast;
-import broadcast.BroadcastSender;
-import broadcast.User;
 
 public class GUI extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JLabel statusLabel;
-	private static JTable clientTable;
 
 	public GUI() {
+		setLayout(new BorderLayout());
 		addComponents();
 
 		setTitle("LANTRANSFER_2000 (ALPHA)");
@@ -47,67 +40,17 @@ public class GUI extends JFrame {
 	}
 
 	private void addComponents() {
-		final JTabbedPane tabbedPane = new JTabbedPane();
+		createClientTable();
 
-		final JComponent clientListTab = new JPanel(new GridLayout());
-		tabbedPane.addTab("Client list", null, clientListTab,
-				"See all available clients");
-		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
-		// add table
-		final String[] columnNames = { "Name", "IP", "Port" };
-		clientTable = new JTable();
-		clientTable.setDragEnabled(false);
-		clientTable.setFillsViewportHeight(true);
-		clientTable.getTableHeader().setReorderingAllowed(false);
+		createButtons();
 
-		DefaultTableModel clientTableModel = new DefaultTableModel(null,
-				columnNames) {
-			private static final long serialVersionUID = 1L;
+//		createStatusbar();
+	}
 
-			@Override
-			public boolean isCellEditable(int row, int column) {
-				// all cells false
-				return false;
-			}
-		};
-
-		clientTable.setModel(clientTableModel);
-
-		final JScrollPane jsp = new JScrollPane(clientTable);
-		clientListTab.add(jsp);
-
-		final JComponent panel2 = new JPanel(new GridLayout());
-		tabbedPane.addTab("Transfers", null, panel2, "See all your transfers");
-		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
-
-		final JSplitPane sp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		sp.setResizeWeight(0.8);
-		sp.setEnabled(false);
-		sp.setDividerSize(0);
-		sp.add(tabbedPane);
-
-		final JComponent buttonPane = new JPanel(null);
-		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.PAGE_AXIS));
-
-		final JButton refreshButton = new JButton("Refresh list");
-		final JButton sendFile = new JButton("Send file (test)");
-		final JButton testButton2 = new JButton("en");
-		final JButton testButton3 = new JButton("noob");
-
-		buttonPane.add(Box.createRigidArea(new Dimension(20, 20)));
-		buttonPane.add(refreshButton);
-		buttonPane.add(Box.createRigidArea(new Dimension(20, 10)));
-		buttonPane.add(sendFile);
-		buttonPane.add(Box.createRigidArea(new Dimension(20, 10)));
-		buttonPane.add(testButton2);
-		buttonPane.add(Box.createRigidArea(new Dimension(20, 10)));
-		buttonPane.add(testButton3);
-
-		sp.add(buttonPane);
-
-		add(sp);
-
-		// create the status bar panel and shove it down the bottom of the frame
+	private void createStatusbar() {
+		/**
+		 * Statusbar
+		 */
 		JPanel statusPanel = new JPanel();
 		statusPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
 
@@ -118,50 +61,111 @@ public class GUI extends JFrame {
 		statusPanel.add(statusLabel);
 
 		add(statusPanel, BorderLayout.SOUTH);
+	}
 
-		// Actionlisteners
-		refreshButton.addActionListener(new ActionListener() {
+	private void createButtons() {
+		/**
+		 * Refresh + rename
+		 */
+		final JComponent topPane = new JPanel(new BorderLayout());
+
+		final JPanel renamePanel = new JPanel(new BorderLayout());
+		JTextField rename = new JTextField();
+		renamePanel.add(rename);
+
+		final JPanel buttonPanel = new JPanel(new FlowLayout());
+		final JButton changeName = new JButton("Change username");
+		final JButton refreshButton = new JButton("Refresh list");
+		buttonPanel.add(changeName);
+		buttonPanel.add(refreshButton);
+
+		topPane.add(renamePanel, BorderLayout.CENTER);
+		topPane.add(buttonPanel, BorderLayout.EAST);
+
+		add(topPane, BorderLayout.NORTH);
+	}
+
+	private void createClientTable() {
+		/**
+		 * Client table
+		 */
+
+		final Map<String, JFrame> clientWindows = new HashMap<String, JFrame>();
+
+		final String[] columnNames = { "Name", "IP" };
+		JTable clientTable = new JTable();
+		clientTable.setDragEnabled(false);
+		clientTable.setFillsViewportHeight(true);
+		clientTable.getTableHeader().setReorderingAllowed(false);
+
+		Object[][] data = { { "Blah", "Blah" } };
+
+		final DefaultTableModel clientTableModel = new DefaultTableModel(data, columnNames) {
+			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				statusLabel.setText("Refreshing client list...");
-				BroadcastSender.forceBroadcast();
-				statusLabel.setText("Done!");
+			public boolean isCellEditable(int row, int column) {
+				// all cells false
+				return false;
+			}
+
+		};
+
+		clientTable.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2) {
+					JTable target = (JTable) e.getSource();
+					int row = target.getSelectedRow();
+					// Get IP
+					final String ip = (String) clientTableModel.getValueAt(row, 1);
+					if (!clientWindows.containsKey(ip)) {
+						ChatFrame cf = new ChatFrame(new User("firas", ip));
+						clientWindows.put(ip, cf);
+						System.out.println("created frame");
+						cf.addWindowListener(new WindowAdapter() {
+
+							@Override
+							public void windowClosing(WindowEvent e) {
+								System.out.println("hello");
+								clientWindows.remove(ip);
+							}
+
+						});
+					} else {
+						clientWindows.get(ip).toFront();
+					}
+				}
 			}
 		});
+
+		clientTable.setModel(clientTableModel);
+
+		clientTableModel.addRow(new Object[] { "a", "b", "c" });
+
+		final JScrollPane jsp = new JScrollPane(clientTable);
+		add(jsp, BorderLayout.CENTER);
 	}
 
 	public static void main(String[] args) {
 		new GUI();
-
-		try {
-			Broadcast.start(); // should fire instantly
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			showError(
-					"An error occured while trying to broadcast. The program will now terminate.",
-					"ERROR");
-			System.exit(1);
-		}
 	}
 
-	public static void showError(String title, String message) {
-		JOptionPane.showMessageDialog(null, message, title,
-				JOptionPane.ERROR_MESSAGE);
-	}
-
-	public static void clearGUI() {
-		DefaultTableModel model = (DefaultTableModel) clientTable.getModel();
-		model.setRowCount(0);
-	}
-
-	public static void populateGUI(Set<User> users) {
-		clearGUI();
-		DefaultTableModel model = (DefaultTableModel) clientTable.getModel();
-		for (User u : users) {
-			model.addRow(new Object[] { u.getUsername(), u.getIP(), u.getPort() });
-		}
-	}
+	// public static void showError(String title, String message) {
+	// JOptionPane.showMessageDialog(null, message, title,
+	// JOptionPane.ERROR_MESSAGE);
+	// }
+	//
+	// public static void clearGUI() {
+	// DefaultTableModel model = (DefaultTableModel) clientTable.getModel();
+	// // model.setRowCount(0);
+	// }
+	//
+	// public static void populateGUI(Set<User> users) {
+	// clearGUI();
+	// DefaultTableModel model = (DefaultTableModel) clientTable.getModel();
+	// for (User u : users) {
+	// model.addRow(new Object[] { u.getUsername(), u.getIP() });
+	// }
+	// }
 
 }

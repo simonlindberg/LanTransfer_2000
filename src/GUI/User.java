@@ -1,19 +1,17 @@
-package broadcast;
+package GUI;
 
 public class User {
 
 	private String ip;
-	private int port;
 	private String username;
 
-	public User(String username, String ip, int port) {
+	public User(String username, String ip) {
 		this.ip = ip;
-		this.port = port;
 		this.username = username;
 	}
 
 	public String toString() {
-		return username + ": " + ip + ":" + port;
+		return username + ": " + ip;
 	}
 
 	@Override
@@ -21,8 +19,7 @@ public class User {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((ip == null) ? 0 : ip.hashCode());
-		result = prime * result
-				+ ((username == null) ? 0 : username.hashCode());
+		result = prime * result + ((username == null) ? 0 : username.hashCode());
 		return result;
 	}
 
@@ -54,10 +51,6 @@ public class User {
 
 	public String getIP() {
 		return ip;
-	}
-
-	public int getPort() {
-		return port;
 	}
 
 }

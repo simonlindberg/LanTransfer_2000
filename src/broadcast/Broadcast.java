@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import GUI.GUI;
+import GUI.User;
 
 public class Broadcast {
 
@@ -50,7 +51,6 @@ public class Broadcast {
 			ownIp = InetAddress.getLocalHost().getHostAddress();
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
-			GUI.showError("Fatal error", "Unable to fetch ip");
 		}
 
 		new BroadcastListener(new BroadcastResponseHandler() {
@@ -62,8 +62,7 @@ public class Broadcast {
 				String otherIp = packet.getAddress().getHostAddress();
 
 				if (!ownIp.equals(otherIp)) {
-					users.add(new User(data, otherIp, packet.getPort()));
-					GUI.populateGUI(users);
+					users.add(new User(data, otherIp));
 					System.out.println("RECEIVE: " + data + " -> " + otherIp
 							+ ":" + packet.getPort());
 				}
@@ -74,7 +73,6 @@ public class Broadcast {
 	}
 
 	public static void resetUserlist() {
-		GUI.clearGUI();
 		users.clear();
 	}
 
