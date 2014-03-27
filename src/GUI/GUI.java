@@ -116,6 +116,7 @@ public class GUI extends JFrame {
 				if (e.getClickCount() == 2) {
 					JTable target = (JTable) e.getSource();
 					int row = target.getSelectedRow();
+					if (row == -1) return;
 					// Get IP
 					final String ip = (String) clientTableModel.getValueAt(row, 1);
 					if (!clientWindows.containsKey(ip)) {
