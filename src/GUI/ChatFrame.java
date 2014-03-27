@@ -21,9 +21,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import org.w3c.dom.css.CSSPrimitiveValue;
-import org.w3c.dom.css.RGBColor;
-
 import net.miginfocom.swing.MigLayout;
 
 public class ChatFrame extends JFrame {
@@ -46,7 +43,6 @@ public class ChatFrame extends JFrame {
 
 		setTitle("Chat window with " + user.getUsername());
 		setSize(new Dimension(500, 600));
-		// setMinimumSize(new Dimension(300, 400));
 		setResizable(false);
 
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -58,15 +54,12 @@ public class ChatFrame extends JFrame {
 	}
 
 	private void createComponents() {
-		// final JPanel chatLog = new JPanel(new GridBagLayout());
 		MigLayout layout = new MigLayout("gap rel 0, wrap 1, insets 0");
 		final JPanel chatLog = new JPanel(layout);
-		// chatLog.setLayout(new BoxLayout(chatLog, BoxLayout.PAGE_AXIS));
-
+		chatLog.setForeground(TXT_COLOR);
+		
 		final JScrollPane scrollChatLog = new JScrollPane(chatLog);
 		scrollChatLog.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		// chatLog.setAutoscrolls(true);
-		// scrollChatLog.setAutoscrolls(true);
 
 		chatLog.setBackground(Color.WHITE);
 
@@ -105,13 +98,6 @@ public class ChatFrame extends JFrame {
 				input.setText("");
 			}
 		});
-
-		// scrollChatLog.getVerticalScrollBar().addAdjustmentListener(new
-		// AdjustmentListener() {
-		// public void adjustmentValueChanged(AdjustmentEvent e) {
-		// e.getAdjustable().setValue(e.getAdjustable().getMaximum());
-		// }
-		// });
 	}
 
 	private void send(final String text, final JComponent chatLog, final JComponent scrollChatLog) {
@@ -147,9 +133,6 @@ public class ChatFrame extends JFrame {
 			messageContents.add(time);
 
 			chatLog.add(messageContents, "pushx, growx");
-
-			chatLog.revalidate();
-			chatLog.repaint();
 
 			// auto scroll
 			int height = (int) chatLog.getPreferredSize().getHeight();
