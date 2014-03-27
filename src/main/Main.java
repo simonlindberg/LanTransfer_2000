@@ -1,5 +1,7 @@
 package main;
 
+import gui.GUI;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -13,7 +15,6 @@ import java.util.Set;
 
 import javax.swing.table.DefaultTableModel;
 
-import GUI.GUI;
 import broadcast.BroadcastListener;
 import broadcast.BroadcastResponseHandler;
 import broadcast.BroadcastSender;

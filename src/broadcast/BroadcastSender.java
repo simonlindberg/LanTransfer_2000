@@ -1,10 +1,11 @@
 package broadcast;
 
+import gui.GUI;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
-import GUI.GUI;
 
 public class BroadcastSender extends BroadcastThread implements Runnable {
 	private static final long SEND_INTERVAL = 1000;
