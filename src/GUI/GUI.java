@@ -2,10 +2,6 @@ package GUI;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +12,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 public class GUI extends JFrame {
@@ -34,23 +29,23 @@ public class GUI extends JFrame {
 
 		setVisible(true);
 	}
-	
+
 	private void addComponents() {
 		final JPanel leftContainer = new JPanel(new BorderLayout());
 		final JPanel rightContainer = new JPanel(new BorderLayout());
-		
+
 		createClientTable(leftContainer);
 		createButtons(leftContainer);
-		
+
 		final ChatPanel cp = new ChatPanel(new User("firas", "192.168.0.1"));
-		
+
 		rightContainer.add(cp);
-		
+
 		final JSplitPane jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftContainer, rightContainer);
-		
+
 		jsp.setDividerSize(5);
 		jsp.setResizeWeight(0.1);
-		
+
 		add(jsp);
 	}
 
@@ -65,7 +60,7 @@ public class GUI extends JFrame {
 
 		topPane.add(changeName, BorderLayout.WEST);
 		topPane.add(refreshButton, BorderLayout.EAST);
-		
+
 		container.add(topPane, BorderLayout.NORTH);
 	}
 
@@ -95,33 +90,33 @@ public class GUI extends JFrame {
 
 		};
 
-//		clientTable.addMouseListener(new MouseAdapter() {
-//			public void mouseClicked(MouseEvent e) {
-//				if (e.getClickCount() == 2) {
-//					JTable target = (JTable) e.getSource();
-//					int row = target.getSelectedRow();
-//					if (row == -1) return;
-//					// Get IP
-//					final String ip = (String) clientTableModel.getValueAt(row, 1);
-//					if (!clientWindows.containsKey(ip)) {
-//						ChatPanel cf = new ChatPanel(new User("firas", ip));
-//						clientWindows.put(ip, cf);
-//						System.out.println("created frame");
-//						cf.addWindowListener(new WindowAdapter() {
-//
-//							@Override
-//							public void windowClosing(WindowEvent e) {
-//								System.out.println("hello");
-//								clientWindows.remove(ip);
-//							}
-//
-//						});
-//					} else {
-//						clientWindows.get(ip).toFront();
-//					}
-//				}
-//			}
-//		});
+		// clientTable.addMouseListener(new MouseAdapter() {
+		// public void mouseClicked(MouseEvent e) {
+		// if (e.getClickCount() == 2) {
+		// JTable target = (JTable) e.getSource();
+		// int row = target.getSelectedRow();
+		// if (row == -1) return;
+		// // Get IP
+		// final String ip = (String) clientTableModel.getValueAt(row, 1);
+		// if (!clientWindows.containsKey(ip)) {
+		// ChatPanel cf = new ChatPanel(new User("firas", ip));
+		// clientWindows.put(ip, cf);
+		// System.out.println("created frame");
+		// cf.addWindowListener(new WindowAdapter() {
+		//
+		// @Override
+		// public void windowClosing(WindowEvent e) {
+		// System.out.println("hello");
+		// clientWindows.remove(ip);
+		// }
+		//
+		// });
+		// } else {
+		// clientWindows.get(ip).toFront();
+		// }
+		// }
+		// }
+		// });
 
 		clientTable.setModel(clientTableModel);
 
