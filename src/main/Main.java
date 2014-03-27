@@ -21,7 +21,7 @@ import broadcast.BroadcastThread;
 import broadcast.User;
 
 public class Main {
-	private static final int TIMEOUT = 10000; // Time a user may have been
+	private static final int TIMEOUT = 5000; // Time a user may have been
 												// unactive before he is kicked
 
 	@SuppressWarnings({ "serial" })

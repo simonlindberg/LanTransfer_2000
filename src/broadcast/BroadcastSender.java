@@ -7,7 +7,7 @@ import java.net.DatagramSocket;
 import GUI.GUI;
 
 public class BroadcastSender extends BroadcastThread implements Runnable {
-	private static final long SEND_INTERVAL = 10000;
+	private static final long SEND_INTERVAL = 1000;
 
 	public BroadcastSender(DatagramSocket sendSocket, DatagramPacket sendPacket) {
 		super(sendSocket, sendPacket);

@@ -28,7 +28,7 @@ public class BroadcastListener extends BroadcastThread implements Runnable {
 			for (;;) {
 				reciveSocket.receive(recivePacket);
 
-				if (true){//InetAddress.getLocalHost().equals(recivePacket.getAddress())) {
+				if (!InetAddress.getLocalHost().equals(recivePacket.getAddress())) {
 
 					System.out.println("recive: " + Arrays.toString(data));
 					if (data[0] == 1) { // I WAS FORCED!
