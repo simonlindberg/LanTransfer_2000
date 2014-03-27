@@ -1,4 +1,4 @@
-package broadcast;
+package main;
 
 public class User {
 

@@ -19,7 +19,6 @@ import broadcast.BroadcastListener;
 import broadcast.BroadcastResponseHandler;
 import broadcast.BroadcastSender;
 import broadcast.BroadcastThread;
-import broadcast.User;
 
 public class Main {
 	private static final int CHECKER_TIMEOUT = 4000;// Time a user may have been
