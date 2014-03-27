@@ -9,23 +9,19 @@ import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.border.BevelBorder;
 import javax.swing.table.DefaultTableModel;
 
 public class GUI extends JFrame {
 
 	private static final long serialVersionUID = 1L;
-	private JLabel statusLabel;
 
 	public GUI() {
 		setLayout(new BorderLayout());
@@ -38,54 +34,42 @@ public class GUI extends JFrame {
 
 		setVisible(true);
 	}
-
+	
 	private void addComponents() {
-		createClientTable();
-
-		createButtons();
-
-//		createStatusbar();
+		final JPanel leftContainer = new JPanel(new BorderLayout());
+		final JPanel rightContainer = new JPanel(new BorderLayout());
+		
+		createClientTable(leftContainer);
+		createButtons(leftContainer);
+		
+		final ChatPanel cp = new ChatPanel(new User("firas", "192.168.0.1"));
+		
+		rightContainer.add(cp);
+		
+		final JSplitPane jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftContainer, rightContainer);
+		
+		jsp.setDividerSize(5);
+		jsp.setResizeWeight(0.1);
+		
+		add(jsp);
 	}
 
-	private void createStatusbar() {
-		/**
-		 * Statusbar
-		 */
-		JPanel statusPanel = new JPanel();
-		statusPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
-
-		statusPanel.setPreferredSize(new Dimension(getWidth(), 24));
-		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
-		statusLabel = new JLabel("Everything is a-ok!");
-		statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
-		statusPanel.add(statusLabel);
-
-		add(statusPanel, BorderLayout.SOUTH);
-	}
-
-	private void createButtons() {
+	private void createButtons(final JComponent container) {
 		/**
 		 * Refresh + rename
 		 */
 		final JComponent topPane = new JPanel(new BorderLayout());
 
-		final JPanel renamePanel = new JPanel(new BorderLayout());
-		JTextField rename = new JTextField();
-		renamePanel.add(rename);
-
-		final JPanel buttonPanel = new JPanel(new FlowLayout());
 		final JButton changeName = new JButton("Change username");
 		final JButton refreshButton = new JButton("Refresh list");
-		buttonPanel.add(changeName);
-		buttonPanel.add(refreshButton);
 
-		topPane.add(renamePanel, BorderLayout.CENTER);
-		topPane.add(buttonPanel, BorderLayout.EAST);
-
-		add(topPane, BorderLayout.NORTH);
+		topPane.add(changeName, BorderLayout.WEST);
+		topPane.add(refreshButton, BorderLayout.EAST);
+		
+		container.add(topPane, BorderLayout.NORTH);
 	}
 
-	private void createClientTable() {
+	private void createClientTable(final JComponent container) {
 		/**
 		 * Client table
 		 */
@@ -111,44 +95,40 @@ public class GUI extends JFrame {
 
 		};
 
-		clientTable.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 2) {
-					JTable target = (JTable) e.getSource();
-					int row = target.getSelectedRow();
-					if (row == -1) return;
-					// Get IP
-					final String ip = (String) clientTableModel.getValueAt(row, 1);
-					if (!clientWindows.containsKey(ip)) {
-						ChatFrame cf = new ChatFrame(new User("firas", ip));
-						clientWindows.put(ip, cf);
-						System.out.println("created frame");
-						cf.addWindowListener(new WindowAdapter() {
-
-							@Override
-							public void windowClosing(WindowEvent e) {
-								System.out.println("hello");
-								clientWindows.remove(ip);
-							}
-
-						});
-					} else {
-						clientWindows.get(ip).toFront();
-					}
-				}
-			}
-		});
+//		clientTable.addMouseListener(new MouseAdapter() {
+//			public void mouseClicked(MouseEvent e) {
+//				if (e.getClickCount() == 2) {
+//					JTable target = (JTable) e.getSource();
+//					int row = target.getSelectedRow();
+//					if (row == -1) return;
+//					// Get IP
+//					final String ip = (String) clientTableModel.getValueAt(row, 1);
+//					if (!clientWindows.containsKey(ip)) {
+//						ChatPanel cf = new ChatPanel(new User("firas", ip));
+//						clientWindows.put(ip, cf);
+//						System.out.println("created frame");
+//						cf.addWindowListener(new WindowAdapter() {
+//
+//							@Override
+//							public void windowClosing(WindowEvent e) {
+//								System.out.println("hello");
+//								clientWindows.remove(ip);
+//							}
+//
+//						});
+//					} else {
+//						clientWindows.get(ip).toFront();
+//					}
+//				}
+//			}
+//		});
 
 		clientTable.setModel(clientTableModel);
 
 		clientTableModel.addRow(new Object[] { "a", "b", "c" });
 
-		final JScrollPane jsp = new JScrollPane(clientTable);
-		add(jsp, BorderLayout.CENTER);
-	}
-
-	public static void main(String[] args) {
-		new GUI();
+		final JScrollPane scrollPane = new JScrollPane(clientTable);
+		container.add(scrollPane, BorderLayout.CENTER);
 	}
 
 	// public static void showError(String title, String message) {

@@ -3,7 +3,6 @@ package GUI;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -14,7 +13,6 @@ import java.util.Calendar;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -23,7 +21,7 @@ import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 
-public class ChatFrame extends JFrame {
+public class ChatPanel extends JPanel {
 
 	private static final long serialVersionUID = -2013659249126443168L;
 
@@ -33,7 +31,7 @@ public class ChatFrame extends JFrame {
 	private static final Color TXT_COLOR = new Color(43, 43, 43);
 	private User lastMessage;
 
-	public ChatFrame(final User user) {
+	public ChatPanel(final User user) {
 		this.user = user;
 		lastMessage = null;
 
@@ -41,13 +39,13 @@ public class ChatFrame extends JFrame {
 
 		createComponents();
 
-		setTitle("Chat window with " + user.getUsername());
-		setSize(new Dimension(500, 600));
-		setResizable(false);
-
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-		setVisible(true);
+//		setTitle("Chat window with " + user.getUsername());
+//		setSize(new Dimension(500, 600));
+//		setResizable(false);
+//
+//		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+//
+//		setVisible(true);
 
 		// TCP
 		System.out.println("Connecting......!!!!!11");
