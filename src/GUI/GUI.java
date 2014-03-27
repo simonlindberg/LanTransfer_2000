@@ -18,9 +18,9 @@ public class GUI extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 
-	public GUI() {
+	public GUI(final String name) {
 		setLayout(new BorderLayout());
-		addComponents();
+		addComponents(name);
 
 		setTitle("LANTRANSFER_2000 (ALPHA)");
 		setSize(700, 400);
@@ -30,14 +30,14 @@ public class GUI extends JFrame {
 		setVisible(true);
 	}
 
-	private void addComponents() {
+	private void addComponents(final String name) {
 		final JPanel leftContainer = new JPanel(new BorderLayout());
 		final JPanel rightContainer = new JPanel(new BorderLayout());
 
 		createClientTable(leftContainer);
 		createButtons(leftContainer);
 
-		final ChatPanel cp = new ChatPanel(new User("firas", "192.168.0.1"));
+		final ChatPanel cp = new ChatPanel(name, new User("firas", "192.168.0.1"));
 
 		rightContainer.add(cp);
 

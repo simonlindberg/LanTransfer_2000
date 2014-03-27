@@ -25,27 +25,30 @@ public class ChatPanel extends JPanel {
 
 	private static final long serialVersionUID = -2013659249126443168L;
 
-	private User user;
 	private static final Color MY_BG = new Color(244, 244, 244);
 	private static final Color INFO_TXT = new Color(195, 195, 195);
 	private static final Color TXT_COLOR = new Color(43, 43, 43);
 	private User lastMessage;
 
-	public ChatPanel(final User user) {
+	private final User user;
+	private final String name;
+
+	public ChatPanel(final String name, final User user) {
 		this.user = user;
+		this.name = name;
 		lastMessage = null;
 
 		setLayout(new BorderLayout());
 
 		createComponents();
 
-//		setTitle("Chat window with " + user.getUsername());
-//		setSize(new Dimension(500, 600));
-//		setResizable(false);
-//
-//		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-//
-//		setVisible(true);
+		// setTitle("Chat window with " + user.getUsername());
+		// setSize(new Dimension(500, 600));
+		// setResizable(false);
+		//
+		// setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		//
+		// setVisible(true);
 
 		// TCP
 		System.out.println("Connecting......!!!!!11");
@@ -55,7 +58,7 @@ public class ChatPanel extends JPanel {
 		MigLayout layout = new MigLayout("gap rel 0, wrap 1, insets 0");
 		final JPanel chatLog = new JPanel(layout);
 		chatLog.setForeground(TXT_COLOR);
-		
+
 		final JScrollPane scrollChatLog = new JScrollPane(chatLog);
 		scrollChatLog.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
@@ -82,62 +85,71 @@ public class ChatPanel extends JPanel {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					send(input.getText(), chatLog, scrollChatLog);
-					input.setText("");
+					handleMessage(chatLog, scrollChatLog, input);
 				}
 			}
+
 		});
 
 		send.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				send(input.getText(), chatLog, scrollChatLog);
-				input.setText("");
+				handleMessage(chatLog, scrollChatLog, input);
 			}
 		});
 	}
 
-	private void send(final String text, final JComponent chatLog, final JComponent scrollChatLog) {
+	private void handleMessage(final JPanel chatLog, final JScrollPane scrollChatLog, final JTextField input) {
+		final String text = input.getText();
 		if (!text.equals("")) {
-			System.out.println(text);
-			final JPanel messageContents = new JPanel();
-			messageContents.setLayout(new MigLayout("insets 0, gap rel 0", "10[]10[]10[]10", "5[]5"));
-			messageContents.setBackground(MY_BG);
-
-			final JTextArea contents = new JTextArea(text);
-			contents.setEditable(false);
-			contents.setLineWrap(true);
-			contents.setWrapStyleWord(true);
-			contents.setAlignmentX(Component.LEFT_ALIGNMENT);
-			contents.setOpaque(true);
-			contents.setBackground(MY_BG);
-
-			final JLabel author = new JLabel(user.getUsername());
-			Font font = author.getFont();
-			Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
-			author.setFont(boldFont);
-			author.setForeground(INFO_TXT);
-
-			final Calendar cal = Calendar.getInstance();
-			final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-			final JLabel time = new JLabel(sdf.format(cal.getTime()));
-			time.setForeground(INFO_TXT);
-
-			if (!user.equals(lastMessage)) {
-				messageContents.add(author, "wrap 1");
-			}
-			messageContents.add(contents, "pushx, growx"); // GROW FUCKER
-			messageContents.add(time);
-
-			chatLog.add(messageContents, "pushx, growx");
-
-			// auto scroll
-			int height = (int) chatLog.getPreferredSize().getHeight();
-			Rectangle rect = new Rectangle(0, height, 10, 10);
-			scrollChatLog.scrollRectToVisible(rect);
-
-			lastMessage = user;
+			showMessage(name, text, chatLog, scrollChatLog);
+			sendMessage(text);
+			input.setText("");
 		}
+	}
+
+	private void sendMessage(final String text) {
+		System.out.println("sending '" + text + "' to " + user.getUsername());
+	}
+
+	private void showMessage(final String from, final String text, final JComponent chatLog, final JComponent scrollChatLog) {
+		final JPanel messageContents = new JPanel();
+		messageContents.setLayout(new MigLayout("insets 0, gap rel 0", "10[]10[]10[]10", "5[]5"));
+		messageContents.setBackground(MY_BG);
+
+		final JTextArea contents = new JTextArea(text);
+		contents.setEditable(false);
+		contents.setLineWrap(true);
+		contents.setWrapStyleWord(true);
+		contents.setAlignmentX(Component.LEFT_ALIGNMENT);
+		contents.setOpaque(true);
+		contents.setBackground(MY_BG);
+
+		final JLabel author = new JLabel(from);
+		Font font = author.getFont();
+		Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
+		author.setFont(boldFont);
+		author.setForeground(INFO_TXT);
+
+		final Calendar cal = Calendar.getInstance();
+		final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+		final JLabel time = new JLabel(sdf.format(cal.getTime()));
+		time.setForeground(INFO_TXT);
+
+		if (!user.equals(lastMessage)) {
+			messageContents.add(author, "wrap 1");
+		}
+		messageContents.add(contents, "pushx, growx"); // GROW FUCKER
+		messageContents.add(time);
+
+		chatLog.add(messageContents, "pushx, growx");
+
+		// auto scroll
+		int height = (int) chatLog.getPreferredSize().getHeight();
+		Rectangle rect = new Rectangle(0, height, 10, 10);
+		scrollChatLog.scrollRectToVisible(rect);
+
+		lastMessage = user;
 	}
 }
