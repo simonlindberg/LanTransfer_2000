@@ -1,25 +1,37 @@
 package GUI;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 
 public class GUI extends JFrame {
 
 	private static final long serialVersionUID = 1L;
+	private Map<String, JComponent> clientWindows;
+	private JPanel leftContainer;
+	private JPanel rightContainer;
 
 	public GUI(final String name) {
 		setLayout(new BorderLayout());
+		leftContainer = new JPanel(new BorderLayout());
+		rightContainer = new JPanel(new BorderLayout());
+
 		addComponents(name);
 
 		setTitle("LANTRANSFER_2000 (ALPHA)");
@@ -31,15 +43,19 @@ public class GUI extends JFrame {
 	}
 
 	private void addComponents(final String name) {
-		final JPanel leftContainer = new JPanel(new BorderLayout());
-		final JPanel rightContainer = new JPanel(new BorderLayout());
-
 		createClientTable(leftContainer);
 		createButtons(leftContainer);
 
-		final ChatPanel cp = new ChatPanel(name, new User("firas", "192.168.0.1"));
+		leftContainer.setPreferredSize(new Dimension(200, 200));
 
-		rightContainer.add(cp);
+		// final ChatPanel cp = new ChatPanel(name, new User("firas",
+		// "192.168.0.1"));
+		//
+		// rightContainer.add(cp);
+		final String introMessage = "Welcome to LANMASTER_2000!";
+		final JLabel intro = new JLabel(introMessage);
+		intro.setHorizontalAlignment(SwingConstants.CENTER);
+		rightContainer.add(intro, BorderLayout.CENTER);
 
 		final JSplitPane jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftContainer, rightContainer);
 
@@ -69,13 +85,14 @@ public class GUI extends JFrame {
 		 * Client table
 		 */
 
-		final Map<String, JFrame> clientWindows = new HashMap<String, JFrame>();
+		clientWindows = new HashMap<String, JComponent>();
 
 		final String[] columnNames = { "Name", "IP" };
 		JTable clientTable = new JTable();
 		clientTable.setDragEnabled(false);
 		clientTable.setFillsViewportHeight(true);
 		clientTable.getTableHeader().setReorderingAllowed(false);
+		clientTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		Object[][] data = { { "Blah", "Blah" } };
 
@@ -90,33 +107,28 @@ public class GUI extends JFrame {
 
 		};
 
-		// clientTable.addMouseListener(new MouseAdapter() {
-		// public void mouseClicked(MouseEvent e) {
-		// if (e.getClickCount() == 2) {
-		// JTable target = (JTable) e.getSource();
-		// int row = target.getSelectedRow();
-		// if (row == -1) return;
-		// // Get IP
-		// final String ip = (String) clientTableModel.getValueAt(row, 1);
-		// if (!clientWindows.containsKey(ip)) {
-		// ChatPanel cf = new ChatPanel(new User("firas", ip));
-		// clientWindows.put(ip, cf);
-		// System.out.println("created frame");
-		// cf.addWindowListener(new WindowAdapter() {
-		//
-		// @Override
-		// public void windowClosing(WindowEvent e) {
-		// System.out.println("hello");
-		// clientWindows.remove(ip);
-		// }
-		//
-		// });
-		// } else {
-		// clientWindows.get(ip).toFront();
-		// }
-		// }
-		// }
-		// });
+		clientTable.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				JTable target = (JTable) e.getSource();
+				int row = target.getSelectedRow();
+				if (row == -1) {
+					return;
+				}
+				// Get IP
+				final String ip = (String) clientTableModel.getValueAt(row, 1);
+				final String username = (String) clientTableModel.getValueAt(row, 0);
+				ChatPanel cf = null;
+				if (!clientWindows.containsKey(ip)) {
+					cf = new ChatPanel(username, new User(username, ip));
+					clientWindows.put(ip, cf);
+				} else {
+					cf = (ChatPanel) clientWindows.get(ip);
+				}
+				switchPanelTo(cf);
+				System.out.println("created panel");
+			}
+
+		});
 
 		clientTable.setModel(clientTableModel);
 
@@ -126,6 +138,14 @@ public class GUI extends JFrame {
 		container.add(scrollPane, BorderLayout.CENTER);
 	}
 
+	private void switchPanelTo(ChatPanel cf) {
+		for (Component j : rightContainer.getComponents()) {
+			j.setVisible(false);
+		}
+		// Is this bad? Adding it several times?
+		rightContainer.add(cf, BorderLayout.CENTER);
+		cf.setVisible(true);
+	}
 	// public static void showError(String title, String message) {
 	// JOptionPane.showMessageDialog(null, message, title,
 	// JOptionPane.ERROR_MESSAGE);
