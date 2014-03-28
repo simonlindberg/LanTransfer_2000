@@ -11,7 +11,7 @@ public class User {
 	}
 
 	public String toString() {
-		return username + ": " + ip;
+		return "'" + username + "' (" + ip + ")";
 	}
 
 	@Override

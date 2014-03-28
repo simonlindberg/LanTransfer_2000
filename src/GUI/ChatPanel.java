@@ -60,14 +60,14 @@ public class ChatPanel extends JPanel {
 		chatLog.setForeground(TXT_COLOR);
 
 		final JScrollPane scrollChatLog = new JScrollPane(chatLog);
-		scrollChatLog.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+//		scrollChatLog.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
 		chatLog.setBackground(Color.WHITE);
 
 		final Calendar cal = Calendar.getInstance();
 		final SimpleDateFormat sdf = new SimpleDateFormat("dd/mm/yyyy HH:mm:ss");
 		// Space is ugly but works..
-		String startMessage = " New chat started with " + user.getUsername() + " at " + sdf.format(cal.getTime());
+		String startMessage = " New chat started with " + user.toString() + " at " + sdf.format(cal.getTime());
 		final JLabel start = new JLabel(startMessage);
 		start.setForeground(INFO_TXT);
 
