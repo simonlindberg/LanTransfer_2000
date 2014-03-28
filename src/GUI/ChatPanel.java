@@ -138,7 +138,7 @@ public class ChatPanel extends JPanel {
 		time.setForeground(INFO_TXT);
 
 		if (!user.equals(lastMessage)) {
-			messageContents.add(author, "wrap 1");
+			messageContents.add(author, "wrap 1, gapy 0 10");
 		}
 		messageContents.add(contents, "width 10:50:, pushx, growx"); // GROW FUCKER
 		messageContents.add(time);
