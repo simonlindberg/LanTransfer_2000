@@ -140,7 +140,7 @@ public class ChatPanel extends JPanel {
 		if (!user.equals(lastMessage)) {
 			messageContents.add(author, "wrap 1");
 		}
-		messageContents.add(contents, "pushx, growx"); // GROW FUCKER
+		messageContents.add(contents, "width 10:50:, pushx, growx"); // GROW FUCKER
 		messageContents.add(time);
 
 		chatLog.add(messageContents, "pushx, growx");
