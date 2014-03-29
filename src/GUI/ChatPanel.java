@@ -35,12 +35,12 @@ import chat.ChatServerThread;
 public class ChatPanel extends JPanel {
 
 	private static final Font BOLD = new Font(new JLabel().getFont().getFontName(), Font.BOLD, new JLabel().getFont().getSize());
-	private static final Format dateFormat = new SimpleDateFormat("dd/mm/yyyy HH:mm:ss");
 	private static final Format timeFormat = new SimpleDateFormat("HH:mm:ss");
 	private static final Color MY_BACKGROUND = new Color(244, 244, 244);
 	private static final Color INFO_TXT = new Color(195, 195, 195);
 	private static final Color TXT_COLOR = new Color(43, 43, 43);
 	private static final Color OTHER_BACKGROUND = Color.WHITE;
+	private static final Color NOTICE_COLOR = new Color(171, 108, 108);
 
 	private String lastSender;
 
@@ -73,7 +73,7 @@ public class ChatPanel extends JPanel {
 				System.out.println("senging files " + files);
 			}
 		}));
-		
+
 		// Set scroll speed
 		scrollChatLog.getVerticalScrollBar().setUnitIncrement(16);
 	}
@@ -93,15 +93,15 @@ public class ChatPanel extends JPanel {
 
 	private void createComponents() {
 		// Space is ugly but works..
-		final String startMessage = " New chat started with " + user.toString() + " at "
-				+ dateFormat.format(Calendar.getInstance().getTime());
+		final String startMessage = "New chat started with " + user.toString();
 
-		final JLabel start = new JLabel(startMessage);
-		start.setForeground(INFO_TXT);
+		// final JLabel start = new JLabel(startMessage);
+		// start.setForeground(INFO_TXT);
+		showNotice(startMessage);
 
 		chatLog.setForeground(TXT_COLOR);
 		chatLog.setBackground(Color.WHITE);
-		chatLog.add(start);
+		// chatLog.add(start);
 
 		input.addKeyListener(new KeyAdapter() {
 			@Override
@@ -142,7 +142,7 @@ public class ChatPanel extends JPanel {
 		sender.send(text);
 	}
 
-	private void showMessage(final String from, final String text) {
+	private void showMessage(final String from, final String text, final Color color) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				final JLabel author = new JLabel(from);
@@ -155,6 +155,7 @@ public class ChatPanel extends JPanel {
 				contents.setWrapStyleWord(true);
 				contents.setAlignmentX(Component.LEFT_ALIGNMENT);
 				contents.setOpaque(true);
+				contents.setForeground(color);
 
 				final JPanel messageContents = new JPanel();
 				messageContents.setLayout(new MigLayout("insets 0, gap rel 0", "10[]10[]10[]10", "5[]5"));
@@ -182,22 +183,11 @@ public class ChatPanel extends JPanel {
 
 				chatLog.revalidate();
 				chatLog.repaint();
-				
+
 				// auto scroll
-				//
-				// @Override
-				// public void run() {
 				final int height = (int) (chatLog.getPreferredSize().getHeight() + messageContents.getPreferredSize().getHeight());
 				Rectangle rect = new Rectangle(0, height, 10, 10);
 				scrollChatLog.scrollRectToVisible(rect);
-				// }
-				//
-				// });
-
-
-//				JScrollBar js = scrollChatLog.getVerticalScrollBar();
-//				js.setValue(Integer.MAX_VALUE);
-				System.out.println(Thread.currentThread());
 			}
 		});
 	}
@@ -205,7 +195,7 @@ public class ChatPanel extends JPanel {
 	public void setOffline() {
 		input.setEnabled(false);
 		send.setEnabled(false);
-		showMessage(user.getUsername(), "has gone offline!");
+		showNotice(user.getUsername() + " has gone offline!");
 	}
 
 	public void showMessage(final String msg) {
@@ -221,5 +211,13 @@ public class ChatPanel extends JPanel {
 		sender = new ChatSender(socket.getOutputStream());
 		reciver = new ChatReciver(socket.getInputStream(), this);
 		reciver.start();
+	}
+
+	private void showMessage(String username, String message) {
+		showMessage(username, message, TXT_COLOR);
+	}
+	
+	private void showNotice(String text) {
+		showMessage("", text, NOTICE_COLOR);
 	}
 }
