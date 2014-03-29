@@ -20,9 +20,10 @@ public class ChatReciver extends Thread implements Runnable {
 	@Override
 	public void run() {
 		try {
-			for (;;) {
-				String msg = br.readLine();
-				chatPanel.showMessage(msg);
+			String line = br.readLine();
+			while (line != null) {
+				chatPanel.showMessage(line);
+				line = br.readLine();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

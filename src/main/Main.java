@@ -93,9 +93,9 @@ public class Main {
 				public void initChat(final Socket socket) {
 					try {
 						final String ip = socket.getInetAddress().getHostAddress();
-						if (clientWindows.containsKey(ip)) {
+						if (!clientWindows.containsKey(ip)) {
 							final User user = users.get(ip);
-							clientWindows.put(myIP, new ChatPanel(myUsername, user));
+							clientWindows.put(ip, new ChatPanel(myUsername, user));
 						}
 						final ChatPanel chatPanel = clientWindows.get(ip);
 
