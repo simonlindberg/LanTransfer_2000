@@ -40,8 +40,8 @@ public class ChatPanel extends JPanel {
 
 	private final User user;
 	private final String myName;
-	
-	private final JTextField input = new JTextField();
+
+	private final JTextField input;
 	private final JButton send = new JButton("Send");
 	private final JPanel chatLog = new JPanel(new MigLayout("gap rel 0, wrap 1, insets 0"));
 	private final JScrollPane scrollChatLog = new JScrollPane(chatLog);
@@ -50,6 +50,7 @@ public class ChatPanel extends JPanel {
 		this.user = user;
 		this.myName = name;
 		lastSender = null;
+		input = new HintTextField(0, "Write a message to " + user.getUsername() + "!");
 
 		setLayout(new BorderLayout());
 
