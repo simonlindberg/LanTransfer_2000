@@ -9,10 +9,8 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -83,8 +81,7 @@ public class Main {
 								Iterator<User> itr = users.iterator();
 								while (itr.hasNext()) {
 									User user = itr.next();
-									long timeDiff = System.currentTimeMillis() - user.getLatest();
-									if (timeDiff > CHECKER_TIMEOUT) {
+									if ((System.currentTimeMillis() - user.getLatest()) > CHECKER_TIMEOUT) {
 										itr.remove();
 									}
 								}
@@ -102,26 +99,32 @@ public class Main {
 
 				@Override
 				public void actionPerformed(final ActionEvent e) {
-					System.out.println("sending force!");
-					try {
-						message[0] = 1; // FORCE ON!
-						sendSocket.send(sendPacket);
-						model.setRowCount(0);
-						users.clear();
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					} finally {
-						message[0] = 0; // FORCE OFF!
-					}
+					sendForce(model, users, sendSocket, message, sendPacket);
 				}
 			});
 
+			sendForce(model, users, sendSocket, message, sendPacket);
 		} catch (SocketException | UnknownHostException e) {
 			// GUI.showError("CRITICAL ERROR", e.getMessage() +
 			// "\n\nShuting down.");
 			System.exit(-1);
 		}
 
+	}
+
+	private static void sendForce(final DefaultTableModel model, final List<User> users, final DatagramSocket sendSocket,
+			final byte[] message, final DatagramPacket sendPacket) {
+		System.out.println("sending force!");
+		try {
+			message[0] = 1; // FORCE ON!
+			sendSocket.send(sendPacket);
+			model.setRowCount(0);
+			users.clear();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		} finally {
+			message[0] = 0; // FORCE OFF!
+		}
 	}
 
 	private static byte[] createMessage(final String name) {
