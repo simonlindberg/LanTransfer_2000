@@ -10,6 +10,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -79,16 +80,13 @@ public class Main {
 					try {
 						for (;;) {
 							synchronized (users) {
-								final Set<User> toRemove = new HashSet<>();
-								for (final User user : users) {
-									if ((System.currentTimeMillis() - user.getLatest()) > CHECKER_TIMEOUT) {
-										model.removeRow(user.getWhere());
-										toRemove.add(user);
+								Iterator<User> itr = users.iterator();
+								while (itr.hasNext()) {
+									User user = itr.next();
+									long timeDiff = System.currentTimeMillis() - user.getLatest();
+									if (timeDiff > CHECKER_TIMEOUT) {
+										itr.remove();
 									}
-								}
-
-								for (final User user : toRemove) {
-									users.remove(user);
 								}
 							}
 							Thread.sleep(CHECKER_TIMEOUT);
