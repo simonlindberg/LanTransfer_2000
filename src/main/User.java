@@ -1,13 +1,5 @@
 package main;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.Socket;
-
-import chat.ChatServerThread;
-import chat.ChatThread;
-
 public class User {
 
 	private final String ip;
@@ -16,8 +8,6 @@ public class User {
 
 	private long latest;
 	private int where;
-	private Socket socket = null;
-	private PrintWriter printWriter = null;
 
 	public User(String username, String ip) {
 		this.ip = ip;
@@ -71,49 +61,4 @@ public class User {
 	public int getWhere() {
 		return where;
 	}
-
-	public void startChat() {
-		try {
-			socket = new Socket(ip, ChatServerThread.CHAT_PORT);
-			socket.getOutputStream().write(-1);
-
-			initWriter();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void initWriter() {
-		try {
-			printWriter = new PrintWriter(socket.getOutputStream());
-			new ChatThread(socket.getInputStream()).start();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void startChat(final Socket socket) {
-		this.socket = socket;
-
-		initWriter();
-	}
-
-	public void setOffline() {
-		try {
-			if (socket != null) {
-				socket.close();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public boolean chatInitiated() {
-		return socket != null;
-	}
-
-	public void send(final String text) {
-		printWriter.print(text);
-	}
-
 }

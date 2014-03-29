@@ -2,31 +2,23 @@ package chat;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Map;
-
-import main.User;
 
 public class ChatServerThread extends Thread implements Runnable {
 
 	public static final int CHAT_PORT = 8888;
-	private final Map<String, User> users;
+	private final ChatHandler chatHandler;
 
-	public ChatServerThread(Map<String, User> users) {
-		this.users = users;
+	public ChatServerThread(ChatHandler chatHandler) {
+		this.chatHandler = chatHandler;
 	}
 
+	@SuppressWarnings("resource")
 	@Override
 	public void run() {
-		ServerSocket chatServer = null;
 		try {
-			chatServer = new ServerSocket(CHAT_PORT);
+			final ServerSocket chatServer = new ServerSocket(CHAT_PORT);
 			for (;;) {
-				Socket socket = chatServer.accept();
-				synchronized (users) {
-					final User user = users.get(socket.getInetAddress().getHostAddress());
-					user.startChat(socket);
-				}
+				chatHandler.initChat(chatServer.accept());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

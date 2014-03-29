@@ -25,9 +25,9 @@ import main.User;
 public class GUI extends JFrame {
 
 	private JComponent currentChat;
-	private final Map<String, JComponent> clientWindows;
+	private final Map<String, ChatPanel> clientWindows;
 
-	public GUI(final String name, final String ip, final DefaultTableModel model, final Map<String, JComponent> clientWindows,
+	public GUI(final String name, final String ip, final DefaultTableModel model, final Map<String, ChatPanel> clientWindows,
 			final ActionListener refresher) {
 		this.clientWindows = clientWindows;
 		setLayout(new BorderLayout());

@@ -12,9 +12,9 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.JComponent;
 import javax.swing.table.DefaultTableModel;
 
+import GUI.ChatPanel;
 import GUI.GUI;
 import broadcast.BroadcastListener;
 import broadcast.BroadcastResponseHandler;
@@ -22,6 +22,8 @@ import broadcast.BroadcastSender;
 import broadcast.BroadcastThread;
 import chat.ChatHandler;
 import chat.ChatServerThread;
+import chat.ChatReciver;
+import chat.Sender;
 
 public class Main {
 
@@ -40,17 +42,17 @@ public class Main {
 
 		final Map<String, User> users = new HashMap<String, User>();
 
-		final Map<String, JComponent> clientWindows = new HashMap<String, JComponent>();
+		final Map<String, ChatPanel> clientWindows = new HashMap<>();
 
 		try {
-			final String username = System.getProperty("user.name");
-			final String ip = InetAddress.getLocalHost().getHostAddress();
+			final String myUsername = System.getProperty("user.name");
+			final String myIP = InetAddress.getLocalHost().getHostAddress();
 
 			final DatagramSocket sendSocket = new DatagramSocket();
 			sendSocket.setBroadcast(true); // Behövs defacto inte, men why not.
 			sendSocket.connect(BroadcastThread.getBroadcastAddress(), BroadcastThread.BROADCAST_PORT);
 
-			final byte[] message = createMessage(username); // ELLER?
+			final byte[] message = createMessage(myUsername); // ELLER?
 
 			final DatagramPacket sendPacket = new DatagramPacket(message, message.length);
 
@@ -73,7 +75,7 @@ public class Main {
 
 			new BroadcastSender(sendSocket, sendPacket).start();
 
-			final GUI gui = new GUI(username, ip, model, clientWindows, new ActionListener() {
+			final GUI gui = new GUI(myUsername, myIP, model, clientWindows, new ActionListener() {
 
 				@Override
 				public void actionPerformed(final ActionEvent e) {
@@ -84,8 +86,27 @@ public class Main {
 			new OfflineCheckerThread(users, model, gui).start();
 
 			sendForce(model, users, sendSocket, message, sendPacket);
-			
-			new ChatServerThread(users).start();
+
+			new ChatServerThread(new ChatHandler() {
+
+				@Override
+				public void initChat(final Socket socket) {
+					try {
+						final String ip = socket.getInetAddress().getHostAddress();
+						if (clientWindows.containsKey(ip)) {
+							final User user = users.get(ip);
+							clientWindows.put(myIP, new ChatPanel(myUsername, user));
+						}
+						final ChatPanel chatPanel = clientWindows.get(ip);
+
+						chatPanel.setSender(new Sender(socket.getOutputStream()));
+
+						new ChatReciver(socket.getInputStream(), chatPanel).start();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}).start();
 		} catch (SocketException | UnknownHostException e) {
 			// GUI.showError("CRITICAL ERROR", e.getMessage() +
 			// "\n\nShuting down.");

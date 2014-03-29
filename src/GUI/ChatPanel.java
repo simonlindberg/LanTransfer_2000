@@ -10,13 +10,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -25,6 +27,9 @@ import javax.swing.JTextField;
 
 import main.User;
 import net.miginfocom.swing.MigLayout;
+import chat.ChatReciver;
+import chat.ChatServerThread;
+import chat.Sender;
 
 @SuppressWarnings("serial")
 public class ChatPanel extends JPanel {
@@ -45,6 +50,9 @@ public class ChatPanel extends JPanel {
 	private final JButton send = new JButton("Send");
 	private final JPanel chatLog = new JPanel(new MigLayout("gap rel 0, wrap 1, insets 0"));
 	private final JScrollPane scrollChatLog = new JScrollPane(chatLog);
+	private Sender sender;
+	private Socket socket;
+	private ChatReciver reciver;
 
 	public ChatPanel(final String name, final User user) {
 		this.user = user;
@@ -68,6 +76,22 @@ public class ChatPanel extends JPanel {
 		System.out.println("Connecting......!!!!!11");
 	}
 
+	@Override
+	public void setVisible(final boolean show) {
+		super.setVisible(show);
+
+		if (socket == null) {
+			try {
+				socket = new Socket(user.getIP(), ChatServerThread.CHAT_PORT);
+				sender = new Sender(socket.getOutputStream());
+				reciver = new ChatReciver(socket.getInputStream(), this);
+				reciver.start();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	private void createComponents() {
 		// Space is ugly but works..
 		final String startMessage = " New chat started with " + user.toString() + " at "
@@ -84,7 +108,7 @@ public class ChatPanel extends JPanel {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					handleMessage(chatLog, scrollChatLog, input);
+					handleMessage();
 				}
 			}
 
@@ -94,7 +118,7 @@ public class ChatPanel extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				handleMessage(chatLog, scrollChatLog, input);
+				handleMessage();
 			}
 		});
 
@@ -106,25 +130,22 @@ public class ChatPanel extends JPanel {
 		add(chatInput, BorderLayout.SOUTH);
 	}
 
-	private void handleMessage(final JPanel chatLog, final JScrollPane scrollChatLog, final JTextField input) {
+	private void handleMessage() {
 		final String text = input.getText();
 		if (!text.equals("")) {
 			System.out.println(myName);
-			showMessage(myName, text, chatLog, scrollChatLog);
+			showMessage(myName, text);
 			sendMessage(text);
 			input.setText("");
 		}
 	}
 
 	private void sendMessage(final String text) {
+		sender.send(text);
 		System.out.println("sending '" + text + "' to " + user.getUsername());
-		if (!user.chatInitiated()) {
-			user.startChat();
-		}
-		user.send(text);
 	}
 
-	private void showMessage(final String from, final String text, final JComponent chatLog, final JComponent scrollChatLog) {
+	private void showMessage(final String from, final String text) {
 		final JLabel author = new JLabel(from);
 		author.setForeground(INFO_TXT);
 		author.setFont(BOLD);
@@ -163,7 +184,14 @@ public class ChatPanel extends JPanel {
 	public void setOffline() {
 		input.setEnabled(false);
 		send.setEnabled(false);
-		user.setOffline();
-		showMessage(user.getUsername(), "Has gone offline!", chatLog, scrollChatLog);
+		showMessage(user.getUsername(), "Has gone offline!");
+	}
+
+	public void showMessage(final String msg) {
+		showMessage(user.getUsername(), msg);
+	}
+
+	public void setSender(final Sender sender) {
+		this.sender = sender;
 	}
 }

@@ -5,12 +5,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-public class ChatThread extends Thread implements Runnable {
+import GUI.ChatPanel;
+
+public class ChatReciver extends Thread implements Runnable {
 
 	private final BufferedReader br;
+	private final ChatPanel chatPanel;
 
-	public ChatThread(final InputStream inputStream) {
+	public ChatReciver(final InputStream inputStream, final ChatPanel chatPanel) {
 		this.br = new BufferedReader(new InputStreamReader(inputStream));
+		this.chatPanel = chatPanel;
 	}
 
 	@Override
@@ -18,6 +22,7 @@ public class ChatThread extends Thread implements Runnable {
 		try {
 			for (;;) {
 				String msg = br.readLine();
+				chatPanel.showMessage(msg);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
