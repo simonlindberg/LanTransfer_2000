@@ -73,6 +73,9 @@ public class ChatPanel extends JPanel {
 				System.out.println("senging files " + files);
 			}
 		}));
+		
+		// Set scroll speed
+		scrollChatLog.getVerticalScrollBar().setUnitIncrement(16);
 	}
 
 	@Override
