@@ -85,27 +85,7 @@ public class Main {
 
 			sendForce(model, users, sendSocket, message, sendPacket);
 			
-			new ChatServerThread(new ChatHandler() {
-
-				@Override
-				public void handleInit(Socket s) {
-					try {
-						String ip = s.getInetAddress().getHostAddress();
-						User u = users.get(ip); // User we are chatting with
-						u.setInputStream(s.getInputStream());
-						u.setOutputStream(s.getOutputStream());
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-
-				@Override
-				public void handleChat() {
-					// TODO Auto-generated method stub
-					
-				}
-
-			});
+			new ChatServerThread(users);
 		} catch (SocketException | UnknownHostException e) {
 			// GUI.showError("CRITICAL ERROR", e.getMessage() +
 			// "\n\nShuting down.");

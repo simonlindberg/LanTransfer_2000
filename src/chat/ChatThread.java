@@ -2,26 +2,28 @@ package chat;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.Socket;
 
 public class ChatThread extends Thread implements Runnable {
 
-	private Socket chatClient;
-	private ChatHandler ch;
+	private final InputStream inputStream;
 
-	public ChatThread(ChatHandler ch, Socket chatClient) {
-		this.chatClient = chatClient;
-		this.ch = ch;
+	public ChatThread(final InputStream inputStream) {
+		this.inputStream = inputStream;
 	}
 
 	@Override
 	public void run() {
+		final StringBuilder msg = new StringBuilder();
 		try {
-			InputStream in = chatClient.getInputStream();
 			for (;;) {
-				int msg = in.read();
+				int data = inputStream.read();
+				while (data != -1) {
+					data = inputStream.read();
+					msg.append((char) data);
+				}
 				// ch to be used later
 				System.out.println(msg);
+				msg.setLength(0);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

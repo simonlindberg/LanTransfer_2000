@@ -3,14 +3,17 @@ package chat;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Map;
+
+import main.User;
 
 public class ChatServerThread extends Thread implements Runnable {
 
-	private int CHAT_PORT = 8888;
-	private ChatHandler ch;
-	
-	public ChatServerThread(ChatHandler ch) {
-		this.ch = ch;
+	public static final int CHAT_PORT = 8888;
+	private final Map<String, User> users;
+
+	public ChatServerThread(Map<String, User> users) {
+		this.users = users;
 	}
 
 	@Override
@@ -19,13 +22,17 @@ public class ChatServerThread extends Thread implements Runnable {
 		try {
 			chatServer = new ServerSocket(CHAT_PORT);
 			for (;;) {
-				Socket s = chatServer.accept();
-				ch.handleInit(s);
-				new ChatThread(ch, s).start();
+				Socket socket = chatServer.accept();
+
+				synchronized (users) {
+					final User user = users.get(socket.getInetAddress().getHostAddress());
+
+					user.startChat(socket);
+					new ChatThread(socket.getInputStream());
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-
 }

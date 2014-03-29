@@ -1,17 +1,23 @@
 package main;
 
-import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.Socket;
+
+import chat.ChatServerThread;
+import chat.ChatThread;
 
 public class User {
 
 	private final String ip;
 	private final String username;
 	private final long arrived;
+
 	private long latest;
 	private int where;
-	private InputStream in = null;
-	private OutputStream out = null;
+	private Socket socket = null;
+	private PrintWriter printWriter = null;
 
 	public User(String username, String ip) {
 		this.ip = ip;
@@ -66,11 +72,46 @@ public class User {
 		return where;
 	}
 
-	public void setInputStream(InputStream inputStream) {
-		in = inputStream;
+	public void startChat() {
+		try {
+			socket = new Socket(ip, ChatServerThread.CHAT_PORT);
+			socket.getOutputStream().write(-1);
+
+			initWriter();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
-	
-	public void setOutputStream(OutputStream outputStream) {
-		out = outputStream;
+
+	private void initWriter() {
+		try {
+			printWriter = new PrintWriter(socket.getOutputStream());
+			new ChatThread(socket.getInputStream()).start();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
+
+	public void startChat(final Socket socket) {
+		this.socket = socket;
+
+		initWriter();
+	}
+
+	public void setOffline() {
+		try {
+			socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public boolean chatInitiated() {
+		return socket != null;
+	}
+
+	public void send(final String text) {
+		printWriter.print(text);
+	}
+
 }

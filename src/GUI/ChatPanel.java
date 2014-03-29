@@ -118,6 +118,10 @@ public class ChatPanel extends JPanel {
 
 	private void sendMessage(final String text) {
 		System.out.println("sending '" + text + "' to " + user.getUsername());
+		if (!user.chatInitiated()) {
+			user.startChat();
+		}
+		user.send(text);
 	}
 
 	private void showMessage(final String from, final String text, final JComponent chatLog, final JComponent scrollChatLog) {
@@ -159,7 +163,7 @@ public class ChatPanel extends JPanel {
 	public void setOffline() {
 		input.setEnabled(false);
 		send.setEnabled(false);
-
+		user.setOffline();
 		showMessage(user.getUsername(), "Has gone offline!", chatLog, scrollChatLog);
 	}
 }
