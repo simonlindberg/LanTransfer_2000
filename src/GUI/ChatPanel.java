@@ -5,12 +5,15 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Rectangle;
+import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -46,34 +49,34 @@ public class ChatPanel extends JPanel {
 
 		createComponents();
 
+		setDropTarget(new DropTarget(this, new FileDropHandle() {
+
+			@Override
+			public void handleFiles(final List<File> files) {
+				System.out.println("senging files " + files);
+			}
+		}));
+
 		// TCP
 		System.out.println("Connecting......!!!!!11");
 	}
 
 	private void createComponents() {
-		final JPanel chatLog = new JPanel(new MigLayout("gap rel 0, wrap 1, insets 0"));
-		chatLog.setForeground(TXT_COLOR);
-		chatLog.setBackground(Color.WHITE);
-
-		final JScrollPane scrollChatLog = new JScrollPane(chatLog);
-
-		final Calendar cal = Calendar.getInstance();
-
 		// Space is ugly but works..
-		final String startMessage = " New chat started with " + user.toString() + " at " + dateFormat.format(cal.getTime());
+		final String startMessage = " New chat started with " + user.toString() + " at "
+				+ dateFormat.format(Calendar.getInstance().getTime());
+
 		final JLabel start = new JLabel(startMessage);
 		start.setForeground(INFO_TXT);
 
+		final JPanel chatLog = new JPanel(new MigLayout("gap rel 0, wrap 1, insets 0"));
+		chatLog.setForeground(TXT_COLOR);
+		chatLog.setBackground(Color.WHITE);
 		chatLog.add(start);
-		add(scrollChatLog, BorderLayout.CENTER);
 
-		final JPanel chatInput = new JPanel(new BorderLayout());
+		final JScrollPane scrollChatLog = new JScrollPane(chatLog);
+
 		final JTextField input = new JTextField();
-		chatInput.add(input, BorderLayout.CENTER);
-		final JButton send = new JButton("Send");
-		chatInput.add(send, BorderLayout.EAST);
-		add(chatInput, BorderLayout.SOUTH);
-
 		input.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -84,6 +87,7 @@ public class ChatPanel extends JPanel {
 
 		});
 
+		final JButton send = new JButton("Send");
 		send.addActionListener(new ActionListener() {
 
 			@Override
@@ -91,6 +95,13 @@ public class ChatPanel extends JPanel {
 				handleMessage(chatLog, scrollChatLog, input);
 			}
 		});
+
+		final JPanel chatInput = new JPanel(new BorderLayout());
+		chatInput.add(input, BorderLayout.CENTER);
+		chatInput.add(send, BorderLayout.EAST);
+
+		add(scrollChatLog, BorderLayout.CENTER);
+		add(chatInput, BorderLayout.SOUTH);
 	}
 
 	private void handleMessage(final JPanel chatLog, final JScrollPane scrollChatLog, final JTextField input) {
