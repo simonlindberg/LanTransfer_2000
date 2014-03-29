@@ -25,9 +25,9 @@ import net.miginfocom.swing.MigLayout;
 @SuppressWarnings("serial")
 public class ChatPanel extends JPanel {
 
-	private final static Format dateFormat = new SimpleDateFormat("dd/mm/yyyy HH:mm:ss");
-	private final static Format timeFormat = new SimpleDateFormat("HH:mm:ss");
-	private final static Font BOLD = new Font(new JLabel().getFont().getFontName(), Font.BOLD, new JLabel().getFont().getSize());
+	private static final Font BOLD = new Font(new JLabel().getFont().getFontName(), Font.BOLD, new JLabel().getFont().getSize());
+	private static final Format dateFormat = new SimpleDateFormat("dd/mm/yyyy HH:mm:ss");
+	private static final Format timeFormat = new SimpleDateFormat("HH:mm:ss");
 	private static final Color MY_BACKGROUND = new Color(244, 244, 244);
 	private static final Color INFO_TXT = new Color(195, 195, 195);
 	private static final Color TXT_COLOR = new Color(43, 43, 43);
