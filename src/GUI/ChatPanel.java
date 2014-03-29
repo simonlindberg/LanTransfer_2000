@@ -32,15 +32,15 @@ public class ChatPanel extends JPanel {
 	private static final Color INFO_TXT = new Color(195, 195, 195);
 	private static final Color TXT_COLOR = new Color(43, 43, 43);
 
-	private User lastMessage;
+	private String lastSender;
 
 	private final User user;
-	private final String name;
+	private final String myName;
 
 	public ChatPanel(final String name, final User user) {
 		this.user = user;
-		this.name = name;
-		lastMessage = null;
+		this.myName = name;
+		lastSender = null;
 
 		setLayout(new BorderLayout());
 
@@ -96,7 +96,7 @@ public class ChatPanel extends JPanel {
 	private void handleMessage(final JPanel chatLog, final JScrollPane scrollChatLog, final JTextField input) {
 		final String text = input.getText();
 		if (!text.equals("")) {
-			showMessage(name, text, chatLog, scrollChatLog);
+			showMessage(myName, text, chatLog, scrollChatLog);
 			sendMessage(text);
 			input.setText("");
 		}
@@ -126,8 +126,9 @@ public class ChatPanel extends JPanel {
 		messageContents.setLayout(new MigLayout("insets 0, gap rel 0", "10[]10[]10[]10", "5[]5"));
 		messageContents.setBackground(MY_BACKGROUND);
 
-		if (!user.equals(lastMessage)) {
+		if (!from.equals(lastSender)) {
 			messageContents.add(author, "wrap 1, gapy 0 10");
+			lastSender = from;
 		}
 
 		messageContents.add(contents, "width 10:50:, pushx, growx");
@@ -139,7 +140,5 @@ public class ChatPanel extends JPanel {
 		final int height = (int) chatLog.getPreferredSize().getHeight();
 		Rectangle rect = new Rectangle(0, height, 10, 10);
 		scrollChatLog.scrollRectToVisible(rect);
-
-		lastMessage = user;
 	}
 }
