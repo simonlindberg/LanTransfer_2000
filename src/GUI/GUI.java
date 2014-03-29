@@ -5,7 +5,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JButton;
@@ -25,11 +24,12 @@ import main.User;
 @SuppressWarnings("serial")
 public class GUI extends JFrame {
 
-	private final Map<String, JComponent> clientWindows = new HashMap<String, JComponent>();
-
 	private JComponent currentChat;
+	private final Map<String, JComponent> clientWindows;
 
-	public GUI(final String name, final String ip, final DefaultTableModel model, final ActionListener refresher) {
+	public GUI(final String name, final String ip, final DefaultTableModel model, final Map<String, JComponent> clientWindows,
+			final ActionListener refresher) {
+		this.clientWindows = clientWindows;
 		setLayout(new BorderLayout());
 
 		addComponents(name, ip, model, refresher);
@@ -47,13 +47,15 @@ public class GUI extends JFrame {
 		final JPanel rightContainer = new JPanel(new BorderLayout());
 
 		final JComponent top = createTop(name, ip, refresher);
-		final JComponent clientTable = createClientTable(rightContainer, model);
+		final JComponent clientTable = createClientTable(name, rightContainer, model);
 		final JComponent introLabel = createWelcomeLabel();
 
 		leftContainer.add(top, BorderLayout.NORTH);
 		leftContainer.add(clientTable, BorderLayout.CENTER);
 		leftContainer.setPreferredSize(new Dimension(200, 200));
+
 		rightContainer.add(introLabel, BorderLayout.CENTER);
+
 		final JSplitPane jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftContainer, rightContainer);
 		jsp.setDividerSize(5);
 		jsp.setResizeWeight(0.1);
@@ -90,8 +92,10 @@ public class GUI extends JFrame {
 
 	/**
 	 * Client table
+	 * 
+	 * @param clientWindows
 	 */
-	private JComponent createClientTable(final JComponent rightContainer, final DefaultTableModel model) {
+	private JComponent createClientTable(final String name, final JComponent rightContainer, final DefaultTableModel model) {
 		final JTable clientTable = new JTable();
 		clientTable.setDragEnabled(false);
 		clientTable.setModel(model);
@@ -110,7 +114,7 @@ public class GUI extends JFrame {
 				final String ip = (String) model.getValueAt(row, 1);
 				final String username = (String) model.getValueAt(row, 0);
 				if (!clientWindows.containsKey(ip)) {
-					ChatPanel newChat = new ChatPanel(username, new User(username, ip));
+					ChatPanel newChat = new ChatPanel(name, new User(username, ip));
 					clientWindows.put(ip, newChat);
 					rightContainer.add(newChat);
 					System.out.println("created panel");
@@ -126,6 +130,12 @@ public class GUI extends JFrame {
 		currentChat.setVisible(false);
 		currentChat = cf;
 		currentChat.setVisible(true);
+	}
+
+	public void logOff(final User user) {
+		if (clientWindows.containsKey(user.getIP())) {
+			((ChatPanel) clientWindows.get(user.getIP())).setOffline();
+		}
 	}
 
 }

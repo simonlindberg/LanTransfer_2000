@@ -40,6 +40,10 @@ public class ChatPanel extends JPanel {
 
 	private final User user;
 	private final String myName;
+	private final JTextField input = new JTextField();
+	private final JButton send = new JButton("Send");
+	private final JPanel chatLog = new JPanel(new MigLayout("gap rel 0, wrap 1, insets 0"));
+	private final JScrollPane scrollChatLog = new JScrollPane(chatLog);
 
 	public ChatPanel(final String name, final User user) {
 		this.user = user;
@@ -70,14 +74,10 @@ public class ChatPanel extends JPanel {
 		final JLabel start = new JLabel(startMessage);
 		start.setForeground(INFO_TXT);
 
-		final JPanel chatLog = new JPanel(new MigLayout("gap rel 0, wrap 1, insets 0"));
 		chatLog.setForeground(TXT_COLOR);
 		chatLog.setBackground(Color.WHITE);
 		chatLog.add(start);
 
-		final JScrollPane scrollChatLog = new JScrollPane(chatLog);
-
-		final JTextField input = new JTextField();
 		input.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -88,7 +88,6 @@ public class ChatPanel extends JPanel {
 
 		});
 
-		final JButton send = new JButton("Send");
 		send.addActionListener(new ActionListener() {
 
 			@Override
@@ -108,6 +107,7 @@ public class ChatPanel extends JPanel {
 	private void handleMessage(final JPanel chatLog, final JScrollPane scrollChatLog, final JTextField input) {
 		final String text = input.getText();
 		if (!text.equals("")) {
+			System.out.println(myName);
 			showMessage(myName, text, chatLog, scrollChatLog);
 			sendMessage(text);
 			input.setText("");
@@ -152,5 +152,12 @@ public class ChatPanel extends JPanel {
 		final int height = (int) chatLog.getPreferredSize().getHeight();
 		Rectangle rect = new Rectangle(0, height, 10, 10);
 		scrollChatLog.scrollRectToVisible(rect);
+	}
+
+	public void setOffline() {
+		input.setEnabled(false);
+		send.setEnabled(false);
+
+		showMessage(user.getUsername(), "Has gone offline! ", chatLog, scrollChatLog);
 	}
 }

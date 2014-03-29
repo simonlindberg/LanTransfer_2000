@@ -9,9 +9,12 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import javax.swing.JComponent;
 import javax.swing.table.DefaultTableModel;
 
 import GUI.GUI;
@@ -29,6 +32,7 @@ public class Main {
 	public static void main(String[] args) {
 		final Object[][] data = { { "test1", "127.0.0.2" }, { "test2", "127.0.0.1" } };
 		final String[] columnNames = { "Name", "IP" };
+
 		final DefaultTableModel model = new DefaultTableModel(data, columnNames) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
@@ -38,6 +42,8 @@ public class Main {
 		};
 
 		final List<User> users = new ArrayList<>();
+
+		final Map<String, JComponent> clientWindows = new HashMap<String, JComponent>();
 
 		try {
 			final String username = System.getProperty("user.name");
@@ -63,13 +69,20 @@ public class Main {
 							users.add(user);
 							model.addRow(new String[] { user.getUsername(), user.getIP() });
 							user.setWhere(model.getRowCount() - 1);
-							System.out.println("inside row: " + user.getWhere());
 						}
 					}
 				}
 			}).start();
 
 			new BroadcastSender(sendSocket, sendPacket).start();
+
+			final GUI gui = new GUI(username, ip, model, clientWindows, new ActionListener() {
+
+				@Override
+				public void actionPerformed(final ActionEvent e) {
+					sendForce(model, users, sendSocket, message, sendPacket);
+				}
+			});
 
 			new Thread(new Runnable() {
 
@@ -82,10 +95,11 @@ public class Main {
 								int removed = 0;
 								while (itr.hasNext()) {
 									final User user = itr.next();
-									System.out.println((System.currentTimeMillis() - user.getLatest()));
 									if ((System.currentTimeMillis() - user.getLatest()) > CHECKER_TIMEOUT) {
 										itr.remove();
 										model.removeRow(user.getWhere());
+										gui.logOff(user);
+
 										removed++;
 									} else {
 										user.setWhere(user.getWhere() - removed); // Update
@@ -104,14 +118,6 @@ public class Main {
 					}
 				}
 			}).start();
-
-			new GUI(username, ip, model, new ActionListener() {
-
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					sendForce(model, users, sendSocket, message, sendPacket);
-				}
-			});
 
 			sendForce(model, users, sendSocket, message, sendPacket);
 		} catch (SocketException | UnknownHostException e) {
