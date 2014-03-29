@@ -92,14 +92,8 @@ public class GUI extends JFrame {
 	 * Client table
 	 */
 	private JComponent createClientTable(final JComponent rightContainer) {
+		final Object[][] data = { { "test1", "127.0.0.2" }, { "test2", "127.0.0.1" } };
 		final String[] columnNames = { "Name", "IP" };
-		JTable clientTable = new JTable();
-		clientTable.setDragEnabled(false);
-		clientTable.setFillsViewportHeight(true);
-		clientTable.getTableHeader().setReorderingAllowed(false);
-		clientTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-		Object[][] data = { { "Blah", "Blah" } };
 
 		final DefaultTableModel clientTableModel = new DefaultTableModel(data, columnNames) {
 			private static final long serialVersionUID = 1L;
@@ -109,17 +103,25 @@ public class GUI extends JFrame {
 				// all cells false
 				return false;
 			}
-
 		};
 
+		final JTable clientTable = new JTable();
+		clientTable.setDragEnabled(false);
+		clientTable.setModel(clientTableModel);
+		clientTable.setFillsViewportHeight(true);
+		clientTable.getTableHeader().setReorderingAllowed(false);
+		clientTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
 		clientTable.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
+
+			@Override
+			public void mouseClicked(final MouseEvent e) {
 				final JTable target = (JTable) e.getSource();
 				final int row = target.getSelectedRow();
 				if (row == -1) {
 					return;
 				}
-				// Get IP
+				// Get IP & username
 				final String ip = (String) clientTableModel.getValueAt(row, 1);
 				final String username = (String) clientTableModel.getValueAt(row, 0);
 
@@ -136,13 +138,7 @@ public class GUI extends JFrame {
 
 		});
 
-		clientTable.setModel(clientTableModel);
-
-		clientTableModel.addRow(new Object[] { "a", "b" });
-
-		final JScrollPane scrollPane = new JScrollPane(clientTable);
-
-		return scrollPane;
+		return new JScrollPane(clientTable);
 	}
 
 	private void switchPanelTo(final JComponent cf) {
