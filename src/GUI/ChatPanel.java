@@ -8,6 +8,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -21,13 +22,16 @@ import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 
+@SuppressWarnings("serial")
 public class ChatPanel extends JPanel {
 
-	private static final long serialVersionUID = -2013659249126443168L;
-
-	private static final Color MY_BG = new Color(244, 244, 244);
+	private final static Format dateFormat = new SimpleDateFormat("dd/mm/yyyy HH:mm:ss");
+	private final static Format timeFormat = new SimpleDateFormat("HH:mm:ss");
+	private final static Font BOLD = new Font(new JLabel().getFont().getFontName(), Font.BOLD, new JLabel().getFont().getSize());
+	private static final Color MY_BACKGROUND = new Color(244, 244, 244);
 	private static final Color INFO_TXT = new Color(195, 195, 195);
 	private static final Color TXT_COLOR = new Color(43, 43, 43);
+
 	private User lastMessage;
 
 	private final User user;
@@ -42,32 +46,21 @@ public class ChatPanel extends JPanel {
 
 		createComponents();
 
-		// setTitle("Chat window with " + user.getUsername());
-		// setSize(new Dimension(500, 600));
-		// setResizable(false);
-		//
-		// setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		//
-		// setVisible(true);
-
 		// TCP
 		System.out.println("Connecting......!!!!!11");
 	}
 
 	private void createComponents() {
-		MigLayout layout = new MigLayout("gap rel 0, wrap 1, insets 0");
-		final JPanel chatLog = new JPanel(layout);
+		final JPanel chatLog = new JPanel(new MigLayout("gap rel 0, wrap 1, insets 0"));
 		chatLog.setForeground(TXT_COLOR);
-
-		final JScrollPane scrollChatLog = new JScrollPane(chatLog);
-//		scrollChatLog.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-
 		chatLog.setBackground(Color.WHITE);
 
+		final JScrollPane scrollChatLog = new JScrollPane(chatLog);
+
 		final Calendar cal = Calendar.getInstance();
-		final SimpleDateFormat sdf = new SimpleDateFormat("dd/mm/yyyy HH:mm:ss");
+
 		// Space is ugly but works..
-		String startMessage = " New chat started with " + user.toString() + " at " + sdf.format(cal.getTime());
+		final String startMessage = " New chat started with " + user.toString() + " at " + dateFormat.format(cal.getTime());
 		final JLabel start = new JLabel(startMessage);
 		start.setForeground(INFO_TXT);
 
@@ -114,9 +107,9 @@ public class ChatPanel extends JPanel {
 	}
 
 	private void showMessage(final String from, final String text, final JComponent chatLog, final JComponent scrollChatLog) {
-		final JPanel messageContents = new JPanel();
-		messageContents.setLayout(new MigLayout("insets 0, gap rel 0", "10[]10[]10[]10", "5[]5"));
-		messageContents.setBackground(MY_BG);
+		final JLabel author = new JLabel(from);
+		author.setForeground(INFO_TXT);
+		author.setFont(BOLD);
 
 		final JTextArea contents = new JTextArea(text);
 		contents.setEditable(false);
@@ -124,29 +117,26 @@ public class ChatPanel extends JPanel {
 		contents.setWrapStyleWord(true);
 		contents.setAlignmentX(Component.LEFT_ALIGNMENT);
 		contents.setOpaque(true);
-		contents.setBackground(MY_BG);
+		contents.setBackground(MY_BACKGROUND);
 
-		final JLabel author = new JLabel(from);
-		Font font = author.getFont();
-		Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
-		author.setFont(boldFont);
-		author.setForeground(INFO_TXT);
-
-		final Calendar cal = Calendar.getInstance();
-		final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-		final JLabel time = new JLabel(sdf.format(cal.getTime()));
+		final JLabel time = new JLabel(timeFormat.format(Calendar.getInstance().getTime()));
 		time.setForeground(INFO_TXT);
+
+		final JPanel messageContents = new JPanel();
+		messageContents.setLayout(new MigLayout("insets 0, gap rel 0", "10[]10[]10[]10", "5[]5"));
+		messageContents.setBackground(MY_BACKGROUND);
 
 		if (!user.equals(lastMessage)) {
 			messageContents.add(author, "wrap 1, gapy 0 10");
 		}
-		messageContents.add(contents, "width 10:50:, pushx, growx"); // GROW FUCKER
+
+		messageContents.add(contents, "width 10:50:, pushx, growx");
 		messageContents.add(time);
 
 		chatLog.add(messageContents, "pushx, growx");
 
 		// auto scroll
-		int height = (int) chatLog.getPreferredSize().getHeight();
+		final int height = (int) chatLog.getPreferredSize().getHeight();
 		Rectangle rect = new Rectangle(0, height, 10, 10);
 		scrollChatLog.scrollRectToVisible(rect);
 
