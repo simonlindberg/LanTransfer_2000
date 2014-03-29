@@ -3,10 +3,10 @@ package chat;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
-public class Sender {
+public class ChatSender {
 	private final PrintWriter writer;
 
-	public Sender(final OutputStream os) {
+	public ChatSender(final OutputStream os) {
 		writer = new PrintWriter(os);
 	}
 

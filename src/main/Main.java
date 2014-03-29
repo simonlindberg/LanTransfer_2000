@@ -27,10 +27,9 @@ public class Main {
 
 	@SuppressWarnings({ "serial" })
 	public static void main(String[] args) {
-		final Object[][] data = { { "test1", "127.0.0.2" }, { "test2", "127.0.0.1" } };
 		final String[] columnNames = { "Name", "IP" };
 
-		final DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+		final DefaultTableModel model = new DefaultTableModel(null, columnNames) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				// all cells false
@@ -96,7 +95,7 @@ public class Main {
 							clientWindows.put(ip, new ChatPanel(myUsername, user));
 						}
 						final ChatPanel chatPanel = clientWindows.get(ip);
-
+						gui.addChatPanel(chatPanel);
 						chatPanel.setSocket(socket);
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -113,7 +112,6 @@ public class Main {
 
 	private static void sendForce(final DefaultTableModel model, final Map<String, User> users, final DatagramSocket sendSocket,
 			final byte[] message, final DatagramPacket sendPacket) {
-		System.out.println("sending force!");
 		try {
 			message[0] = 1; // FORCE ON!
 			sendSocket.send(sendPacket);

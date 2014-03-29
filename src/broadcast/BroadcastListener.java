@@ -30,7 +30,6 @@ public class BroadcastListener extends BroadcastThread implements Runnable {
 
 					// System.out.println("recive: " + Arrays.toString(data));
 					if (data[0] == 1) { // I WAS FORCED!
-						System.out.println("I WAS FORCED!");
 						sendSocket.send(sendPacket);
 					}
 

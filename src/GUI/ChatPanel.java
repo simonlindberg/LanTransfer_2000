@@ -20,15 +20,17 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 import main.User;
 import net.miginfocom.swing.MigLayout;
 import chat.ChatReciver;
+import chat.ChatSender;
 import chat.ChatServerThread;
-import chat.Sender;
 
 @SuppressWarnings("serial")
 public class ChatPanel extends JPanel {
@@ -39,6 +41,7 @@ public class ChatPanel extends JPanel {
 	private static final Color MY_BACKGROUND = new Color(244, 244, 244);
 	private static final Color INFO_TXT = new Color(195, 195, 195);
 	private static final Color TXT_COLOR = new Color(43, 43, 43);
+	private static final Color OTHER_BACKGROUND = Color.WHITE;
 
 	private String lastSender;
 
@@ -49,7 +52,7 @@ public class ChatPanel extends JPanel {
 	private final JButton send = new JButton("Send");
 	private final JPanel chatLog = new JPanel(new MigLayout("gap rel 0, wrap 1, insets 0"));
 	private final JScrollPane scrollChatLog = new JScrollPane(chatLog);
-	private Sender sender;
+	private ChatSender sender;
 	private Socket socket;
 	private ChatReciver reciver;
 
@@ -70,9 +73,6 @@ public class ChatPanel extends JPanel {
 				System.out.println("senging files " + files);
 			}
 		}));
-
-		// TCP
-		System.out.println("Connecting......!!!!!11");
 	}
 
 	@Override
@@ -129,71 +129,93 @@ public class ChatPanel extends JPanel {
 	private void handleMessage() {
 		final String text = input.getText();
 		if (!text.equals("")) {
-			System.out.println(myName);
-			showMessage(myName, text);
 			sendMessage(text);
+			showMessage(myName, text);
 			input.setText("");
 		}
 	}
 
 	private void sendMessage(final String text) {
 		sender.send(text);
-		System.out.println("sending '" + text + "' to " + user.getUsername());
 	}
 
 	private void showMessage(final String from, final String text) {
-		final JLabel author = new JLabel(from);
-		author.setForeground(INFO_TXT);
-		author.setFont(BOLD);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				final JLabel author = new JLabel(from);
+				author.setForeground(INFO_TXT);
+				author.setFont(BOLD);
 
-		final JTextArea contents = new JTextArea(text);
-		contents.setEditable(false);
-		contents.setLineWrap(true);
-		contents.setWrapStyleWord(true);
-		contents.setAlignmentX(Component.LEFT_ALIGNMENT);
-		contents.setOpaque(true);
-		contents.setBackground(MY_BACKGROUND);
+				final JTextArea contents = new JTextArea(text);
+				contents.setEditable(false);
+				contents.setLineWrap(true);
+				contents.setWrapStyleWord(true);
+				contents.setAlignmentX(Component.LEFT_ALIGNMENT);
+				contents.setOpaque(true);
 
-		final JLabel time = new JLabel(timeFormat.format(Calendar.getInstance().getTime()));
-		time.setForeground(INFO_TXT);
+				final JPanel messageContents = new JPanel();
+				messageContents.setLayout(new MigLayout("insets 0, gap rel 0", "10[]10[]10[]10", "5[]5"));
 
-		final JPanel messageContents = new JPanel();
-		messageContents.setLayout(new MigLayout("insets 0, gap rel 0", "10[]10[]10[]10", "5[]5"));
-		messageContents.setBackground(MY_BACKGROUND);
+				if (from.equals(myName)) {
+					contents.setBackground(MY_BACKGROUND);
+					messageContents.setBackground(MY_BACKGROUND);
+				} else {
+					contents.setBackground(OTHER_BACKGROUND);
+					messageContents.setBackground(OTHER_BACKGROUND);
+				}
 
-		if (!from.equals(lastSender)) {
-			messageContents.add(author, "wrap 1, gapy 0 10");
-			lastSender = from;
-		}
+				final JLabel time = new JLabel(timeFormat.format(Calendar.getInstance().getTime()));
+				time.setForeground(INFO_TXT);
 
-		messageContents.add(contents, "width 10:50:, pushx, growx");
-		messageContents.add(time);
+				if (!from.equals(lastSender)) {
+					messageContents.add(author, "wrap 1, gapy 0 10");
+					lastSender = from;
+				}
 
-		chatLog.add(messageContents, "pushx, growx");
+				messageContents.add(contents, "width 10:50:, pushx, growx");
+				messageContents.add(time);
 
-		// auto scroll
-		final int height = (int) chatLog.getPreferredSize().getHeight();
-		Rectangle rect = new Rectangle(0, height, 10, 10);
-		scrollChatLog.scrollRectToVisible(rect);
+				chatLog.add(messageContents, "pushx, growx");
+
+				chatLog.revalidate();
+				chatLog.repaint();
+				
+				// auto scroll
+				//
+				// @Override
+				// public void run() {
+				final int height = (int) (chatLog.getPreferredSize().getHeight() + messageContents.getPreferredSize().getHeight());
+				Rectangle rect = new Rectangle(0, height, 10, 10);
+				scrollChatLog.scrollRectToVisible(rect);
+				// }
+				//
+				// });
+
+
+//				JScrollBar js = scrollChatLog.getVerticalScrollBar();
+//				js.setValue(Integer.MAX_VALUE);
+				System.out.println(Thread.currentThread());
+			}
+		});
 	}
 
 	public void setOffline() {
 		input.setEnabled(false);
 		send.setEnabled(false);
-		showMessage(user.getUsername(), "Has gone offline!");
+		showMessage(user.getUsername(), "has gone offline!");
 	}
 
 	public void showMessage(final String msg) {
 		showMessage(user.getUsername(), msg);
 	}
 
-	public void setSender(final Sender sender) {
+	public void setSender(final ChatSender sender) {
 		this.sender = sender;
 	}
 
 	public void setSocket(Socket socket) throws IOException {
 		this.socket = socket;
-		sender = new Sender(socket.getOutputStream());
+		sender = new ChatSender(socket.getOutputStream());
 		reciver = new ChatReciver(socket.getInputStream(), this);
 		reciver.start();
 	}

@@ -26,9 +26,12 @@ public class GUI extends JFrame {
 
 	private JComponent currentChat;
 	private final Map<String, ChatPanel> clientWindows;
+	private final JPanel rightContainer;
 
 	public GUI(final String name, final String ip, final DefaultTableModel model, final Map<String, ChatPanel> clientWindows,
 			final ActionListener refresher) {
+		rightContainer = new JPanel(new BorderLayout());
+		
 		this.clientWindows = clientWindows;
 		setLayout(new BorderLayout());
 
@@ -44,10 +47,9 @@ public class GUI extends JFrame {
 
 	private void addComponents(final String name, final String ip, final DefaultTableModel model, final ActionListener refresher) {
 		final JPanel leftContainer = new JPanel(new BorderLayout());
-		final JPanel rightContainer = new JPanel(new BorderLayout());
 
 		final JComponent top = createTop(name, ip, refresher);
-		final JComponent clientTable = createClientTable(name, rightContainer, model);
+		final JComponent clientTable = createClientTable(name, model);
 		final JComponent introLabel = createWelcomeLabel();
 
 		leftContainer.add(top, BorderLayout.NORTH);
@@ -95,7 +97,7 @@ public class GUI extends JFrame {
 	 * 
 	 * @param clientWindows
 	 */
-	private JComponent createClientTable(final String name, final JComponent rightContainer, final DefaultTableModel model) {
+	private JComponent createClientTable(final String name, final DefaultTableModel model) {
 		final JTable clientTable = new JTable();
 		clientTable.setDragEnabled(false);
 		clientTable.setModel(model);
@@ -116,8 +118,7 @@ public class GUI extends JFrame {
 				if (!clientWindows.containsKey(ip)) {
 					ChatPanel newChat = new ChatPanel(name, new User(username, ip));
 					clientWindows.put(ip, newChat);
-					rightContainer.add(newChat);
-					System.out.println("created panel");
+					addChatPanel(newChat);
 				}
 				final JComponent cf = clientWindows.get(ip);
 				switchPanelTo(cf);
@@ -130,13 +131,16 @@ public class GUI extends JFrame {
 		currentChat.setVisible(false);
 		currentChat = cf;
 		currentChat.setVisible(true);
-		System.out.println("switch!");
 	}
 
 	public void logOff(final User user) {
 		if (clientWindows.containsKey(user.getIP())) {
 			((ChatPanel) clientWindows.get(user.getIP())).setOffline();
 		}
+	}
+
+	public void addChatPanel(ChatPanel chatPanel) {
+		rightContainer.add(chatPanel);
 	}
 
 }
