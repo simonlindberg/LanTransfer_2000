@@ -61,7 +61,7 @@ public class Main {
 
 				@Override
 				public void handle(final DatagramPacket packet) {
-					final User user = new User(new String(packet.getData()), packet.getAddress().getHostAddress());
+					final User user = new User(new String(packet.getData(), 0, packet.getLength()), packet.getAddress().getHostAddress());
 					synchronized (users) {
 						if (users.contains(user)) {
 							users.get(users.indexOf(user)).refresh();

@@ -40,6 +40,7 @@ public class ChatPanel extends JPanel {
 
 	private final User user;
 	private final String myName;
+	
 	private final JTextField input = new JTextField();
 	private final JButton send = new JButton("Send");
 	private final JPanel chatLog = new JPanel(new MigLayout("gap rel 0, wrap 1, insets 0"));
@@ -158,6 +159,6 @@ public class ChatPanel extends JPanel {
 		input.setEnabled(false);
 		send.setEnabled(false);
 
-		showMessage(user.getUsername(), "Has gone offline! ", chatLog, scrollChatLog);
+		showMessage(user.getUsername(), "Has gone offline!", chatLog, scrollChatLog);
 	}
 }
