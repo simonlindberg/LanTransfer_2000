@@ -1,29 +1,23 @@
 package chat;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class ChatThread extends Thread implements Runnable {
 
-	private final InputStream inputStream;
+	private final BufferedReader br;
 
 	public ChatThread(final InputStream inputStream) {
-		this.inputStream = inputStream;
+		this.br = new BufferedReader(new InputStreamReader(inputStream));
 	}
 
 	@Override
 	public void run() {
-		final StringBuilder msg = new StringBuilder();
 		try {
 			for (;;) {
-				int data = inputStream.read();
-				while (data != -1) {
-					data = inputStream.read();
-					msg.append((char) data);
-				}
-				// ch to be used later
-				System.out.println(msg);
-				msg.setLength(0);
+				String msg = br.readLine();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

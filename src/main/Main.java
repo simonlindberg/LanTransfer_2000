@@ -85,7 +85,7 @@ public class Main {
 
 			sendForce(model, users, sendSocket, message, sendPacket);
 			
-			new ChatServerThread(users);
+			new ChatServerThread(users).start();
 		} catch (SocketException | UnknownHostException e) {
 			// GUI.showError("CRITICAL ERROR", e.getMessage() +
 			// "\n\nShuting down.");

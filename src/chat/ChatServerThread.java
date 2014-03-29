@@ -23,12 +23,9 @@ public class ChatServerThread extends Thread implements Runnable {
 			chatServer = new ServerSocket(CHAT_PORT);
 			for (;;) {
 				Socket socket = chatServer.accept();
-
 				synchronized (users) {
 					final User user = users.get(socket.getInetAddress().getHostAddress());
-
 					user.startChat(socket);
-					new ChatThread(socket.getInputStream());
 				}
 			}
 		} catch (IOException e) {

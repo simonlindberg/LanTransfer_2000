@@ -100,7 +100,9 @@ public class User {
 
 	public void setOffline() {
 		try {
-			socket.close();
+			if (socket != null) {
+				socket.close();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
