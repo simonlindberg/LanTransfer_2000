@@ -55,6 +55,7 @@ public class ChatPanel extends JPanel {
 	private ChatSender sender;
 	private Socket socket;
 	private ChatReciver reciver;
+	private boolean online = true;
 
 	public ChatPanel(final String name, final User user) {
 		this.user = user;
@@ -214,22 +215,29 @@ public class ChatPanel extends JPanel {
 	}
 
 	public void setOnline() {
-		input.setEnabled(true);
-		send.setEnabled(true);
+		if (!online) {
+			online = true;
+			input.setEnabled(true);
+			send.setEnabled(true);
 
-		if (isVisible()) {
-			newSocket();
+			if (isVisible()) {
+				newSocket();
+			}
+			System.out.println("ONLINE!");
 		}
 	}
 
 	public void setOffline() {
-		input.setEnabled(false);
-		send.setEnabled(false);
-		showNotice(user.getUsername() + " has gone offline!");
-		try {
-			socket.close();
-		} catch (IOException e) {
-			// If so, already closed!
+		if (online) {
+			online = false;
+			input.setEnabled(false);
+			send.setEnabled(false);
+			showNotice(user.getUsername() + " has gone offline!");
+			try {
+				socket.close();
+			} catch (IOException e) {
+				// If so, already closed!
+			}
 		}
 	}
 }
