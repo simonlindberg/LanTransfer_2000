@@ -37,11 +37,8 @@ public class OfflineCheckerThread extends Thread implements Runnable {
 
 							removed++;
 						} else {
-							user.setWhere(user.getWhere() - removed); // Update
-																		// where
-																		// the
-																		// user
-																		// is.
+							// Update where the user is.
+							user.setWhere(user.getWhere() - removed);
 						}
 					}
 				}

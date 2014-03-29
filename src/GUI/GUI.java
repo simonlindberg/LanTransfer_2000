@@ -38,7 +38,7 @@ public class GUI extends JFrame {
 		addComponents(name, ip, model, refresher);
 
 		setTitle("LANTRANSFER_2000 (ALPHA)");
-		setSize(700, 400);
+		setSize(800, 400);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setMinimumSize(new Dimension(500, 300));
 
