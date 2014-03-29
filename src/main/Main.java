@@ -24,9 +24,6 @@ import broadcast.BroadcastSender;
 import broadcast.BroadcastThread;
 
 public class Main {
-	private static final int CHECKER_TIMEOUT = 4000;// Time a user may have been
-													// unactive before he is
-													// kicked
 
 	@SuppressWarnings({ "serial" })
 	public static void main(String[] args) {
@@ -84,40 +81,7 @@ public class Main {
 				}
 			});
 
-			new Thread(new Runnable() {
-
-				@Override
-				public void run() {
-					try {
-						for (;;) {
-							synchronized (users) {
-								final Iterator<User> itr = users.iterator();
-								int removed = 0;
-								while (itr.hasNext()) {
-									final User user = itr.next();
-									if ((System.currentTimeMillis() - user.getLatest()) > CHECKER_TIMEOUT) {
-										itr.remove();
-										model.removeRow(user.getWhere());
-										gui.logOff(user);
-
-										removed++;
-									} else {
-										user.setWhere(user.getWhere() - removed); // Update
-																					// where
-																					// the
-																					// user
-																					// is.
-									}
-								}
-							}
-							Thread.sleep(CHECKER_TIMEOUT);
-						}
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}).start();
+			new OfflineCheckerThread(users, model, gui).start();
 
 			sendForce(model, users, sendSocket, message, sendPacket);
 		} catch (SocketException | UnknownHostException e) {
