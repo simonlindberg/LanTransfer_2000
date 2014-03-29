@@ -48,10 +48,6 @@ public class GUI extends JFrame {
 
 		leftContainer.setPreferredSize(new Dimension(200, 200));
 
-		// final ChatPanel cp = new ChatPanel(name, new User("firas",
-		// "192.168.0.1"));
-		//
-		// rightContainer.add(cp);
 		final String introMessage = "Welcome to LANMASTER_2000!";
 		final JLabel intro = new JLabel(introMessage);
 		intro.setHorizontalAlignment(SwingConstants.CENTER);
@@ -146,22 +142,5 @@ public class GUI extends JFrame {
 		rightContainer.add(cf, BorderLayout.CENTER);
 		cf.setVisible(true);
 	}
-	// public static void showError(String title, String message) {
-	// JOptionPane.showMessageDialog(null, message, title,
-	// JOptionPane.ERROR_MESSAGE);
-	// }
-	//
-	// public static void clearGUI() {
-	// DefaultTableModel model = (DefaultTableModel) clientTable.getModel();
-	// // model.setRowCount(0);
-	// }
-	//
-	// public static void populateGUI(Set<User> users) {
-	// clearGUI();
-	// DefaultTableModel model = (DefaultTableModel) clientTable.getModel();
-	// for (User u : users) {
-	// model.addRow(new Object[] { u.getUsername(), u.getIP() });
-	// }
-	// }
 
 }
