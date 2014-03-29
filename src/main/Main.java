@@ -47,7 +47,7 @@ public class Main {
 			sendSocket.setBroadcast(true); // Behövs defacto inte, men why not.
 			sendSocket.connect(BroadcastThread.getBroadcastAddress(), BroadcastThread.BROADCAST_PORT);
 
-			final byte[] message = createMessage(username + "the man!"); // ELLER?
+			final byte[] message = createMessage(username); // ELLER?
 
 			final DatagramPacket sendPacket = new DatagramPacket(message, message.length);
 
@@ -78,11 +78,21 @@ public class Main {
 					try {
 						for (;;) {
 							synchronized (users) {
-								Iterator<User> itr = users.iterator();
+								final Iterator<User> itr = users.iterator();
+								int removed = 0;
 								while (itr.hasNext()) {
-									User user = itr.next();
+									final User user = itr.next();
+									System.out.println((System.currentTimeMillis() - user.getLatest()));
 									if ((System.currentTimeMillis() - user.getLatest()) > CHECKER_TIMEOUT) {
 										itr.remove();
+										model.removeRow(user.getWhere());
+										removed++;
+									} else {
+										user.setWhere(user.getWhere() - removed); // Update
+																					// where
+																					// the
+																					// user
+																					// is.
 									}
 								}
 							}
