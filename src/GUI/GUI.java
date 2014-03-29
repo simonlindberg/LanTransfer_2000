@@ -1,7 +1,6 @@
 package GUI;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -20,19 +19,18 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 
+@SuppressWarnings("serial")
 public class GUI extends JFrame {
 
-	private static final long serialVersionUID = 1L;
-	private Map<String, JComponent> clientWindows;
-	private JPanel leftContainer;
-	private JPanel rightContainer;
+	private final Map<String, JComponent> clientWindows;
 
-	public GUI(final String name) {
+	private JComponent currentChat;
+
+	public GUI(final String name, final String ip) {
 		setLayout(new BorderLayout());
-		leftContainer = new JPanel(new BorderLayout());
-		rightContainer = new JPanel(new BorderLayout());
+		clientWindows = new HashMap<String, JComponent>();
 
-		addComponents(name);
+		addComponents(name, ip);
 
 		setTitle("LANTRANSFER_2000 (ALPHA)");
 		setSize(700, 400);
@@ -42,16 +40,19 @@ public class GUI extends JFrame {
 		setVisible(true);
 	}
 
-	private void addComponents(final String name) {
-		createClientTable(leftContainer);
-		createButtons(leftContainer);
+	private void addComponents(final String name, final String ip) {
+		final JPanel leftContainer = new JPanel(new BorderLayout());
+		final JPanel rightContainer = new JPanel(new BorderLayout());
 
+		final JComponent top = createTop(name, ip);
+		final JComponent clientTable = createClientTable(rightContainer);
+		final JComponent introLabel = createWelcomeLabel();
+
+		leftContainer.add(top, BorderLayout.NORTH);
+		leftContainer.add(clientTable, BorderLayout.CENTER);
 		leftContainer.setPreferredSize(new Dimension(200, 200));
 
-		final String introMessage = "Welcome to LANMASTER_2000!";
-		final JLabel intro = new JLabel(introMessage);
-		intro.setHorizontalAlignment(SwingConstants.CENTER);
-		rightContainer.add(intro, BorderLayout.CENTER);
+		rightContainer.add(introLabel, BorderLayout.CENTER);
 
 		final JSplitPane jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftContainer, rightContainer);
 
@@ -61,28 +62,36 @@ public class GUI extends JFrame {
 		add(jsp);
 	}
 
-	private void createButtons(final JComponent container) {
-		/**
-		 * Refresh + rename
-		 */
-		final JComponent topPane = new JPanel(new BorderLayout());
+	private JComponent createWelcomeLabel() {
+		final String welcomeMessage = "Welcome to LANMASTER_2000!";
+		final JLabel introLabel = new JLabel(welcomeMessage);
 
-		final JButton changeName = new JButton("Change username");
-		final JButton refreshButton = new JButton("Refresh list");
+		introLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-		topPane.add(changeName, BorderLayout.WEST);
-		topPane.add(refreshButton, BorderLayout.EAST);
+		currentChat = introLabel;
 
-		container.add(topPane, BorderLayout.NORTH);
+		return introLabel;
 	}
 
-	private void createClientTable(final JComponent container) {
-		/**
-		 * Client table
-		 */
+	/**
+	 * Refresh + name
+	 */
+	private JComponent createTop(final String name, final String ip) {
+		final JComponent topPane = new JPanel(new BorderLayout());
 
-		clientWindows = new HashMap<String, JComponent>();
+		final JLabel nameLabel = new JLabel(name + " (" + ip + ")");
+		final JButton refreshButton = new JButton("Refresh list");
 
+		topPane.add(nameLabel, BorderLayout.WEST);
+		topPane.add(refreshButton, BorderLayout.EAST);
+
+		return topPane;
+	}
+
+	/**
+	 * Client table
+	 */
+	private JComponent createClientTable(final JComponent rightContainer) {
 		final String[] columnNames = { "Name", "IP" };
 		JTable clientTable = new JTable();
 		clientTable.setDragEnabled(false);
@@ -105,42 +114,41 @@ public class GUI extends JFrame {
 
 		clientTable.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				JTable target = (JTable) e.getSource();
-				int row = target.getSelectedRow();
+				final JTable target = (JTable) e.getSource();
+				final int row = target.getSelectedRow();
 				if (row == -1) {
 					return;
 				}
 				// Get IP
 				final String ip = (String) clientTableModel.getValueAt(row, 1);
 				final String username = (String) clientTableModel.getValueAt(row, 0);
-				ChatPanel cf = null;
+
 				if (!clientWindows.containsKey(ip)) {
-					cf = new ChatPanel(username, new User(username, ip));
-					clientWindows.put(ip, cf);
-				} else {
-					cf = (ChatPanel) clientWindows.get(ip);
+					ChatPanel newChat = new ChatPanel(username, new User(username, ip));
+					clientWindows.put(ip, newChat);
+					rightContainer.add(newChat);
+					System.out.println("created panel");
 				}
+
+				final JComponent cf = clientWindows.get(ip);
 				switchPanelTo(cf);
-				System.out.println("created panel");
 			}
 
 		});
 
 		clientTable.setModel(clientTableModel);
 
-		clientTableModel.addRow(new Object[] { "a", "b", "c" });
+		clientTableModel.addRow(new Object[] { "a", "b" });
 
 		final JScrollPane scrollPane = new JScrollPane(clientTable);
-		container.add(scrollPane, BorderLayout.CENTER);
+
+		return scrollPane;
 	}
 
-	private void switchPanelTo(ChatPanel cf) {
-		for (Component j : rightContainer.getComponents()) {
-			j.setVisible(false);
-		}
-		// Is this bad? Adding it several times?
-		rightContainer.add(cf, BorderLayout.CENTER);
-		cf.setVisible(true);
+	private void switchPanelTo(final JComponent cf) {
+		currentChat.setVisible(false);
+		currentChat = cf;
+		currentChat.setVisible(true);
 	}
 
 }
