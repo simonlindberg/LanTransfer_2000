@@ -2,6 +2,7 @@ package GUI;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
@@ -22,15 +23,14 @@ import javax.swing.table.DefaultTableModel;
 @SuppressWarnings("serial")
 public class GUI extends JFrame {
 
-	private final Map<String, JComponent> clientWindows;
+	private final Map<String, JComponent> clientWindows = new HashMap<String, JComponent>();
 
 	private JComponent currentChat;
 
-	public GUI(final String name, final String ip) {
+	public GUI(final String name, final String ip, final DefaultTableModel model, final ActionListener refresher) {
 		setLayout(new BorderLayout());
-		clientWindows = new HashMap<String, JComponent>();
 
-		addComponents(name, ip);
+		addComponents(name, ip, model, refresher);
 
 		setTitle("LANTRANSFER_2000 (ALPHA)");
 		setSize(700, 400);
@@ -40,20 +40,18 @@ public class GUI extends JFrame {
 		setVisible(true);
 	}
 
-	private void addComponents(final String name, final String ip) {
+	private void addComponents(final String name, final String ip, final DefaultTableModel model, final ActionListener refresher) {
 		final JPanel leftContainer = new JPanel(new BorderLayout());
 		final JPanel rightContainer = new JPanel(new BorderLayout());
 
-		final JComponent top = createTop(name, ip);
-		final JComponent clientTable = createClientTable(rightContainer);
+		final JComponent top = createTop(name, ip, refresher);
+		final JComponent clientTable = createClientTable(rightContainer, model);
 		final JComponent introLabel = createWelcomeLabel();
 
 		leftContainer.add(top, BorderLayout.NORTH);
 		leftContainer.add(clientTable, BorderLayout.CENTER);
 		leftContainer.setPreferredSize(new Dimension(200, 200));
-
 		rightContainer.add(introLabel, BorderLayout.CENTER);
-
 		final JSplitPane jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftContainer, rightContainer);
 
 		jsp.setDividerSize(5);
@@ -76,11 +74,12 @@ public class GUI extends JFrame {
 	/**
 	 * Refresh + name
 	 */
-	private JComponent createTop(final String name, final String ip) {
+	private JComponent createTop(final String name, final String ip, final ActionListener refresher) {
 		final JComponent topPane = new JPanel(new BorderLayout());
 
 		final JLabel nameLabel = new JLabel(name + " (" + ip + ")");
 		final JButton refreshButton = new JButton("Refresh list");
+		refreshButton.addActionListener(refresher);
 
 		topPane.add(nameLabel, BorderLayout.WEST);
 		topPane.add(refreshButton, BorderLayout.EAST);
@@ -88,26 +87,15 @@ public class GUI extends JFrame {
 		return topPane;
 	}
 
+	final JLabel statusLabel = new JLabel("Everything is a-ok!");
+
 	/**
 	 * Client table
 	 */
-	private JComponent createClientTable(final JComponent rightContainer) {
-		final Object[][] data = { { "test1", "127.0.0.2" }, { "test2", "127.0.0.1" } };
-		final String[] columnNames = { "Name", "IP" };
-
-		final DefaultTableModel clientTableModel = new DefaultTableModel(data, columnNames) {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public boolean isCellEditable(int row, int column) {
-				// all cells false
-				return false;
-			}
-		};
-
+	private JComponent createClientTable(final JComponent rightContainer, final DefaultTableModel model) {
 		final JTable clientTable = new JTable();
 		clientTable.setDragEnabled(false);
-		clientTable.setModel(clientTableModel);
+		clientTable.setModel(model);
 		clientTable.setFillsViewportHeight(true);
 		clientTable.getTableHeader().setReorderingAllowed(false);
 		clientTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -122,8 +110,8 @@ public class GUI extends JFrame {
 					return;
 				}
 				// Get IP & username
-				final String ip = (String) clientTableModel.getValueAt(row, 1);
-				final String username = (String) clientTableModel.getValueAt(row, 0);
+				final String ip = (String) model.getValueAt(row, 1);
+				final String username = (String) model.getValueAt(row, 0);
 
 				if (!clientWindows.containsKey(ip)) {
 					ChatPanel newChat = new ChatPanel(username, new User(username, ip));
@@ -131,11 +119,9 @@ public class GUI extends JFrame {
 					rightContainer.add(newChat);
 					System.out.println("created panel");
 				}
-
 				final JComponent cf = clientWindows.get(ip);
 				switchPanelTo(cf);
 			}
-
 		});
 
 		return new JScrollPane(clientTable);
