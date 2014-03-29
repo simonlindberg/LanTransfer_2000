@@ -87,6 +87,7 @@ public class ChatPanel extends JPanel {
 				setSocket(new Socket(user.getIP(), ChatServerThread.CHAT_PORT));
 			} catch (IOException e) {
 				e.printStackTrace();
+				// om man försöker chatta med nån som nyss gick offline
 			}
 		}
 	}
