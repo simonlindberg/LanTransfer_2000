@@ -23,6 +23,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import main.User;
 import net.miginfocom.swing.MigLayout;
 
 @SuppressWarnings("serial")

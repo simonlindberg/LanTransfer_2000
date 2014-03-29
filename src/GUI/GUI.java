@@ -20,6 +20,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 
+import main.User;
+
 @SuppressWarnings("serial")
 public class GUI extends JFrame {
 
