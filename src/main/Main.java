@@ -22,8 +22,6 @@ import broadcast.BroadcastSender;
 import broadcast.BroadcastThread;
 import chat.ChatHandler;
 import chat.ChatServerThread;
-import chat.ChatReciver;
-import chat.Sender;
 
 public class Main {
 
@@ -99,9 +97,7 @@ public class Main {
 						}
 						final ChatPanel chatPanel = clientWindows.get(ip);
 
-						chatPanel.setSender(new Sender(socket.getOutputStream()));
-
-						new ChatReciver(socket.getInputStream(), chatPanel).start();
+						chatPanel.setSocket(socket);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}

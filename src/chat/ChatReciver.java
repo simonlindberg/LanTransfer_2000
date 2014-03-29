@@ -22,6 +22,7 @@ public class ChatReciver extends Thread implements Runnable {
 		try {
 			String line = br.readLine();
 			while (line != null) {
+				System.out.println("new message");
 				chatPanel.showMessage(line);
 				line = br.readLine();
 			}

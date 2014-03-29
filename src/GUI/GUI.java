@@ -130,6 +130,7 @@ public class GUI extends JFrame {
 		currentChat.setVisible(false);
 		currentChat = cf;
 		currentChat.setVisible(true);
+		System.out.println("switch!");
 	}
 
 	public void logOff(final User user) {

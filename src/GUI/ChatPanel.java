@@ -12,7 +12,6 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -82,10 +81,7 @@ public class ChatPanel extends JPanel {
 
 		if (socket == null) {
 			try {
-				socket = new Socket(user.getIP(), ChatServerThread.CHAT_PORT);
-				sender = new Sender(socket.getOutputStream());
-				reciver = new ChatReciver(socket.getInputStream(), this);
-				reciver.start();
+				setSocket(new Socket(user.getIP(), ChatServerThread.CHAT_PORT));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -193,5 +189,12 @@ public class ChatPanel extends JPanel {
 
 	public void setSender(final Sender sender) {
 		this.sender = sender;
+	}
+
+	public void setSocket(Socket socket) throws IOException {
+		this.socket = socket;
+		sender = new Sender(socket.getOutputStream());
+		reciver = new ChatReciver(socket.getInputStream(), this);
+		reciver.start();
 	}
 }
