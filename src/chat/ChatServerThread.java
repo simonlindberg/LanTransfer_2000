@@ -3,6 +3,8 @@ package chat;
 import java.io.IOException;
 import java.net.ServerSocket;
 
+import GUI.GUI;
+
 public class ChatServerThread extends Thread implements Runnable {
 
 	public static final int CHAT_PORT = 8888;
@@ -21,7 +23,8 @@ public class ChatServerThread extends Thread implements Runnable {
 				chatHandler.initChat(chatServer.accept());
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			GUI.showError("Critical error", e.getMessage() + "\n\nProgram will now exit.");
+			System.exit(-1);
 		}
 	}
 }

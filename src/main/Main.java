@@ -112,6 +112,7 @@ public class Main {
 							chatPanel.setSocket(socket);
 						}
 					} catch (IOException e) {
+						System.out.println("Attempted to set socket for user but failed");
 						e.printStackTrace();
 					}
 				}
@@ -130,8 +131,9 @@ public class Main {
 			sendSocket.send(sendPacket);
 			model.setRowCount(0);
 			users.clear();
-		} catch (IOException e1) {
-			e1.printStackTrace();
+		} catch (IOException e) {
+			System.out.println("Tried to send broadcast but failed.");
+			e.printStackTrace();
 		} finally {
 			message[0] = 0; // FORCE OFF!
 		}

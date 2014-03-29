@@ -45,8 +45,8 @@ public class OfflineCheckerThread extends Thread implements Runnable {
 				Thread.sleep(CHECKER_TIMEOUT);
 			}
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			GUI.showError("Critical error", e.getMessage() + "\n\nProgram will now exit.");
+			System.exit(-1);
 		}
 	}
 

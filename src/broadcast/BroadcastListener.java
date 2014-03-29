@@ -6,6 +6,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.Arrays;
 
+import GUI.GUI;
+
 public class BroadcastListener extends BroadcastThread implements Runnable {
 	private final BroadcastResponseHandler handler;
 	private static final int BUFFER_SIZE = 20;
@@ -41,7 +43,8 @@ public class BroadcastListener extends BroadcastThread implements Runnable {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			GUI.showError("Critical error", e.getMessage() + "\n\nProgram will now exit.");
+			System.exit(-1);
 		}
 	}
 }

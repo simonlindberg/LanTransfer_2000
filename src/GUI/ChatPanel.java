@@ -89,10 +89,14 @@ public class ChatPanel extends JPanel {
 	}
 
 	private void newSocket() {
+		System.out.println("Creating new socket...");
 		try {
 			setSocket(new Socket(user.getIP(), ChatServerThread.CHAT_PORT));
 		} catch (IOException e) {
 			// om man försöker chatta med nån som nyss gick offline
+			System.out.println("Attempted to initiate chat with old(?) user");
+			System.out.println("Socket was: " + socket.isClosed());
+			System.out.println("Socket was also: " + socket.isBound());
 			e.printStackTrace();
 		}
 	}
@@ -237,7 +241,10 @@ public class ChatPanel extends JPanel {
 				socket.close();
 			} catch (IOException e) {
 				// If so, already closed!
+				System.out.println("Offline status set but socket was already closed(?))");
+				e.printStackTrace();
 			}
+			System.out.println("OFFLINE!");
 		}
 	}
 }
