@@ -1,11 +1,8 @@
 package broadcast;
 
-import gui.GUI;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-
 
 public class BroadcastSender extends BroadcastThread implements Runnable {
 	private static final long SEND_INTERVAL = 1000;
@@ -23,7 +20,6 @@ public class BroadcastSender extends BroadcastThread implements Runnable {
 			}
 		} catch (InterruptedException | IOException e) {
 			e.printStackTrace();
-			GUI.showError("Fatal error", "Unable to send data");
 		}
 	}
 

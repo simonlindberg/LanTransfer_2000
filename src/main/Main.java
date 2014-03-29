@@ -1,13 +1,13 @@
 package main;
 
-import gui.GUI;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +15,7 @@ import java.util.Set;
 
 import javax.swing.table.DefaultTableModel;
 
+import GUI.GUI;
 import broadcast.BroadcastListener;
 import broadcast.BroadcastResponseHandler;
 import broadcast.BroadcastSender;
@@ -27,8 +28,9 @@ public class Main {
 
 	@SuppressWarnings({ "serial" })
 	public static void main(String[] args) {
-
-		final DefaultTableModel model = new DefaultTableModel(null, new String[] { "Name", "IP" }) {
+		final Object[][] data = { { "test1", "127.0.0.2" }, { "test2", "127.0.0.1" } };
+		final String[] columnNames = { "Name", "IP" };
+		final DefaultTableModel model = new DefaultTableModel(data, columnNames) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				// all cells false
@@ -39,11 +41,14 @@ public class Main {
 		final List<User> users = new ArrayList<>();
 
 		try {
+			final String username = System.getProperty("user.name");
+			final String ip = InetAddress.getLocalHost().getHostAddress();
+
 			final DatagramSocket sendSocket = new DatagramSocket();
 			sendSocket.setBroadcast(true); // Behövs defacto inte, men why not.
 			sendSocket.connect(BroadcastThread.getBroadcastAddress(), BroadcastThread.BROADCAST_PORT);
 
-			final byte[] message = createMessage(System.getProperty("user.name") + "the man!"); // ELLER?
+			final byte[] message = createMessage(username + "the man!"); // ELLER?
 
 			final DatagramPacket sendPacket = new DatagramPacket(message, message.length);
 
@@ -95,7 +100,7 @@ public class Main {
 				}
 			}).start();
 
-			new GUI(model, new ActionListener() {
+			new GUI(username, ip, model, new ActionListener() {
 
 				@Override
 				public void actionPerformed(final ActionEvent e) {
@@ -113,8 +118,9 @@ public class Main {
 				}
 			});
 
-		} catch (SocketException e) {
-			GUI.showError("CRITICAL ERROR", e.getMessage() + "\n\nShuting down.");
+		} catch (SocketException | UnknownHostException e) {
+			// GUI.showError("CRITICAL ERROR", e.getMessage() +
+			// "\n\nShuting down.");
 			System.exit(-1);
 		}
 

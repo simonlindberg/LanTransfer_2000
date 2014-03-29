@@ -1,13 +1,10 @@
 package broadcast;
 
-import gui.GUI;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.Arrays;
-
 
 public class BroadcastListener extends BroadcastThread implements Runnable {
 	private final BroadcastResponseHandler handler;
@@ -31,7 +28,7 @@ public class BroadcastListener extends BroadcastThread implements Runnable {
 
 				if (!InetAddress.getLocalHost().equals(recivePacket.getAddress())) {
 
-//					System.out.println("recive: " + Arrays.toString(data));
+					// System.out.println("recive: " + Arrays.toString(data));
 					if (data[0] == 1) { // I WAS FORCED!
 						System.out.println("I WAS FORCED!");
 						sendSocket.send(sendPacket);
@@ -46,7 +43,6 @@ public class BroadcastListener extends BroadcastThread implements Runnable {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			GUI.showError("Fatal error", "Unable to receive data");
 		}
 	}
 }
