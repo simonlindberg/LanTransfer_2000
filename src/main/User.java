@@ -1,5 +1,8 @@
 package main;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+
 public class User {
 
 	private final String ip;
@@ -7,6 +10,8 @@ public class User {
 	private final long arrived;
 	private long latest;
 	private int where;
+	private InputStream in = null;
+	private OutputStream out = null;
 
 	public User(String username, String ip) {
 		this.ip = ip;
@@ -59,5 +64,13 @@ public class User {
 
 	public int getWhere() {
 		return where;
+	}
+
+	public void setInputStream(InputStream inputStream) {
+		in = inputStream;
+	}
+	
+	public void setOutputStream(OutputStream outputStream) {
+		out = outputStream;
 	}
 }

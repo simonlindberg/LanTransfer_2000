@@ -1,7 +1,7 @@
 package main;
 
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -12,10 +12,10 @@ public class OfflineCheckerThread extends Thread implements Runnable {
 	private static final int CHECKER_TIMEOUT = 4000;
 
 	private final DefaultTableModel model;
-	private final List<User> users;
+	private final Map<String, User> users;
 	private final GUI gui;
 
-	public OfflineCheckerThread(final List<User> users, final DefaultTableModel model, final GUI gui) {
+	public OfflineCheckerThread(final Map<String, User> users, final DefaultTableModel model, final GUI gui) {
 		this.users = users;
 		this.model = model;
 		this.gui = gui;
@@ -26,7 +26,7 @@ public class OfflineCheckerThread extends Thread implements Runnable {
 		try {
 			for (;;) {
 				synchronized (users) {
-					final Iterator<User> itr = users.iterator();
+					final Iterator<User> itr = users.values().iterator();
 					int removed = 0;
 					while (itr.hasNext()) {
 						final User user = itr.next();

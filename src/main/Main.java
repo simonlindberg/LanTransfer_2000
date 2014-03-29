@@ -6,12 +6,10 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.JComponent;
@@ -22,6 +20,8 @@ import broadcast.BroadcastListener;
 import broadcast.BroadcastResponseHandler;
 import broadcast.BroadcastSender;
 import broadcast.BroadcastThread;
+import chat.ChatHandler;
+import chat.ChatServerThread;
 
 public class Main {
 
@@ -38,7 +38,7 @@ public class Main {
 			}
 		};
 
-		final List<User> users = new ArrayList<>();
+		final Map<String, User> users = new HashMap<String, User>();
 
 		final Map<String, JComponent> clientWindows = new HashMap<String, JComponent>();
 
@@ -60,10 +60,10 @@ public class Main {
 				public void handle(final DatagramPacket packet) {
 					final User user = new User(new String(packet.getData(), 0, packet.getLength()), packet.getAddress().getHostAddress());
 					synchronized (users) {
-						if (users.contains(user)) {
-							users.get(users.indexOf(user)).refresh();
+						if (users.containsValue(user)) {
+							users.get(user.getIP()).refresh();
 						} else {
-							users.add(user);
+							users.put(user.getIP(), user);
 							model.addRow(new String[] { user.getUsername(), user.getIP() });
 							user.setWhere(model.getRowCount() - 1);
 						}
@@ -84,6 +84,28 @@ public class Main {
 			new OfflineCheckerThread(users, model, gui).start();
 
 			sendForce(model, users, sendSocket, message, sendPacket);
+			
+			new ChatServerThread(new ChatHandler() {
+
+				@Override
+				public void handleInit(Socket s) {
+					try {
+						String ip = s.getInetAddress().getHostAddress();
+						User u = users.get(ip); // User we are chatting with
+						u.setInputStream(s.getInputStream());
+						u.setOutputStream(s.getOutputStream());
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
+				@Override
+				public void handleChat() {
+					// TODO Auto-generated method stub
+					
+				}
+
+			});
 		} catch (SocketException | UnknownHostException e) {
 			// GUI.showError("CRITICAL ERROR", e.getMessage() +
 			// "\n\nShuting down.");
@@ -92,7 +114,7 @@ public class Main {
 
 	}
 
-	private static void sendForce(final DefaultTableModel model, final List<User> users, final DatagramSocket sendSocket,
+	private static void sendForce(final DefaultTableModel model, final Map<String, User> users, final DatagramSocket sendSocket,
 			final byte[] message, final DatagramPacket sendPacket) {
 		System.out.println("sending force!");
 		try {
