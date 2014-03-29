@@ -26,7 +26,8 @@ public class ChatReciver extends Thread implements Runnable {
 				line = br.readLine();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			// Connection is dead, let thread die.
+			chatPanel.setOffline();
 		}
 	}
 }

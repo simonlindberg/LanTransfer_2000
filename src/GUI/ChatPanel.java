@@ -83,12 +83,16 @@ public class ChatPanel extends JPanel {
 		super.setVisible(show);
 
 		if (socket == null) {
-			try {
-				setSocket(new Socket(user.getIP(), ChatServerThread.CHAT_PORT));
-			} catch (IOException e) {
-				e.printStackTrace();
-				// om man försöker chatta med nån som nyss gick offline
-			}
+			newSocket();
+		}
+	}
+
+	private void newSocket() {
+		try {
+			setSocket(new Socket(user.getIP(), ChatServerThread.CHAT_PORT));
+		} catch (IOException e) {
+			// om man försöker chatta med nån som nyss gick offline
+			e.printStackTrace();
 		}
 	}
 
@@ -96,13 +100,10 @@ public class ChatPanel extends JPanel {
 		// Space is ugly but works..
 		final String startMessage = "New chat started with " + user.toString();
 
-		// final JLabel start = new JLabel(startMessage);
-		// start.setForeground(INFO_TXT);
 		showNotice(startMessage);
 
 		chatLog.setForeground(TXT_COLOR);
 		chatLog.setBackground(Color.WHITE);
-		// chatLog.add(start);
 
 		input.addKeyListener(new KeyAdapter() {
 			@Override
@@ -193,18 +194,8 @@ public class ChatPanel extends JPanel {
 		});
 	}
 
-	public void setOffline() {
-		input.setEnabled(false);
-		send.setEnabled(false);
-		showNotice(user.getUsername() + " has gone offline!");
-	}
-
 	public void showMessage(final String msg) {
 		showMessage(user.getUsername(), msg);
-	}
-
-	public void setSender(final ChatSender sender) {
-		this.sender = sender;
 	}
 
 	public void setSocket(Socket socket) throws IOException {
@@ -217,8 +208,28 @@ public class ChatPanel extends JPanel {
 	private void showMessage(String username, String message) {
 		showMessage(username, message, TXT_COLOR);
 	}
-	
+
 	private void showNotice(String text) {
 		showMessage("", text, NOTICE_COLOR);
+	}
+
+	public void setOnline() {
+		input.setEnabled(true);
+		send.setEnabled(true);
+
+		if (isVisible()) {
+			newSocket();
+		}
+	}
+
+	public void setOffline() {
+		input.setEnabled(false);
+		send.setEnabled(false);
+		showNotice(user.getUsername() + " has gone offline!");
+		try {
+			socket.close();
+		} catch (IOException e) {
+			// If so, already closed!
+		}
 	}
 }

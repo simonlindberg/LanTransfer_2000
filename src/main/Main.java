@@ -57,13 +57,21 @@ public class Main {
 
 				@Override
 				public void handle(final DatagramPacket packet) {
-					final User user = new User(new String(packet.getData(), 0, packet.getLength()), packet.getAddress().getHostAddress());
+					final String ip = packet.getAddress().getHostAddress();
+
+					synchronized (clientWindows) {
+						if (clientWindows.containsKey(ip)) {
+							clientWindows.get(ip).setOnline();
+						}
+					}
+
+					final User user = new User(new String(packet.getData(), 0, packet.getLength()), ip);
 					synchronized (users) {
 						if (users.containsValue(user)) {
-							users.get(user.getIP()).refresh();
+							users.get(ip).refresh();
 						} else {
-							users.put(user.getIP(), user);
-							model.addRow(new String[] { user.getUsername(), user.getIP() });
+							users.put(ip, user);
+							model.addRow(new String[] { user.getUsername(), ip });
 							user.setWhere(model.getRowCount() - 1);
 						}
 					}
@@ -90,21 +98,26 @@ public class Main {
 				public void initChat(final Socket socket) {
 					try {
 						final String ip = socket.getInetAddress().getHostAddress();
-						if (!clientWindows.containsKey(ip)) {
-							final User user = users.get(ip);
-							clientWindows.put(ip, new ChatPanel(myUsername, user));
+
+						synchronized (clientWindows) {
+							if (!clientWindows.containsKey(ip)) {
+
+								synchronized (users) {
+									final User user = users.get(ip);
+									clientWindows.put(ip, new ChatPanel(myUsername, user));
+								}
+							}
+							final ChatPanel chatPanel = clientWindows.get(ip);
+							gui.addChatPanel(chatPanel);
+							chatPanel.setSocket(socket);
 						}
-						final ChatPanel chatPanel = clientWindows.get(ip);
-						gui.addChatPanel(chatPanel);
-						chatPanel.setSocket(socket);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 				}
 			}).start();
 		} catch (SocketException | UnknownHostException e) {
-			// GUI.showError("CRITICAL ERROR", e.getMessage() +
-			// "\n\nShuting down.");
+			GUI.showError("CRITICAL ERROR", e.getMessage() + "\n\nShuting down.");
 			System.exit(-1);
 		}
 

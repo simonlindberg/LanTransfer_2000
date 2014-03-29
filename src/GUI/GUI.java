@@ -11,6 +11,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -31,7 +32,7 @@ public class GUI extends JFrame {
 	public GUI(final String name, final String ip, final DefaultTableModel model, final Map<String, ChatPanel> clientWindows,
 			final ActionListener refresher) {
 		rightContainer = new JPanel(new BorderLayout());
-		
+
 		this.clientWindows = clientWindows;
 		setLayout(new BorderLayout());
 
@@ -141,6 +142,10 @@ public class GUI extends JFrame {
 
 	public void addChatPanel(ChatPanel chatPanel) {
 		rightContainer.add(chatPanel);
+	}
+
+	public static void showError(String title, String msg) {
+		JOptionPane.showMessageDialog(null, msg, title, JOptionPane.ERROR_MESSAGE);
 	}
 
 }
