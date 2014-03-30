@@ -30,8 +30,6 @@ public class BroadcastListener extends BroadcastThread implements Runnable {
 				reciveSocket.receive(recivePacket);
 
 				if (!InetAddress.getLocalHost().equals(recivePacket.getAddress())) {
-					recivePacket.setData(Arrays.copyOfRange(data, 1, data.length));
-
 					if (data[0] == GOING_OFFLINE) {
 						handler.handleGoingOffline(recivePacket);
 					} else {

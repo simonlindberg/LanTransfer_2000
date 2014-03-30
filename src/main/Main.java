@@ -90,7 +90,7 @@ public class Main {
 						clientWindows.get(ip).setOnline();
 					}
 
-					final User user = new User(new String(packet.getData(), 0, packet.getLength()), ip);
+					final User user = new User(new String(packet.getData(), 1, packet.getLength() - 1), ip);
 					if (users.containsValue(user)) {
 						users.get(ip).refresh();
 					} else {
