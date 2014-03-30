@@ -149,7 +149,7 @@ public class ChatPanel extends JPanel {
 		sender.send(text);
 	}
 
-	private void showMessage(final String text, final Color color, final boolean fromMe) {
+	private void showMessage(final String text, final Color color, final boolean fromMe, final boolean notice) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				final JTextArea contents = new JTextArea(text);
@@ -174,7 +174,7 @@ public class ChatPanel extends JPanel {
 				final JLabel time = new JLabel(timeFormat.format(Calendar.getInstance().getTime()));
 				time.setForeground(INFO_TXT);
 
-				if (fromMe != lastFromMe || firstMsg) {
+				if ((fromMe != lastFromMe || firstMsg) && !notice) {
 					final JLabel author = new JLabel(fromMe ? myName : user.getUsername());
 					author.setForeground(INFO_TXT);
 					author.setFont(BOLD);
@@ -212,11 +212,11 @@ public class ChatPanel extends JPanel {
 	}
 
 	private void showMessage(final String username, final String message, final boolean fromMe) {
-		showMessage(message, TXT_COLOR, fromMe);
+		showMessage(message, TXT_COLOR, fromMe, false);
 	}
 
 	private void showNotice(final String text) {
-		showMessage(text, NOTICE_COLOR, false);
+		showMessage(text, NOTICE_COLOR, false, true);
 	}
 
 	public void setOnline() {
