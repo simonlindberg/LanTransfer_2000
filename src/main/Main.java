@@ -27,21 +27,19 @@ public class Main {
 
 	@SuppressWarnings({ "serial" })
 	public static void main(String[] args) {
-		final String[] columnNames = { "Name", "IP" };
-
-		final DefaultTableModel model = new DefaultTableModel(null, columnNames) {
-			@Override
-			public boolean isCellEditable(int row, int column) {
-				// all cells false
-				return false;
-			}
-		};
-
-		final Map<String, User> users = new HashMap<String, User>();
-
-		final Map<String, ChatPanel> clientWindows = new HashMap<>();
 
 		try {
+			final DefaultTableModel model = new DefaultTableModel(null, new String[] { "Name", "IP" }) {
+				@Override
+				public boolean isCellEditable(int row, int column) {
+					// all cells false
+					return false;
+				}
+			};
+
+			final Map<String, User> users = new HashMap<String, User>();
+			final Map<String, ChatPanel> clientWindows = new HashMap<>();
+
 			final String myUsername = System.getProperty("user.name");
 			final String myIP = InetAddress.getLocalHost().getHostAddress();
 
@@ -52,6 +50,40 @@ public class Main {
 			final byte[] message = createMessage(myUsername); // ELLER?
 
 			final DatagramPacket sendPacket = new DatagramPacket(message, message.length);
+
+			final GUI gui = new GUI(myUsername, myIP, model, clientWindows, new ActionListener() {
+
+				@Override
+				public void actionPerformed(final ActionEvent e) {
+					sendForce(model, users, sendSocket, message, sendPacket);
+				}
+			});
+
+			new ChatServerThread(new ChatHandler() {
+
+				@Override
+				public void initChat(final Socket socket) {
+					try {
+						final String ip = socket.getInetAddress().getHostAddress();
+
+						synchronized (clientWindows) {
+							if (!clientWindows.containsKey(ip)) {
+
+								synchronized (users) {
+									final User user = users.get(ip);
+									clientWindows.put(ip, new ChatPanel(myUsername, user));
+								}
+							}
+							final ChatPanel chatPanel = clientWindows.get(ip);
+							gui.addChatPanel(chatPanel);
+							chatPanel.setSocket(socket);
+						}
+					} catch (IOException e) {
+						System.out.println("Attempted to set socket for user but failed");
+						e.printStackTrace();
+					}
+				}
+			}).start();
 
 			new BroadcastListener(sendSocket, sendPacket, new BroadcastResponseHandler() {
 
@@ -80,43 +112,10 @@ public class Main {
 
 			new BroadcastSender(sendSocket, sendPacket).start();
 
-			final GUI gui = new GUI(myUsername, myIP, model, clientWindows, new ActionListener() {
-
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					sendForce(model, users, sendSocket, message, sendPacket);
-				}
-			});
-
 			new OfflineCheckerThread(users, model, gui).start();
 
 			sendForce(model, users, sendSocket, message, sendPacket);
 
-			new ChatServerThread(new ChatHandler() {
-
-				@Override
-				public void initChat(final Socket socket) {
-					try {
-						final String ip = socket.getInetAddress().getHostAddress();
-
-						synchronized (clientWindows) {
-							if (!clientWindows.containsKey(ip)) {
-
-								synchronized (users) {
-									final User user = users.get(ip);
-									clientWindows.put(ip, new ChatPanel(myUsername, user));
-								}
-							}
-							final ChatPanel chatPanel = clientWindows.get(ip);
-							gui.addChatPanel(chatPanel);
-							chatPanel.setSocket(socket);
-						}
-					} catch (IOException e) {
-						System.out.println("Attempted to set socket for user but failed");
-						e.printStackTrace();
-					}
-				}
-			}).start();
 		} catch (SocketException | UnknownHostException e) {
 			GUI.showError("CRITICAL ERROR", e.getMessage() + "\n\nShuting down.");
 			System.exit(-1);
