@@ -27,19 +27,17 @@ public class OfflineCheckerThread extends Thread implements Runnable {
 			for (;;) {
 				synchronized (users) {
 					final Iterator<User> itr = users.values().iterator();
-					int removed = 0;
 					while (itr.hasNext()) {
 						final User user = itr.next();
 						if ((System.currentTimeMillis() - user.getLatest()) > CHECKER_TIMEOUT) {
 							itr.remove();
-							model.removeRow(user.getWhere());
 							gui.logOff(user);
-
-							removed++;
-						} else {
-							// Update where the user is.
-							user.setWhere(user.getWhere() - removed);
 						}
+					}
+					// Reset model!
+					model.setRowCount(0);
+					for (final User user : users.values()) {
+						model.addRow(new String[] { user.getUsername(), user.getIP() });
 					}
 				}
 				Thread.sleep(CHECKER_TIMEOUT);

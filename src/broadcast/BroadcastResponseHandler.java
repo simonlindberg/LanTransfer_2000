@@ -3,5 +3,7 @@ package broadcast;
 import java.net.DatagramPacket;
 
 public interface BroadcastResponseHandler {
-	public void handle(final DatagramPacket packet);
+	public void handleBroadcast(final DatagramPacket packet);
+
+	public void handleGoingOffline(final DatagramPacket packet);
 }

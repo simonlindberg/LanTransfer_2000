@@ -88,7 +88,7 @@ public class Main {
 			new BroadcastListener(sendSocket, sendPacket, new BroadcastResponseHandler() {
 
 				@Override
-				public void handle(final DatagramPacket packet) {
+				public void handleBroadcast(final DatagramPacket packet) {
 					final String ip = packet.getAddress().getHostAddress();
 
 					synchronized (clientWindows) {
@@ -105,6 +105,18 @@ public class Main {
 							users.put(ip, user);
 							model.addRow(new String[] { user.getUsername(), ip });
 							user.setWhere(model.getRowCount() - 1);
+						}
+					}
+				}
+
+				@Override
+				public void handleGoingOffline(final DatagramPacket packet) {
+					final String ip = packet.getAddress().getHostAddress();
+					synchronized (users) {
+						users.remove(ip);
+						model.setRowCount(0);
+						for (final User user : users.values()) {
+							model.addRow(new String[] { user.getUsername(), user.getIP() });
 						}
 					}
 				}

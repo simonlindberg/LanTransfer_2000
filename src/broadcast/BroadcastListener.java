@@ -9,6 +9,7 @@ import java.util.Arrays;
 import GUI.GUI;
 
 public class BroadcastListener extends BroadcastThread implements Runnable {
+
 	private final BroadcastResponseHandler handler;
 	private static final int BUFFER_SIZE = 20;
 
@@ -29,14 +30,17 @@ public class BroadcastListener extends BroadcastThread implements Runnable {
 				reciveSocket.receive(recivePacket);
 
 				if (!InetAddress.getLocalHost().equals(recivePacket.getAddress())) {
+					recivePacket.setData(Arrays.copyOfRange(data, 1, data.length));
 
-					// System.out.println("recive: " + Arrays.toString(data));
-					if (data[0] == 1) { // I WAS FORCED!
-						sendSocket.send(sendPacket);
+					if (data[0] == GOING_OFFLINE) {
+						handler.handleGoingOffline(recivePacket);
+					} else {
+						if (data[0] == FORCED) { // I WAS FORCED!
+							sendSocket.send(sendPacket);
+						}
+						handler.handleBroadcast(recivePacket);
 					}
 
-					recivePacket.setData(Arrays.copyOfRange(data, 1, data.length));
-					handler.handle(recivePacket);
 					Arrays.fill(data, (byte) 0);
 					recivePacket.setData(data);
 
