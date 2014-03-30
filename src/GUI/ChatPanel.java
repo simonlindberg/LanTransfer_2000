@@ -233,17 +233,18 @@ public class ChatPanel extends JPanel {
 	}
 
 	public void setOffline() {
-		System.out.println(Arrays.toString(Thread.currentThread().getStackTrace()));
-		online = false;
-		input.setEnabled(false);
-		send.setEnabled(false);
-		showNotice(user.getUsername() + " has gone offline!");
-		try {
-			socket.close();
-		} catch (IOException e) {
-			// If so, already closed!
+		if (online) {
+			online = false;
+			input.setEnabled(false);
+			send.setEnabled(false);
+			showNotice(user.getUsername() + " has gone offline!");
+			try {
+				socket.close();
+			} catch (IOException e) {
+				// If so, already closed!
 				System.out.println("Offline status set but socket was already closed(?))");
 				e.printStackTrace();
+			}
 			System.out.println("OFFLINE!");
 		}
 	}
