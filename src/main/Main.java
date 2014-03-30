@@ -112,10 +112,12 @@ public class Main {
 				public void handleGoingOffline(final DatagramPacket packet) {
 					final String ip = packet.getAddress().getHostAddress();
 					synchronized (users) {
+						final User user = users.get(ip);
 						users.remove(ip);
+						gui.logOff(user);
 						model.setRowCount(0);
-						for (final User user : users.values()) {
-							model.addRow(new String[] { user.getUsername(), user.getIP() });
+						for (final User remainingUser : users.values()) {
+							model.addRow(new String[] { remainingUser.getUsername(), remainingUser.getIP() });
 						}
 					}
 				}
