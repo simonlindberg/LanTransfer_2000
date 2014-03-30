@@ -9,8 +9,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -37,8 +37,8 @@ public class Main {
 				}
 			};
 
-			final Map<String, User> users = new HashMap<String, User>();
-			final Map<String, ChatPanel> clientWindows = new HashMap<>();
+			final Map<String, User> users = new ConcurrentHashMap<String, User>();
+			final Map<String, ChatPanel> clientWindows = new ConcurrentHashMap<>();
 
 			final String myUsername = System.getProperty("user.name");
 			final String myIP = InetAddress.getLocalHost().getHostAddress();
@@ -66,18 +66,13 @@ public class Main {
 					try {
 						final String ip = socket.getInetAddress().getHostAddress();
 
-						synchronized (clientWindows) {
-							if (!clientWindows.containsKey(ip)) {
-
-								synchronized (users) {
-									final User user = users.get(ip);
-									clientWindows.put(ip, new ChatPanel(myUsername, user));
-								}
-							}
-							final ChatPanel chatPanel = clientWindows.get(ip);
-							gui.addChatPanel(chatPanel);
-							chatPanel.setSocket(socket);
+						if (!clientWindows.containsKey(ip)) {
+							final User user = users.get(ip);
+							clientWindows.put(ip, new ChatPanel(myUsername, user));
 						}
+						final ChatPanel chatPanel = clientWindows.get(ip);
+						gui.addChatPanel(chatPanel);
+						chatPanel.setSocket(socket);
 					} catch (IOException e) {
 						System.out.println("Attempted to set socket for user but failed");
 						e.printStackTrace();
@@ -91,20 +86,16 @@ public class Main {
 				public void handleBroadcast(final DatagramPacket packet) {
 					final String ip = packet.getAddress().getHostAddress();
 
-					synchronized (clientWindows) {
-						if (clientWindows.containsKey(ip)) {
-							clientWindows.get(ip).setOnline();
-						}
+					if (clientWindows.containsKey(ip)) {
+						clientWindows.get(ip).setOnline();
 					}
 
 					final User user = new User(new String(packet.getData(), 0, packet.getLength()), ip);
-					synchronized (users) {
-						if (users.containsValue(user)) {
-							users.get(ip).refresh();
-						} else {
-							users.put(ip, user);
-							model.addRow(new String[] { user.getUsername(), ip });
-						}
+					if (users.containsValue(user)) {
+						users.get(ip).refresh();
+					} else {
+						users.put(ip, user);
+						model.addRow(new String[] { user.getUsername(), ip });
 					}
 				}
 
@@ -112,17 +103,15 @@ public class Main {
 				public void handleGoingOffline(final DatagramPacket packet) {
 					System.out.println("offline!");
 					final String ip = packet.getAddress().getHostAddress();
-					synchronized (users) {
-						users.remove(ip);
-						model.setRowCount(0);
-						for (final User remainingUser : users.values()) {
-							model.addRow(new String[] { remainingUser.getUsername(), remainingUser.getIP() });
-						}
+					users.remove(ip);
+					model.setRowCount(0);
+
+					for (final User remainingUser : users.values()) {
+						model.addRow(new String[] { remainingUser.getUsername(), remainingUser.getIP() });
 					}
-					synchronized (clientWindows) {
-						if (clientWindows.containsKey(ip)) {
-							clientWindows.get(ip).setOffline();
-						}
+
+					if (clientWindows.containsKey(ip)) {
+						clientWindows.get(ip).setOffline();
 					}
 				}
 			}).start();
