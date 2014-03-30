@@ -104,7 +104,6 @@ public class Main {
 						} else {
 							users.put(ip, user);
 							model.addRow(new String[] { user.getUsername(), ip });
-							user.setWhere(model.getRowCount() - 1);
 						}
 					}
 				}
@@ -128,6 +127,17 @@ public class Main {
 
 			sendForce(model, users, sendSocket, message, sendPacket);
 
+			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					message[0] = BroadcastThread.GOING_OFFLINE;
+					try {
+						sendSocket.send(sendPacket);
+					} catch (IOException e) {
+					}
+				}
+			}));
 		} catch (SocketException | UnknownHostException e) {
 			GUI.showError("CRITICAL ERROR", e.getMessage() + "\n\nShuting down.");
 			System.exit(-1);
@@ -138,7 +148,7 @@ public class Main {
 	private static void sendForce(final DefaultTableModel model, final Map<String, User> users, final DatagramSocket sendSocket,
 			final byte[] message, final DatagramPacket sendPacket) {
 		try {
-			message[0] = 1; // FORCE ON!
+			message[0] = BroadcastThread.FORCED; // FORCE ON!
 			sendSocket.send(sendPacket);
 			model.setRowCount(0);
 			users.clear();
@@ -146,7 +156,7 @@ public class Main {
 			System.out.println("Tried to send broadcast but failed.");
 			e.printStackTrace();
 		} finally {
-			message[0] = 0; // FORCE OFF!
+			message[0] = BroadcastThread.NORMAL; // FORCE OFF!
 		}
 	}
 

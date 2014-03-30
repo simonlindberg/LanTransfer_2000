@@ -7,7 +7,6 @@ public class User {
 	private final long arrived;
 
 	private long latest;
-	private int where;
 
 	public User(String username, String ip) {
 		this.ip = ip;
@@ -54,11 +53,4 @@ public class User {
 		return latest;
 	}
 
-	public void setWhere(int where) {
-		this.where = where;
-	}
-
-	public int getWhere() {
-		return where;
-	}
 }
