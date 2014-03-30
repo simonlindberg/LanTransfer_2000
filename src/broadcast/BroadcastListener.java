@@ -3,33 +3,50 @@ package broadcast;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.Arrays;
 
-public class BroadcastListener extends Thread implements Runnable {
+import GUI.GUI;
+
+public class BroadcastListener extends BroadcastThread implements Runnable {
+
 	private final BroadcastResponseHandler handler;
-	private static final int BUFFER_SIZE = 100;
+	private static final int BUFFER_SIZE = 20;
 
-	public BroadcastListener(final BroadcastResponseHandler handler) {
+	public BroadcastListener(final DatagramSocket sendSocket, final DatagramPacket sendPacket, final BroadcastResponseHandler handler) {
+		super(sendSocket, sendPacket);
 		this.handler = handler;
 	}
 
 	@SuppressWarnings("resource")
 	@Override
 	public void run() {
-		byte[] inBuf = new byte[BUFFER_SIZE];
+		final byte[] data = new byte[BUFFER_SIZE];
 		try {
-			final DatagramSocket ds = new DatagramSocket(
-					Broadcast.BROADCAST_PORT);
-			final DatagramPacket packet = new DatagramPacket(inBuf, BUFFER_SIZE);
+			final DatagramSocket reciveSocket = new DatagramSocket(BROADCAST_PORT);
+			final DatagramPacket recivePacket = new DatagramPacket(data, BUFFER_SIZE);
 
 			for (;;) {
-				ds.receive(packet);
-				if (packet.getData()[0] == 1) { // FORCED
-					BroadcastSender.forceResponse();
+				reciveSocket.receive(recivePacket);
+
+				if (!InetAddress.getLocalHost().equals(recivePacket.getAddress())) {
+					if (data[0] == GOING_OFFLINE) {
+						handler.handleGoingOffline(recivePacket);
+					} else {
+						if (data[0] == FORCED) { // I WAS FORCED!
+							sendSocket.send(sendPacket);
+						}
+						handler.handleBroadcast(recivePacket);
+					}
+
+					Arrays.fill(data, (byte) 0);
+					recivePacket.setData(data);
+
 				}
-				handler.handle(packet);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			GUI.showError("Critical error", e.getMessage() + "\n\nProgram will now exit.");
+			System.exit(-1);
 		}
 	}
 }

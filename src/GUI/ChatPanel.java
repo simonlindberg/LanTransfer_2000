@@ -5,87 +5,116 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Rectangle;
+import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.IOException;
+import java.net.Socket;
+import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
+import main.User;
 import net.miginfocom.swing.MigLayout;
+import chat.ChatReciver;
+import chat.ChatSender;
+import chat.ChatServerThread;
 
+@SuppressWarnings("serial")
 public class ChatPanel extends JPanel {
 
-	private static final long serialVersionUID = -2013659249126443168L;
-
-	private static final Color MY_BG = new Color(244, 244, 244);
+	private static final Font BOLD = new Font(new JLabel().getFont().getFontName(), Font.BOLD, new JLabel().getFont().getSize());
+	private static final Format timeFormat = new SimpleDateFormat("HH:mm:ss");
+	private static final Color MY_BACKGROUND = new Color(244, 244, 244);
 	private static final Color INFO_TXT = new Color(195, 195, 195);
 	private static final Color TXT_COLOR = new Color(43, 43, 43);
-	private User lastMessage;
+	private static final Color OTHER_BACKGROUND = Color.WHITE;
+	private static final Color NOTICE_COLOR = new Color(171, 108, 108);
+
+	private boolean lastFromMe;
+	private boolean firstMsg = true;
 
 	private final User user;
-	private final String name;
+	private final String myName;
+
+	private final JTextField input;
+	private final JButton send = new JButton("Send");
+	private final JPanel chatLog = new JPanel(new MigLayout("gap rel 0, wrap 1, insets 0"));
+	private final JScrollPane scrollChatLog = new JScrollPane(chatLog);
+
+	private ChatSender sender;
+	private Socket socket;
+	private ChatReciver reciver;
+	private boolean online = true;
 
 	public ChatPanel(final String name, final User user) {
 		this.user = user;
-		this.name = name;
-		lastMessage = null;
+		this.myName = name;
+		input = new HintTextField(0, "Write a message to " + user.getUsername() + "!");
 
 		setLayout(new BorderLayout());
 
 		createComponents();
 
-		// setTitle("Chat window with " + user.getUsername());
-		// setSize(new Dimension(500, 600));
-		// setResizable(false);
-		//
-		// setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		//
-		// setVisible(true);
+		setDropTarget(new DropTarget(this, new FileDropHandle() {
 
-		// TCP
-		System.out.println("Connecting......!!!!!11");
+			@Override
+			public void handleFiles(final List<File> files) {
+				System.out.println("senging files " + files);
+			}
+		}));
+
+		// Set scroll speed
+		scrollChatLog.getVerticalScrollBar().setUnitIncrement(16);
+	}
+
+	@Override
+	public void setVisible(final boolean show) {
+		super.setVisible(show);
+
+		if (socket == null) {
+			newSocket();
+		}
+	}
+
+	private void newSocket() {
+		System.out.println("Creating new socket...");
+		try {
+			setSocket(new Socket(user.getIP(), ChatServerThread.CHAT_PORT));
+		} catch (IOException e) {
+			// om man försöker chatta med nån som nyss gick offline
+			System.out.println("Attempted to initiate chat with old(?) user");
+			System.out.println("Socket was: " + socket.isClosed());
+			System.out.println("Socket was also: " + socket.isBound());
+			e.printStackTrace();
+		}
 	}
 
 	private void createComponents() {
-		MigLayout layout = new MigLayout("gap rel 0, wrap 1, insets 0");
-		final JPanel chatLog = new JPanel(layout);
-		chatLog.setForeground(TXT_COLOR);
-
-		final JScrollPane scrollChatLog = new JScrollPane(chatLog);
-//		scrollChatLog.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-
-		chatLog.setBackground(Color.WHITE);
-
-		final Calendar cal = Calendar.getInstance();
-		final SimpleDateFormat sdf = new SimpleDateFormat("dd/mm/yyyy HH:mm:ss");
 		// Space is ugly but works..
-		String startMessage = " New chat started with " + user.toString() + " at " + sdf.format(cal.getTime());
-		final JLabel start = new JLabel(startMessage);
-		start.setForeground(INFO_TXT);
+		final String startMessage = "New chat started with " + user.toString();
 
-		chatLog.add(start);
-		add(scrollChatLog, BorderLayout.CENTER);
+		showNotice(startMessage);
 
-		final JPanel chatInput = new JPanel(new BorderLayout());
-		final JTextField input = new JTextField();
-		chatInput.add(input, BorderLayout.CENTER);
-		final JButton send = new JButton("Send");
-		chatInput.add(send, BorderLayout.EAST);
-		add(chatInput, BorderLayout.SOUTH);
+		chatLog.setForeground(TXT_COLOR);
+		chatLog.setBackground(Color.WHITE);
 
 		input.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					handleMessage(chatLog, scrollChatLog, input);
+					handleMessage();
 				}
 			}
 
@@ -95,61 +124,128 @@ public class ChatPanel extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				handleMessage(chatLog, scrollChatLog, input);
+				handleMessage();
 			}
 		});
+
+		final JPanel chatInput = new JPanel(new BorderLayout());
+		chatInput.add(input, BorderLayout.CENTER);
+		chatInput.add(send, BorderLayout.EAST);
+
+		add(scrollChatLog, BorderLayout.CENTER);
+		add(chatInput, BorderLayout.SOUTH);
 	}
 
-	private void handleMessage(final JPanel chatLog, final JScrollPane scrollChatLog, final JTextField input) {
+	private void handleMessage() {
 		final String text = input.getText();
 		if (!text.equals("")) {
-			showMessage(name, text, chatLog, scrollChatLog);
 			sendMessage(text);
+			showMessage(myName, text, true);
 			input.setText("");
 		}
 	}
 
 	private void sendMessage(final String text) {
-		System.out.println("sending '" + text + "' to " + user.getUsername());
+		sender.send(text);
 	}
 
-	private void showMessage(final String from, final String text, final JComponent chatLog, final JComponent scrollChatLog) {
-		final JPanel messageContents = new JPanel();
-		messageContents.setLayout(new MigLayout("insets 0, gap rel 0", "10[]10[]10[]10", "5[]5"));
-		messageContents.setBackground(MY_BG);
+	private void showMessage(final String text, final Color color, final boolean fromMe, final boolean notice) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				final JTextArea contents = new JTextArea(text);
+				contents.setEditable(false);
+				contents.setLineWrap(true);
+				contents.setWrapStyleWord(true);
+				contents.setAlignmentX(Component.LEFT_ALIGNMENT);
+				contents.setOpaque(true);
+				contents.setForeground(color);
 
-		final JTextArea contents = new JTextArea(text);
-		contents.setEditable(false);
-		contents.setLineWrap(true);
-		contents.setWrapStyleWord(true);
-		contents.setAlignmentX(Component.LEFT_ALIGNMENT);
-		contents.setOpaque(true);
-		contents.setBackground(MY_BG);
+				final JPanel messageContents = new JPanel();
+				messageContents.setLayout(new MigLayout("insets 0, gap rel 0", "10[]10[]10[]10", "5[]5"));
 
-		final JLabel author = new JLabel(from);
-		Font font = author.getFont();
-		Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
-		author.setFont(boldFont);
-		author.setForeground(INFO_TXT);
+				if (fromMe) {
+					contents.setBackground(MY_BACKGROUND);
+					messageContents.setBackground(MY_BACKGROUND);
+				} else {
+					contents.setBackground(OTHER_BACKGROUND);
+					messageContents.setBackground(OTHER_BACKGROUND);
+				}
 
-		final Calendar cal = Calendar.getInstance();
-		final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-		final JLabel time = new JLabel(sdf.format(cal.getTime()));
-		time.setForeground(INFO_TXT);
+				final JLabel time = new JLabel(timeFormat.format(Calendar.getInstance().getTime()));
+				time.setForeground(INFO_TXT);
 
-		if (!user.equals(lastMessage)) {
-			messageContents.add(author, "wrap 1, gapy 0 10");
+				if ((fromMe != lastFromMe || firstMsg) && !notice) {
+					final JLabel author = new JLabel(fromMe ? myName : user.getUsername());
+					author.setForeground(INFO_TXT);
+					author.setFont(BOLD);
+					messageContents.add(author, "wrap 1, gapy 0 10");
+					lastFromMe = fromMe;
+				}
+
+				messageContents.add(contents, "width 10:50:, pushx, growx");
+				messageContents.add(time);
+
+				chatLog.add(messageContents, "pushx, growx");
+
+				chatLog.revalidate();
+				chatLog.repaint();
+
+				// auto scroll
+				final int height = (int) (chatLog.getPreferredSize().getHeight() + messageContents.getPreferredSize().getHeight());
+				Rectangle rect = new Rectangle(0, height, 10, 10);
+				scrollChatLog.scrollRectToVisible(rect);
+
+				firstMsg = false;
+			}
+		});
+	}
+
+	public void showMessage(final String msg) {
+		showMessage(user.getUsername(), msg, false);
+	}
+
+	public void setSocket(final Socket socket) throws IOException {
+		this.socket = socket;
+		sender = new ChatSender(socket.getOutputStream());
+		reciver = new ChatReciver(socket.getInputStream(), this);
+		reciver.start();
+	}
+
+	private void showMessage(final String username, final String message, final boolean fromMe) {
+		showMessage(message, TXT_COLOR, fromMe, false);
+	}
+
+	private void showNotice(final String text) {
+		showMessage(text, NOTICE_COLOR, false, true);
+	}
+
+	public void setOnline() {
+		if (!online) {
+			online = true;
+			input.setEnabled(true);
+			send.setEnabled(true);
+
+			if (isVisible()) {
+				newSocket();
+			}
+			System.out.println("ONLINE!");
 		}
-		messageContents.add(contents, "width 10:50:, pushx, growx"); // GROW FUCKER
-		messageContents.add(time);
+	}
 
-		chatLog.add(messageContents, "pushx, growx");
-
-		// auto scroll
-		int height = (int) chatLog.getPreferredSize().getHeight();
-		Rectangle rect = new Rectangle(0, height, 10, 10);
-		scrollChatLog.scrollRectToVisible(rect);
-
-		lastMessage = user;
+	public void setOffline() {
+		if (online) {
+			online = false;
+			input.setEnabled(false);
+			send.setEnabled(false);
+			showNotice(user.getUsername() + " has gone offline!");
+			try {
+				socket.close();
+			} catch (IOException e) {
+				// If so, already closed!
+				System.out.println("Offline status set but socket was already closed(?))");
+				e.printStackTrace();
+			}
+			System.out.println("OFFLINE!");
+		}
 	}
 }

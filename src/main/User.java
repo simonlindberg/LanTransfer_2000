@@ -1,17 +1,22 @@
-package GUI;
+package main;
 
 public class User {
 
-	private String ip;
-	private String username;
+	private final String ip;
+	private final String username;
+	private final long arrived;
+
+	private long latest;
 
 	public User(String username, String ip) {
 		this.ip = ip;
 		this.username = username;
+		arrived = System.currentTimeMillis();
+		latest = arrived;
 	}
 
 	public String toString() {
-		return "'" + username + "' (" + ip + ")";
+		return username + " (" + ip + ")";
 	}
 
 	@Override
@@ -25,24 +30,11 @@ public class User {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		User other = (User) obj;
-		if (ip == null) {
-			if (other.ip != null)
-				return false;
-		} else if (!ip.equals(other.ip))
-			return false;
-		if (username == null) {
-			if (other.username != null)
-				return false;
-		} else if (!username.equals(other.username))
-			return false;
-		return true;
+		if (obj instanceof User) {
+			User other = (User) obj;
+			return ip.equals(other.ip);
+		}
+		return false;
 	}
 
 	public String getUsername() {
@@ -51,6 +43,14 @@ public class User {
 
 	public String getIP() {
 		return ip;
+	}
+
+	public void refresh() {
+		latest = System.currentTimeMillis();
+	}
+
+	public long getLatest() {
+		return latest;
 	}
 
 }
