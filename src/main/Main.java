@@ -110,14 +110,18 @@ public class Main {
 
 				@Override
 				public void handleGoingOffline(final DatagramPacket packet) {
+					System.out.println("offline!");
 					final String ip = packet.getAddress().getHostAddress();
 					synchronized (users) {
-						final User user = users.get(ip);
 						users.remove(ip);
-						gui.logOff(user);
 						model.setRowCount(0);
 						for (final User remainingUser : users.values()) {
 							model.addRow(new String[] { remainingUser.getUsername(), remainingUser.getIP() });
+						}
+					}
+					synchronized (clientWindows) {
+						if (clientWindows.containsKey(ip)) {
+							clientWindows.get(ip).setOffline();
 						}
 					}
 				}
