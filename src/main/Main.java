@@ -14,8 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.table.DefaultTableModel;
 
-import GUI.ChatPanel;
-import GUI.GUI;
+import GUI.Gui;
 import broadcast.BroadcastListener;
 import broadcast.BroadcastResponseHandler;
 import broadcast.BroadcastSender;
@@ -24,11 +23,16 @@ import chat.ChatHandler;
 import chat.ChatServerThread;
 
 public class Main {
+	public static final String myUsername = System.getProperty("user.name");
+	public static String myIP;
 
 	@SuppressWarnings({ "serial" })
 	public static void main(String[] args) {
 
 		try {
+			final Map<String, User> users = new ConcurrentHashMap<String, User>();
+			myIP = InetAddress.getLocalHost().getHostAddress();
+
 			final DefaultTableModel model = new DefaultTableModel(null, new String[] { "Name", "IP" }) {
 				@Override
 				public boolean isCellEditable(int row, int column) {
@@ -37,21 +41,15 @@ public class Main {
 				}
 			};
 
-			final Map<String, User> users = new ConcurrentHashMap<String, User>();
-			final Map<String, ChatPanel> clientWindows = new ConcurrentHashMap<>();
-
-			final String myUsername = System.getProperty("user.name");
-			final String myIP = InetAddress.getLocalHost().getHostAddress();
-
 			final DatagramSocket sendSocket = new DatagramSocket();
 			sendSocket.setBroadcast(true); // Behövs defacto inte, men why not.
 			sendSocket.connect(BroadcastThread.getBroadcastAddress(), BroadcastThread.BROADCAST_PORT);
 
-			final byte[] message = createMessage(myUsername); // ELLER?
+			final byte[] message = createMessage();
 
 			final DatagramPacket sendPacket = new DatagramPacket(message, message.length);
 
-			final GUI gui = new GUI(myUsername, myIP, model, clientWindows, new ActionListener() {
+			final Gui gui = new Gui(model, users, new ActionListener() {
 
 				@Override
 				public void actionPerformed(final ActionEvent e) {
@@ -62,21 +60,17 @@ public class Main {
 			new ChatServerThread(new ChatHandler() {
 
 				@Override
-				public void initChat(final Socket socket) {
-					try {
-						final String ip = socket.getInetAddress().getHostAddress();
+				public void initChat(final Socket socket) throws IOException {
+					final String ip = socket.getInetAddress().getHostAddress();
 
-						if (!clientWindows.containsKey(ip)) {
-							final User user = users.get(ip);
-							clientWindows.put(ip, new ChatPanel(myUsername, user));
-						}
-						final ChatPanel chatPanel = clientWindows.get(ip);
-						gui.addChatPanel(chatPanel);
-						chatPanel.setSocket(socket);
-					} catch (IOException e) {
-						System.out.println("Attempted to set socket for user but failed");
-						e.printStackTrace();
+					final User user = users.get(ip);
+
+					if (user == null) {
+						System.out.println("Unknow user tried to connect a chat!");
+						return;
 					}
+
+					user.newChat(socket);
 				}
 			}).start();
 
@@ -85,40 +79,45 @@ public class Main {
 				@Override
 				public void handleBroadcast(final DatagramPacket packet) {
 					final String ip = packet.getAddress().getHostAddress();
+					final String username = new String(packet.getData(), 1, packet.getLength() - 1);
 
-					if (clientWindows.containsKey(ip)) {
-						clientWindows.get(ip).setOnline();
+					if (!users.containsKey(ip)) {
+						users.put(ip, new User(username, ip));
+						model.addRow(new String[] { username, ip });
 					}
-
-					final User user = new User(new String(packet.getData(), 1, packet.getLength() - 1), ip);
-					if (users.containsValue(user)) {
-						users.get(ip).refresh();
-					} else {
-						users.put(ip, user);
-						model.addRow(new String[] { user.getUsername(), ip });
-					}
+					final User user = users.get(ip);
+					user.refresh();
+					user.setOnline(gui);
 				}
 
 				@Override
-				public void handleGoingOffline(final DatagramPacket packet) {
+				public void handleOfflineMessage(final DatagramPacket packet) {
 					System.out.println("offline!");
 					final String ip = packet.getAddress().getHostAddress();
-					users.remove(ip);
-					model.setRowCount(0);
 
-					for (final User remainingUser : users.values()) {
-						model.addRow(new String[] { remainingUser.getUsername(), remainingUser.getIP() });
+					final User user = users.get(ip);
+
+					if (user == null) {
+						System.out.println("Unknow user sent offline message!");
+						return;
 					}
 
-					if (clientWindows.containsKey(ip)) {
-						clientWindows.get(ip).setOffline();
-					}
+					user.setOffline();
+
+					updateModel(model, users);
 				}
 			}).start();
 
 			new BroadcastSender(sendSocket, sendPacket).start();
 
-			new OfflineCheckerThread(users, model, gui).start();
+			new OfflineCheckerThread(users, new ModelUpdater() {
+
+				@Override
+				public void update() {
+					updateModel(model, users);
+				}
+
+			}).start();
 
 			sendForce(model, users, sendSocket, message, sendPacket);
 
@@ -134,10 +133,19 @@ public class Main {
 				}
 			}));
 		} catch (SocketException | UnknownHostException e) {
-			GUI.showError("CRITICAL ERROR", e.getMessage() + "\n\nShuting down.");
+			Gui.showError("CRITICAL ERROR", e.getMessage() + "\n\nShuting down.");
 			System.exit(-1);
 		}
 
+	}
+
+	private static void updateModel(final DefaultTableModel model, final Map<String, User> users) {
+		model.setRowCount(0);
+		for (final User u : users.values()) {
+			if (u.isOnline()) {
+				model.addRow(new String[] { u.getUsername(), u.getIP() });
+			}
+		}
 	}
 
 	private static void sendForce(final DefaultTableModel model, final Map<String, User> users, final DatagramSocket sendSocket,
@@ -155,8 +163,8 @@ public class Main {
 		}
 	}
 
-	private static byte[] createMessage(final String name) {
-		final byte[] nameBytes = name.getBytes();
+	private static byte[] createMessage() {
+		final byte[] nameBytes = myUsername.getBytes();
 		final byte[] message = new byte[nameBytes.length + 1];
 		message[0] = 0; // NOT FORCED!
 		System.arraycopy(nameBytes, 0, message, 1, nameBytes.length);

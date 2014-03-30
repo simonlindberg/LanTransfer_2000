@@ -6,7 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.Arrays;
 
-import GUI.GUI;
+import GUI.Gui;
 
 public class BroadcastListener extends BroadcastThread implements Runnable {
 
@@ -31,7 +31,7 @@ public class BroadcastListener extends BroadcastThread implements Runnable {
 
 				if (!InetAddress.getLocalHost().equals(recivePacket.getAddress())) {
 					if (data[0] == GOING_OFFLINE) {
-						handler.handleGoingOffline(recivePacket);
+						handler.handleOfflineMessage(recivePacket);
 					} else {
 						if (data[0] == FORCED) { // I WAS FORCED!
 							sendSocket.send(sendPacket);
@@ -45,7 +45,7 @@ public class BroadcastListener extends BroadcastThread implements Runnable {
 				}
 			}
 		} catch (IOException e) {
-			GUI.showError("Critical error", e.getMessage() + "\n\nProgram will now exit.");
+			Gui.showError("Critical error", e.getMessage() + "\n\nProgram will now exit.");
 			System.exit(-1);
 		}
 	}

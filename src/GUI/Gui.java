@@ -20,23 +20,23 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 
+import main.Main;
 import main.User;
 
 @SuppressWarnings("serial")
-public class GUI extends JFrame {
+public class Gui extends JFrame {
 
-	private JComponent currentChat;
-	private final Map<String, ChatPanel> clientWindows;
+	private User current = User.NULL_USER;
 	private final JPanel rightContainer;
+	private final Map<String, User> users;
+	private JComponent introLabel;
 
-	public GUI(final String name, final String ip, final DefaultTableModel model, final Map<String, ChatPanel> clientWindows,
-			final ActionListener refresher) {
+	public Gui(final DefaultTableModel model, final Map<String, User> users, final ActionListener refresher) {
 		rightContainer = new JPanel(new BorderLayout());
-
-		this.clientWindows = clientWindows;
+		this.users = users;
 		setLayout(new BorderLayout());
 
-		addComponents(name, ip, model, refresher);
+		addComponents(model, refresher);
 
 		setTitle("LANTRANSFER_2000 (ALPHA)");
 		setSize(800, 400);
@@ -46,17 +46,16 @@ public class GUI extends JFrame {
 		setVisible(true);
 	}
 
-	private void addComponents(final String name, final String ip, final DefaultTableModel model, final ActionListener refresher) {
+	private void addComponents(final DefaultTableModel model, final ActionListener refresher) {
+		final JComponent top = createTop(refresher);
+		final JComponent clientTable = createClientTable(model);
+
 		final JPanel leftContainer = new JPanel(new BorderLayout());
-
-		final JComponent top = createTop(name, ip, refresher);
-		final JComponent clientTable = createClientTable(name, model);
-		final JComponent introLabel = createWelcomeLabel();
-
 		leftContainer.add(top, BorderLayout.NORTH);
 		leftContainer.add(clientTable, BorderLayout.CENTER);
 		leftContainer.setPreferredSize(new Dimension(200, 200));
 
+		introLabel = createWelcomeLabel();
 		rightContainer.add(introLabel, BorderLayout.CENTER);
 
 		final JSplitPane jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftContainer, rightContainer);
@@ -72,18 +71,16 @@ public class GUI extends JFrame {
 
 		introLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-		currentChat = introLabel;
-
 		return introLabel;
 	}
 
 	/**
 	 * Refresh + name
 	 */
-	private JComponent createTop(final String name, final String ip, final ActionListener refresher) {
+	private JComponent createTop(final ActionListener refresher) {
 		final JComponent topPane = new JPanel(new BorderLayout());
 
-		final JLabel nameLabel = new JLabel(name + " (" + ip + ")");
+		final JLabel nameLabel = new JLabel(Main.myUsername + " (" + Main.myIP + ")");
 		final JButton refreshButton = new JButton("Refresh list");
 		refreshButton.addActionListener(refresher);
 
@@ -98,7 +95,7 @@ public class GUI extends JFrame {
 	 * 
 	 * @param clientWindows
 	 */
-	private JComponent createClientTable(final String name, final DefaultTableModel model) {
+	private JComponent createClientTable(final DefaultTableModel model) {
 		final JTable clientTable = new JTable();
 		clientTable.setDragEnabled(false);
 		clientTable.setModel(model);
@@ -115,32 +112,23 @@ public class GUI extends JFrame {
 				}
 				// Get IP & username
 				final String ip = (String) model.getValueAt(row, 1);
-				final String username = (String) model.getValueAt(row, 0);
-				if (!clientWindows.containsKey(ip)) {
-					ChatPanel newChat = new ChatPanel(name, new User(username, ip));
-					clientWindows.put(ip, newChat);
-					addChatPanel(newChat);
+
+				final User user = users.get(ip);
+				if (user == null) {
+					System.out.println("Trying to chat with unknow user.");
+					return;
 				}
-				final JComponent cf = clientWindows.get(ip);
-				switchPanelTo(cf);
+				introLabel.setVisible(false);
+				current.hideChat();
+				user.showChat();
+				current = user;
 			}
 		});
 		return new JScrollPane(clientTable);
 	}
 
-	private void switchPanelTo(final JComponent cf) {
-		currentChat.setVisible(false);
-		currentChat = cf;
-		currentChat.setVisible(true);
-	}
-
-	public void logOff(final User user) {
-		if (clientWindows.containsKey(user.getIP())) {
-			((ChatPanel) clientWindows.get(user.getIP())).setOffline();
-		}
-	}
-
-	public void addChatPanel(ChatPanel chatPanel) {
+	public void addChatPanel(final ChatPanel chatPanel) {
+		System.out.println("add panel");
 		rightContainer.add(chatPanel);
 	}
 
