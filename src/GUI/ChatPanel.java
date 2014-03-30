@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
@@ -43,7 +42,8 @@ public class ChatPanel extends JPanel {
 	private static final Color OTHER_BACKGROUND = Color.WHITE;
 	private static final Color NOTICE_COLOR = new Color(171, 108, 108);
 
-	private String lastSender;
+	private boolean lastFromMe;
+	private boolean firstMsg = true;
 
 	private final User user;
 	private final String myName;
@@ -61,7 +61,6 @@ public class ChatPanel extends JPanel {
 	public ChatPanel(final String name, final User user) {
 		this.user = user;
 		this.myName = name;
-		lastSender = null;
 		input = new HintTextField(0, "Write a message to " + user.getUsername() + "!");
 
 		setLayout(new BorderLayout());
@@ -141,7 +140,7 @@ public class ChatPanel extends JPanel {
 		final String text = input.getText();
 		if (!text.equals("")) {
 			sendMessage(text);
-			showMessage(myName, text);
+			showMessage(myName, text, true);
 			input.setText("");
 		}
 	}
@@ -150,13 +149,9 @@ public class ChatPanel extends JPanel {
 		sender.send(text);
 	}
 
-	private void showMessage(final String from, final String text, final Color color) {
+	private void showMessage(final String text, final Color color, final boolean fromMe) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				final JLabel author = new JLabel(from);
-				author.setForeground(INFO_TXT);
-				author.setFont(BOLD);
-
 				final JTextArea contents = new JTextArea(text);
 				contents.setEditable(false);
 				contents.setLineWrap(true);
@@ -168,7 +163,7 @@ public class ChatPanel extends JPanel {
 				final JPanel messageContents = new JPanel();
 				messageContents.setLayout(new MigLayout("insets 0, gap rel 0", "10[]10[]10[]10", "5[]5"));
 
-				if (from.equals(myName)) {
+				if (fromMe) {
 					contents.setBackground(MY_BACKGROUND);
 					messageContents.setBackground(MY_BACKGROUND);
 				} else {
@@ -179,9 +174,12 @@ public class ChatPanel extends JPanel {
 				final JLabel time = new JLabel(timeFormat.format(Calendar.getInstance().getTime()));
 				time.setForeground(INFO_TXT);
 
-				if (!from.equals(lastSender)) {
+				if (fromMe != lastFromMe || firstMsg) {
+					final JLabel author = new JLabel(fromMe ? myName : user.getUsername());
+					author.setForeground(INFO_TXT);
+					author.setFont(BOLD);
 					messageContents.add(author, "wrap 1, gapy 0 10");
-					lastSender = from;
+					lastFromMe = fromMe;
 				}
 
 				messageContents.add(contents, "width 10:50:, pushx, growx");
@@ -196,27 +194,29 @@ public class ChatPanel extends JPanel {
 				final int height = (int) (chatLog.getPreferredSize().getHeight() + messageContents.getPreferredSize().getHeight());
 				Rectangle rect = new Rectangle(0, height, 10, 10);
 				scrollChatLog.scrollRectToVisible(rect);
+
+				firstMsg = false;
 			}
 		});
 	}
 
 	public void showMessage(final String msg) {
-		showMessage(user.getUsername(), msg);
+		showMessage(user.getUsername(), msg, false);
 	}
 
-	public void setSocket(Socket socket) throws IOException {
+	public void setSocket(final Socket socket) throws IOException {
 		this.socket = socket;
 		sender = new ChatSender(socket.getOutputStream());
 		reciver = new ChatReciver(socket.getInputStream(), this);
 		reciver.start();
 	}
 
-	private void showMessage(String username, String message) {
-		showMessage(username, message, TXT_COLOR);
+	private void showMessage(final String username, final String message, final boolean fromMe) {
+		showMessage(message, TXT_COLOR, fromMe);
 	}
 
-	private void showNotice(String text) {
-		showMessage("", text, NOTICE_COLOR);
+	private void showNotice(final String text) {
+		showMessage(text, NOTICE_COLOR, false);
 	}
 
 	public void setOnline() {
