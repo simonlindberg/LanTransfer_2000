@@ -1,7 +1,7 @@
 package main;
 
+import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,7 +49,7 @@ public class UserTableModel extends DefaultTableModel implements UserTable {
 		final JLabel jLabel = new JLabel((String) value);
 		final User user = users.get(row);
 		if (user.hasUnreadMessages()) {
-			jLabel.setFont(new Font(jLabel.getFont().getFontName(), Font.BOLD, jLabel.getFont().getSize()));
+			jLabel.setForeground(Color.MAGENTA);
 		}
 		System.out.println("repaint!");
 		return jLabel;
