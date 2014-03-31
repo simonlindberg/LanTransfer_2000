@@ -17,7 +17,7 @@ import broadcast.BroadcastListener;
 import broadcast.BroadcastResponseHandler;
 import broadcast.BroadcastSender;
 import broadcast.BroadcastThread;
-import chat.ChatHandler;
+import chat.ChatInitiator;
 import chat.ChatServerThread;
 
 public class Main {
@@ -47,7 +47,7 @@ public class Main {
 				}
 			});
 
-			new ChatServerThread(new ChatHandler() {
+			new ChatServerThread(new ChatInitiator() {
 
 				@Override
 				public void initChat(final Socket socket) throws IOException {
@@ -72,8 +72,9 @@ public class Main {
 					final String username = new String(packet.getData(), 1, packet.getLength() - 1);
 
 					if (!users.containsKey(ip)) {
-						users.put(ip, new User(username, ip, gui));
+						users.put(ip, new User(username, ip, gui, model));
 					}
+					
 					final User user = users.get(ip);
 					if (!user.isOnline()) {
 						model.addUser(user);

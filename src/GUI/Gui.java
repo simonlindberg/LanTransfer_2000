@@ -18,10 +18,10 @@ import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.table.TableModel;
 
 import main.Main;
 import main.User;
+import main.UserTable;
 
 @SuppressWarnings("serial")
 public class Gui extends JFrame {
@@ -31,7 +31,7 @@ public class Gui extends JFrame {
 	private final Map<String, User> users;
 	private JComponent introLabel;
 
-	public Gui(final TableModel model, final Map<String, User> users, final ActionListener refresher) {
+	public Gui(final UserTable model, final Map<String, User> users, final ActionListener refresher) {
 		rightContainer = new JPanel(new BorderLayout());
 		this.users = users;
 		setLayout(new BorderLayout());
@@ -46,7 +46,7 @@ public class Gui extends JFrame {
 		setVisible(true);
 	}
 
-	private void addComponents(final TableModel model, final ActionListener refresher) {
+	private void addComponents(final UserTable model, final ActionListener refresher) {
 		final JComponent top = createTop(refresher);
 		final JComponent clientTable = createClientTable(model);
 
@@ -95,13 +95,14 @@ public class Gui extends JFrame {
 	 * 
 	 * @param clientWindows
 	 */
-	private JComponent createClientTable(final TableModel model) {
+	private JComponent createClientTable(final UserTable model) {
 		final JTable clientTable = new JTable();
 		clientTable.setDragEnabled(false);
 		clientTable.setModel(model);
 		clientTable.setFillsViewportHeight(true);
 		clientTable.getTableHeader().setReorderingAllowed(false);
 		clientTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		clientTable.setDefaultRenderer(Object.class, model);
 
 		clientTable.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(final MouseEvent e) {
@@ -124,6 +125,7 @@ public class Gui extends JFrame {
 				current = user;
 			}
 		});
+
 		return new JScrollPane(clientTable);
 	}
 
