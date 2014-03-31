@@ -12,8 +12,6 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.swing.table.DefaultTableModel;
-
 import GUI.Gui;
 import broadcast.BroadcastListener;
 import broadcast.BroadcastResponseHandler;
@@ -27,7 +25,6 @@ public class Main {
 	public static final String myUsername = System.getProperty("user.name");
 	public static String myIP;
 
-	@SuppressWarnings({ "serial" })
 	public static void main(String[] args) {
 
 		try {
