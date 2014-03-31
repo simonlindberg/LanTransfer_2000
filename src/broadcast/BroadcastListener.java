@@ -38,10 +38,6 @@ public class BroadcastListener extends BroadcastThread implements Runnable {
 						}
 						handler.handleBroadcast(recivePacket);
 					}
-
-					Arrays.fill(data, (byte) 0);
-					recivePacket.setData(data);
-
 				}
 			}
 		} catch (IOException e) {
