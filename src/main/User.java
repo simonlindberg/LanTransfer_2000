@@ -114,6 +114,9 @@ public class User {
 				chatPanel.setOnline();
 				isOnline = true;
 
+				if (socket == null) {
+					createNewChat();
+				}
 			}
 		}
 	}
@@ -124,9 +127,7 @@ public class User {
 	public void setOffline() {
 		synchronized (onlineLock) {
 			if (isOnline) {
-				if (chatPanel != null) {
-					chatPanel.setOffline();
-				}
+				chatPanel.setOffline();
 				if (socket != null) {
 					try {
 						socket.close();
@@ -155,13 +156,7 @@ public class User {
 	public void showChat() {
 		chatPanel.setVisible(true);
 		if (socket == null) {
-			try {
-				socket = new Socket(ip, ChatServerThread.CHAT_PORT);
-				initChat();
-			} catch (IOException e) {
-				chatPanel.showMessage(e.getMessage());
-				e.printStackTrace();
-			}
+			createNewChat();
 		}
 
 		synchronized (messageLock) {
@@ -169,6 +164,16 @@ public class User {
 				unreadMessages = false;
 				model.updateUser(this);
 			}
+		}
+	}
+
+	private void createNewChat() {
+		try {
+			socket = new Socket(ip, ChatServerThread.CHAT_PORT);
+			initChat();
+		} catch (IOException e) {
+			chatPanel.showMessage(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 
