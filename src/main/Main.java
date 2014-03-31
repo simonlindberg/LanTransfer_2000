@@ -25,7 +25,7 @@ public class Main {
 	public static final String myUsername = System.getProperty("user.name");
 	public static final String myIP = getMyIP();
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		try {
 			final Map<String, User> users = new ConcurrentHashMap<String, User>();
 
