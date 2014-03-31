@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-public abstract class FileDropHandle implements DropTargetListener {
+public abstract class FileDropHandler implements DropTargetListener {
 
 	@Override
 	public final void dragEnter(DropTargetDragEvent dtde) {

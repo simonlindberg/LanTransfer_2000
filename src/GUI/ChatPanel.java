@@ -56,7 +56,7 @@ public class ChatPanel extends JPanel {
 
 		createComponents();
 
-		setDropTarget(new DropTarget(this, new FileDropHandle() {
+		setDropTarget(new DropTarget(this, new FileDropHandler() {
 
 			@Override
 			public void handleFiles(final List<File> files) {
