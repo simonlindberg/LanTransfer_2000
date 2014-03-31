@@ -128,7 +128,6 @@ public class Gui extends JFrame {
 	}
 
 	public void addChatPanel(final ChatPanel chatPanel) {
-		System.out.println("add panel");
 		rightContainer.add(chatPanel);
 	}
 

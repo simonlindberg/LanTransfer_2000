@@ -122,8 +122,7 @@ public class ChatPanel extends JPanel {
 				contents.setOpaque(true);
 				contents.setForeground(color);
 
-				final JPanel messageContents = new JPanel();
-				messageContents.setLayout(new MigLayout("insets 0, gap rel 0", "10[]10[]10[]10", "5[]5"));
+				final JPanel messageContents = new JPanel(new MigLayout("insets 0, gap rel 0", "10[]10[]10[]10", "5[]5"));
 
 				if (fromMe) {
 					contents.setBackground(MY_BACKGROUND);
@@ -177,8 +176,6 @@ public class ChatPanel extends JPanel {
 	public void setOnline() {
 		input.setEnabled(true);
 		send.setEnabled(true);
-		System.out.println("ONLINE!");
-		System.out.println(timeFormat.format(Calendar.getInstance().getTime()));
 		showNotice(user.getUsername() + " is online!");
 	}
 

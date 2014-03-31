@@ -85,7 +85,6 @@ public class Main {
 
 				@Override
 				public void handleOfflineMessage(final DatagramPacket packet) {
-					System.out.println("offline!");
 					final String ip = packet.getAddress().getHostAddress();
 
 					final User user = users.get(ip);
