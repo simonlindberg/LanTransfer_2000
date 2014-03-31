@@ -44,8 +44,6 @@ public class UserTableModel extends DefaultTableModel implements UserTable {
 		return false;
 	}
 
-	int count = 0;
-
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 		final JLabel jLabel = new JLabel((String) value);
