@@ -10,8 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.io.IOException;
-import java.net.Socket;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -25,11 +23,9 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import main.Main;
 import main.User;
 import net.miginfocom.swing.MigLayout;
-import chat.ChatReciver;
-import chat.ChatSender;
-import chat.ChatServerThread;
 
 @SuppressWarnings("serial")
 public class ChatPanel extends JPanel {
@@ -46,28 +42,21 @@ public class ChatPanel extends JPanel {
 	private boolean firstMsg = true;
 
 	private final User user;
-	private final String myName;
 
 	private final JTextField input;
 	private final JButton send = new JButton("Send");
 	private final JPanel chatLog = new JPanel(new MigLayout("gap rel 0, wrap 1, insets 0"));
 	private final JScrollPane scrollChatLog = new JScrollPane(chatLog);
 
-	private ChatSender sender;
-	private Socket socket;
-	private ChatReciver reciver;
-	private boolean online = true;
-
-	public ChatPanel(final String name, final User user) {
+	public ChatPanel(final User user) {
 		this.user = user;
-		this.myName = name;
 		input = new HintTextField(0, "Write a message to " + user.getUsername() + "!");
 
 		setLayout(new BorderLayout());
 
 		createComponents();
 
-		setDropTarget(new DropTarget(this, new FileDropHandle() {
+		setDropTarget(new DropTarget(this, new FileDropHandler() {
 
 			@Override
 			public void handleFiles(final List<File> files) {
@@ -79,34 +68,7 @@ public class ChatPanel extends JPanel {
 		scrollChatLog.getVerticalScrollBar().setUnitIncrement(16);
 	}
 
-	@Override
-	public void setVisible(final boolean show) {
-		super.setVisible(show);
-
-		if (socket == null) {
-			newSocket();
-		}
-	}
-
-	private void newSocket() {
-		System.out.println("Creating new socket...");
-		try {
-			setSocket(new Socket(user.getIP(), ChatServerThread.CHAT_PORT));
-		} catch (IOException e) {
-			// om man försöker chatta med nån som nyss gick offline
-			System.out.println("Attempted to initiate chat with old(?) user");
-			System.out.println("Socket was: " + socket.isClosed());
-			System.out.println("Socket was also: " + socket.isBound());
-			e.printStackTrace();
-		}
-	}
-
 	private void createComponents() {
-		// Space is ugly but works..
-		final String startMessage = "New chat started with " + user.toString();
-
-		showNotice(startMessage);
-
 		chatLog.setForeground(TXT_COLOR);
 		chatLog.setBackground(Color.WHITE);
 
@@ -140,13 +102,13 @@ public class ChatPanel extends JPanel {
 		final String text = input.getText();
 		if (!text.equals("")) {
 			sendMessage(text);
-			showMessage(myName, text, true);
+			showMessage(Main.myUsername, text, true);
 			input.setText("");
 		}
 	}
 
 	private void sendMessage(final String text) {
-		sender.send(text);
+		user.sendMessage(text);
 	}
 
 	private void showMessage(final String text, final Color color, final boolean fromMe, final boolean notice) {
@@ -175,7 +137,7 @@ public class ChatPanel extends JPanel {
 				time.setForeground(INFO_TXT);
 
 				if ((fromMe != lastFromMe || firstMsg) && !notice) {
-					final JLabel author = new JLabel(fromMe ? myName : user.getUsername());
+					final JLabel author = new JLabel(fromMe ? Main.myUsername : user.getUsername());
 					author.setForeground(INFO_TXT);
 					author.setFont(BOLD);
 					messageContents.add(author, "wrap 1, gapy 0 10");
@@ -204,13 +166,6 @@ public class ChatPanel extends JPanel {
 		showMessage(user.getUsername(), msg, false);
 	}
 
-	public void setSocket(final Socket socket) throws IOException {
-		this.socket = socket;
-		sender = new ChatSender(socket.getOutputStream());
-		reciver = new ChatReciver(socket.getInputStream(), this);
-		reciver.start();
-	}
-
 	private void showMessage(final String username, final String message, final boolean fromMe) {
 		showMessage(message, TXT_COLOR, fromMe, false);
 	}
@@ -220,32 +175,16 @@ public class ChatPanel extends JPanel {
 	}
 
 	public void setOnline() {
-		if (!online) {
-			online = true;
-			input.setEnabled(true);
-			send.setEnabled(true);
-
-			if (isVisible()) {
-				newSocket();
-			}
-			System.out.println("ONLINE!");
-		}
+		input.setEnabled(true);
+		send.setEnabled(true);
+		System.out.println("ONLINE!");
+		System.out.println(timeFormat.format(Calendar.getInstance().getTime()));
+		showNotice(user.getUsername() + " is online!");
 	}
 
 	public void setOffline() {
-		if (online) {
-			online = false;
-			input.setEnabled(false);
-			send.setEnabled(false);
-			showNotice(user.getUsername() + " has gone offline!");
-			try {
-				socket.close();
-			} catch (IOException e) {
-				// If so, already closed!
-				System.out.println("Offline status set but socket was already closed(?))");
-				e.printStackTrace();
-			}
-			System.out.println("OFFLINE!");
-		}
+		input.setEnabled(false);
+		send.setEnabled(false);
+		showNotice(user.getUsername() + " has gone offline!");
 	}
 }
