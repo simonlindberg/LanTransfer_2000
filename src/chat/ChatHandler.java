@@ -5,5 +5,5 @@ import java.net.Socket;
 
 public interface ChatHandler {
 
-	void initChat(Socket socket) throws IOException;
+	public void initChat(Socket socket) throws IOException;
 }
