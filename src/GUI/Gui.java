@@ -18,7 +18,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 import main.Main;
 import main.User;
@@ -31,7 +31,7 @@ public class Gui extends JFrame {
 	private final Map<String, User> users;
 	private JComponent introLabel;
 
-	public Gui(final DefaultTableModel model, final Map<String, User> users, final ActionListener refresher) {
+	public Gui(final TableModel model, final Map<String, User> users, final ActionListener refresher) {
 		rightContainer = new JPanel(new BorderLayout());
 		this.users = users;
 		setLayout(new BorderLayout());
@@ -46,7 +46,7 @@ public class Gui extends JFrame {
 		setVisible(true);
 	}
 
-	private void addComponents(final DefaultTableModel model, final ActionListener refresher) {
+	private void addComponents(final TableModel model, final ActionListener refresher) {
 		final JComponent top = createTop(refresher);
 		final JComponent clientTable = createClientTable(model);
 
@@ -95,7 +95,7 @@ public class Gui extends JFrame {
 	 * 
 	 * @param clientWindows
 	 */
-	private JComponent createClientTable(final DefaultTableModel model) {
+	private JComponent createClientTable(final TableModel model) {
 		final JTable clientTable = new JTable();
 		clientTable.setDragEnabled(false);
 		clientTable.setModel(model);
@@ -110,7 +110,7 @@ public class Gui extends JFrame {
 				if (row == -1) {
 					return;
 				}
-				// Get IP & username
+				// Get IP
 				final String ip = (String) model.getValueAt(row, 1);
 
 				final User user = users.get(ip);
@@ -132,7 +132,7 @@ public class Gui extends JFrame {
 		rightContainer.add(chatPanel);
 	}
 
-	public static void showError(String title, String msg) {
+	public static void showError(final String title, final String msg) {
 		JOptionPane.showMessageDialog(null, msg, title, JOptionPane.ERROR_MESSAGE);
 	}
 

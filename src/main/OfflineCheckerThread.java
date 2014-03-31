@@ -9,12 +9,12 @@ public class OfflineCheckerThread extends Thread implements Runnable {
 	// Time a user may have been unactive before he is kicked
 	private static final int CHECKER_TIMEOUT = 4000;
 
-	private final ModelUpdater modelUpdater;
+	private final UserTable model;
 	private final Map<String, User> users;
 
-	public OfflineCheckerThread(final Map<String, User> users, final ModelUpdater modelUpdater) {
+	public OfflineCheckerThread(final Map<String, User> users, final UserTable model) {
 		this.users = users;
-		this.modelUpdater = modelUpdater;
+		this.model = model;
 	}
 
 	@Override
@@ -26,10 +26,9 @@ public class OfflineCheckerThread extends Thread implements Runnable {
 					final User user = itr.next();
 					if ((System.currentTimeMillis() - user.getLatest()) > CHECKER_TIMEOUT) {
 						user.setOffline();
+						model.removeUser(user);
 					}
 				}
-				// Update model!
-				modelUpdater.update();
 
 				Thread.sleep(CHECKER_TIMEOUT);
 			}

@@ -14,8 +14,8 @@ public class User {
 
 	private final String ip;
 	private final String username;
+	private final ChatPanel chatPanel;
 
-	private ChatPanel chatPanel;
 	private ChatSender sender;
 	private Socket socket;
 
@@ -23,12 +23,20 @@ public class User {
 	private boolean isOnline;
 
 	private final Object onlineLock = new Object();
-	private final Object timestampLock = new Object();
 
-	public User(String username, String ip) {
+	public User(final String username, final String ip, final Gui gui) {
 		this.ip = ip;
 		this.username = username;
+		this.chatPanel = new ChatPanel(this);
+
+		gui.addChatPanel(chatPanel);
 		timestamp = System.currentTimeMillis();
+	}
+
+	private User(String username, String ip) {
+		this.username = username;
+		this.ip = ip;
+		this.chatPanel = null;
 	}
 
 	public String toString() {
@@ -61,14 +69,12 @@ public class User {
 		return ip;
 	}
 
-	public void refresh() {
-		synchronized (timestampLock) {
-			timestamp = System.currentTimeMillis();
-		}
+	private void refresh() {
+		timestamp = System.currentTimeMillis();
 	}
 
 	public long getLatest() {
-		synchronized (timestampLock) {
+		synchronized (onlineLock) {
 			return timestamp;
 		}
 	}
@@ -92,16 +98,11 @@ public class User {
 	/**
 	 * Sets a user to be online. If this is the first time, then a chatPanel
 	 * will be initiated.
-	 * 
-	 * @param gui
 	 */
-	public void setOnline(final Gui gui) {
+	public void setOnline() {
 		synchronized (onlineLock) {
+			refresh();
 			if (!isOnline) {
-				if (chatPanel == null) {
-					chatPanel = new ChatPanel(this);
-					gui.addChatPanel(chatPanel);
-				}
 				chatPanel.setOnline();
 				isOnline = true;
 

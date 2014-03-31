@@ -23,6 +23,7 @@ import chat.ChatHandler;
 import chat.ChatServerThread;
 
 public class Main {
+
 	public static final String myUsername = System.getProperty("user.name");
 	public static String myIP;
 
@@ -33,13 +34,7 @@ public class Main {
 			final Map<String, User> users = new ConcurrentHashMap<String, User>();
 			myIP = InetAddress.getLocalHost().getHostAddress();
 
-			final DefaultTableModel model = new DefaultTableModel(null, new String[] { "Name", "IP" }) {
-				@Override
-				public boolean isCellEditable(int row, int column) {
-					// all cells false
-					return false;
-				}
-			};
+			final UserTable model = new UserTableModel();
 
 			final DatagramSocket sendSocket = new DatagramSocket();
 			sendSocket.setBroadcast(true); // Behövs defacto inte, men why not.
@@ -82,12 +77,13 @@ public class Main {
 					final String username = new String(packet.getData(), 1, packet.getLength() - 1);
 
 					if (!users.containsKey(ip)) {
-						users.put(ip, new User(username, ip));
-						model.addRow(new String[] { username, ip });
+						users.put(ip, new User(username, ip, gui));
 					}
 					final User user = users.get(ip);
-					user.refresh();
-					user.setOnline(gui);
+					if (!user.isOnline()) {
+						model.addUser(user);
+					}
+					user.setOnline();
 				}
 
 				@Override
@@ -104,20 +100,13 @@ public class Main {
 
 					user.setOffline();
 
-					updateModel(model, users);
+					model.removeUser(user);
 				}
 			}).start();
 
 			new BroadcastSender(sendSocket, sendPacket).start();
 
-			new OfflineCheckerThread(users, new ModelUpdater() {
-
-				@Override
-				public void update() {
-					updateModel(model, users);
-				}
-
-			}).start();
+			new OfflineCheckerThread(users, model).start();
 
 			sendForce(model, users, sendSocket, message, sendPacket);
 
@@ -139,21 +128,12 @@ public class Main {
 
 	}
 
-	private static void updateModel(final DefaultTableModel model, final Map<String, User> users) {
-		model.setRowCount(0);
-		for (final User u : users.values()) {
-			if (u.isOnline()) {
-				model.addRow(new String[] { u.getUsername(), u.getIP() });
-			}
-		}
-	}
-
-	private static void sendForce(final DefaultTableModel model, final Map<String, User> users, final DatagramSocket sendSocket,
+	private static void sendForce(final UserTable model, final Map<String, User> users, final DatagramSocket sendSocket,
 			final byte[] message, final DatagramPacket sendPacket) {
 		try {
 			message[0] = BroadcastThread.FORCED; // FORCE ON!
 			sendSocket.send(sendPacket);
-			model.setRowCount(0);
+			model.clear();
 			users.clear();
 		} catch (IOException e) {
 			System.out.println("Tried to send broadcast but failed.");
