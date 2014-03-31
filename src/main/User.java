@@ -145,7 +145,6 @@ public class User {
 	 * Shows the chat for this user.
 	 */
 	public void showChat() {
-		System.out.println("show");
 		if (chatPanel != null) {
 			chatPanel.setVisible(true);
 			if (socket == null) {
