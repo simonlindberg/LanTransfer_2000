@@ -23,13 +23,11 @@ import chat.ChatServerThread;
 public class Main {
 
 	public static final String myUsername = System.getProperty("user.name");
-	public static String myIP;
+	public static final String myIP = getMyIP();
 
 	public static void main(String[] args) {
-
 		try {
 			final Map<String, User> users = new ConcurrentHashMap<String, User>();
-			myIP = InetAddress.getLocalHost().getHostAddress();
 
 			final UserTable model = new UserTableModel();
 
@@ -117,11 +115,21 @@ public class Main {
 					}
 				}
 			}));
-		} catch (SocketException | UnknownHostException e) {
+		} catch (SocketException e) {
 			Gui.showError("CRITICAL ERROR", e.getMessage() + "\n\nShuting down.");
 			System.exit(-1);
 		}
 
+	}
+
+	private static String getMyIP() {
+		try {
+			return InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			Gui.showError("CRITICAL ERROR", e.getMessage() + "\n\nShuting down.");
+			System.exit(-1);
+			return "";
+		}
 	}
 
 	private static void sendForce(final UserTable model, final Map<String, User> users, final DatagramSocket sendSocket,
