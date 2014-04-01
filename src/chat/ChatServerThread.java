@@ -8,9 +8,9 @@ import GUI.Gui;
 public class ChatServerThread extends Thread implements Runnable {
 
 	public static final int CHAT_PORT = 8888;
-	private final ChatHandler chatHandler;
+	private final ChatInitiator chatHandler;
 
-	public ChatServerThread(ChatHandler chatHandler) {
+	public ChatServerThread(ChatInitiator chatHandler) {
 		this.chatHandler = chatHandler;
 	}
 

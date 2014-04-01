@@ -12,27 +12,22 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.swing.table.DefaultTableModel;
-
 import GUI.Gui;
 import broadcast.BroadcastListener;
 import broadcast.BroadcastResponseHandler;
 import broadcast.BroadcastSender;
 import broadcast.BroadcastThread;
-import chat.ChatHandler;
+import chat.ChatInitiator;
 import chat.ChatServerThread;
 
 public class Main {
 
 	public static final String myUsername = System.getProperty("user.name");
-	public static String myIP;
+	public static final String myIP = getMyIP();
 
-	@SuppressWarnings({ "serial" })
-	public static void main(String[] args) {
-
+	public static void main(final String[] args) {
 		try {
 			final Map<String, User> users = new ConcurrentHashMap<String, User>();
-			myIP = InetAddress.getLocalHost().getHostAddress();
 
 			final UserTable model = new UserTableModel();
 
@@ -52,7 +47,7 @@ public class Main {
 				}
 			});
 
-			new ChatServerThread(new ChatHandler() {
+			new ChatServerThread(new ChatInitiator() {
 
 				@Override
 				public void initChat(final Socket socket) throws IOException {
@@ -77,8 +72,9 @@ public class Main {
 					final String username = new String(packet.getData(), 1, packet.getLength() - 1);
 
 					if (!users.containsKey(ip)) {
-						users.put(ip, new User(username, ip, gui));
+						users.put(ip, new User(username, ip, gui, model));
 					}
+					
 					final User user = users.get(ip);
 					if (!user.isOnline()) {
 						model.addUser(user);
@@ -88,7 +84,6 @@ public class Main {
 
 				@Override
 				public void handleOfflineMessage(final DatagramPacket packet) {
-					System.out.println("offline!");
 					final String ip = packet.getAddress().getHostAddress();
 
 					final User user = users.get(ip);
@@ -121,11 +116,21 @@ public class Main {
 					}
 				}
 			}));
-		} catch (SocketException | UnknownHostException e) {
+		} catch (SocketException e) {
 			Gui.showError("CRITICAL ERROR", e.getMessage() + "\n\nShuting down.");
 			System.exit(-1);
 		}
 
+	}
+
+	private static String getMyIP() {
+		try {
+			return InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			Gui.showError("CRITICAL ERROR", e.getMessage() + "\n\nShuting down.");
+			System.exit(-1);
+			return "";
+		}
 	}
 
 	private static void sendForce(final UserTable model, final Map<String, User> users, final DatagramSocket sendSocket,

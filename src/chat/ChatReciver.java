@@ -6,18 +6,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import main.User;
-import GUI.ChatPanel;
 
 public class ChatReciver extends Thread implements Runnable {
 
 	private final BufferedReader br;
 	private final User user;
-	private final ChatPanel chatPanel;
 
-	public ChatReciver(final InputStream inputStream, final ChatPanel chatPanel, final User user) {
+	public ChatReciver(final InputStream inputStream, final User user) {
 		this.br = new BufferedReader(new InputStreamReader(inputStream));
 		this.user = user;
-		this.chatPanel = chatPanel;
 	}
 
 	@Override
@@ -25,7 +22,7 @@ public class ChatReciver extends Thread implements Runnable {
 		try {
 			String line = br.readLine();
 			while (line != null) {
-				chatPanel.showMessage(line);
+				user.newMessage(line);
 				line = br.readLine();
 			}
 		} catch (IOException e) {

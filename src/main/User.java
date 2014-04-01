@@ -23,11 +23,18 @@ public class User {
 	private boolean isOnline;
 
 	private final Object onlineLock = new Object();
+	private final Object messageLock = new Object();
 
-	public User(final String username, final String ip, final Gui gui) {
+	private boolean unreadMessages;
+
+	private final UserTable model;
+
+	public User(final String username, final String ip, final Gui gui, final UserTable model) {
 		this.ip = ip;
 		this.username = username;
+		this.model = model;
 		this.chatPanel = new ChatPanel(this);
+		chatPanel.setVisible(false);
 
 		gui.addChatPanel(chatPanel);
 		timestamp = System.currentTimeMillis();
@@ -36,6 +43,7 @@ public class User {
 	private User(String username, String ip) {
 		this.username = username;
 		this.ip = ip;
+		model = null;
 		this.chatPanel = null;
 	}
 
@@ -92,7 +100,7 @@ public class User {
 
 	private void initChat() throws IOException {
 		sender = new ChatSender(socket.getOutputStream());
-		new ChatReciver(socket.getInputStream(), chatPanel, this).start();
+		new ChatReciver(socket.getInputStream(), this).start();
 	}
 
 	/**
@@ -106,6 +114,9 @@ public class User {
 				chatPanel.setOnline();
 				isOnline = true;
 
+				if (socket == null) {
+					createNewChat();
+				}
 			}
 		}
 	}
@@ -116,9 +127,7 @@ public class User {
 	public void setOffline() {
 		synchronized (onlineLock) {
 			if (isOnline) {
-				if (chatPanel != null) {
-					chatPanel.setOffline();
-				}
+				chatPanel.setOffline();
 				if (socket != null) {
 					try {
 						socket.close();
@@ -145,18 +154,26 @@ public class User {
 	 * Shows the chat for this user.
 	 */
 	public void showChat() {
-		System.out.println("show");
-		if (chatPanel != null) {
-			chatPanel.setVisible(true);
-			if (socket == null) {
-				try {
-					socket = new Socket(ip, ChatServerThread.CHAT_PORT);
-					initChat();
-				} catch (IOException e) {
-					chatPanel.showMessage(e.getMessage());
-					e.printStackTrace();
-				}
+		chatPanel.setVisible(true);
+		if (socket == null) {
+			createNewChat();
+		}
+
+		synchronized (messageLock) {
+			if (unreadMessages) {
+				unreadMessages = false;
+				model.updateUser(this);
 			}
+		}
+	}
+
+	private void createNewChat() {
+		try {
+			socket = new Socket(ip, ChatServerThread.CHAT_PORT);
+			initChat();
+		} catch (IOException e) {
+			chatPanel.showMessage(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 
@@ -170,4 +187,20 @@ public class User {
 		sender.send(text);
 	}
 
+	public void newMessage(final String msg) {
+		chatPanel.showMessage(msg);
+
+		synchronized (messageLock) {
+			if (!chatPanel.isVisible() && !unreadMessages) {
+				unreadMessages = true;
+				model.updateUser(this);
+			}
+		}
+	}
+
+	public boolean hasUnreadMessages() {
+		synchronized (messageLock) {
+			return unreadMessages;
+		}
+	}
 }
