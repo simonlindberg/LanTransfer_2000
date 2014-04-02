@@ -73,7 +73,7 @@ public class Main {
 				public void handleBroadcast(final DatagramPacket packet) {
 					final String ip = packet.getAddress().getHostAddress();
 					final String username = new String(packet.getData(), 1, packet.getLength() - 1);
-					System.out.println(username + ": " + ip);
+
 					if (!users.containsKey(ip)) {
 						users.put(ip, new User(username, ip, gui, model));
 					}
