@@ -3,7 +3,6 @@ package GUI;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.dnd.DropTarget;
@@ -57,7 +56,7 @@ public class ChatPanel extends JPanel {
 	private final JButton send = new JButton("Send");
 	private final JPanel chatLog = new JPanel(new MigLayout("gap rel 0, wrap 1, insets 0"));
 	private final JScrollPane scrollChatLog = new JScrollPane(chatLog);
-	
+
 	private final JLabel sendFileImage;
 
 	public ChatPanel(final User user) {
@@ -74,13 +73,13 @@ public class ChatPanel extends JPanel {
 			public void handleFiles(final List<File> files) {
 				// File.isDirectory()
 				System.out.println("senging files " + files);
-				sendFile(false, files);
+				sendFiles(files);
 			}
 		}));
 
 		// Set scroll speed
 		scrollChatLog.getVerticalScrollBar().setUnitIncrement(16);
-		
+
 		// Add upload icon
 		BufferedImage uploadImage = null;
 		try {
@@ -107,48 +106,64 @@ public class ChatPanel extends JPanel {
 		return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
 	}
 
-	private void sendFile(final boolean isDirectory, final List<File> files) {
-		if (isDirectory) {
+	private void receiveFiles(final List<Long> fileSizes, final List<String> fileNames) {
+		long totalSize = 0;
+		for (int i = 0; i < fileSizes.size(); i++) {
+			totalSize += fileSizes.get(i);
 
-		} else {
-			long totalSize = 0;
-			for (File f : files) {
-				long fileSize = f.length();
-				totalSize += fileSize;
-
-				final JPanel fileContents = new JPanel(new MigLayout("insets 0, gap rel 0", "16[]10", "[][]5"));
-				final JLabel fileName = new JLabel(f.getName());
-				fileName.setFont(BOLD);
-				fileContents.add(fileName, "wrap 1");
-				fileContents.add(new JLabel(readableFileSize(fileSize)), "wrap 1");
-				
-				
-				final JPanel messageContents = createMessagePanel(true, false, fileContents);
-
-				addToLog(messageContents);
-			}
-
-			final JPanel submitPanel = new JPanel(new MigLayout("insets 0, gap rel 0", "[][][]", "[]10[]"));
-			final JButton saveAs = new JButton("Save as..");
-			final JButton cancel = new JButton("Cancel");
-			
-			final JLabel fileInfo = new JLabel();
-			fileInfo.setText(user.getUsername() + " wants to send " + files.size() + " file(s) (" + readableFileSize(totalSize) + ")");
-			fileInfo.setAlignmentX(Component.LEFT_ALIGNMENT);
-			
-			JProgressBar fileProgress = new JProgressBar(0, 100);
-			fileProgress.setValue(20);
-
-//			submitPanel.add(sendFileImage);
-			submitPanel.add(fileInfo);
-			submitPanel.add(saveAs);
-			submitPanel.add(cancel, "wrap");
-			submitPanel.add(fileProgress, "pushx, growx, spanx 4, height 5");
-
-			final JPanel submitContents = createMessagePanel(true, false, submitPanel);
-
-			addToLog(submitContents);
+			createFilePanel(fileSizes.get(i), fileNames.get(i));
 		}
+
+		createSubmitPanel(fileSizes.size(), totalSize, true);
+	}
+
+	private void createFilePanel(long size, String name) {
+		final JPanel fileContents = new JPanel(new MigLayout("insets 0, gap rel 0", "16[]10", "[][]5"));
+		final JLabel fileName = new JLabel(name);
+		fileName.setFont(BOLD);
+		fileContents.add(fileName, "wrap 1");
+		fileContents.add(new JLabel(readableFileSize(size)), "wrap 1");
+
+		final JPanel messageContents = createMessagePanel(true, false, fileContents);
+
+		addToLog(messageContents);
+	}
+
+	private void createSubmitPanel(int numOfFiles, long totalSize, boolean receiving) {
+		final JPanel submitPanel = new JPanel(new MigLayout("insets 0, gap rel 0", "[][][]", "[]10[]"));
+		final JButton cancel = new JButton("Cancel");
+
+		final JLabel fileInfo = new JLabel();
+		fileInfo.setText(user.getUsername() + " wants to send " + numOfFiles + " file(s) (" + readableFileSize(totalSize) + ")");
+
+		JProgressBar fileProgress = new JProgressBar(0, 100);
+		fileProgress.setValue(0);
+		fileProgress.setStringPainted(true);
+
+		// submitPanel.add(sendFileImage);
+		submitPanel.add(fileInfo);
+		if (receiving) {
+			final JButton saveAs = new JButton("Save as..");
+			submitPanel.add(saveAs);
+		}
+		submitPanel.add(cancel, "wrap");
+		submitPanel.add(fileProgress, "pushx, growx, spanx 4, height 5");
+
+		final JPanel submitContents = createMessagePanel(true, false, submitPanel);
+
+		addToLog(submitContents);
+	}
+
+	private void sendFiles(final List<File> files) {
+		long totalSize = 0;
+		for (File f : files) {
+			long fileSize = f.length();
+			totalSize += fileSize;
+
+			createFilePanel(fileSize, f.getName());
+		}
+
+		createSubmitPanel(files.size(), totalSize, true);
 	}
 
 	/**
