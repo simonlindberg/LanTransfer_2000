@@ -59,7 +59,7 @@ public class Main {
 					final User user = users.get(ip);
 
 					if (user == null) {
-						System.out.println("Unknow user tried to connect a chat!");
+						System.out.println("Unknow user tried to connect a chat: " + ip);
 						return;
 					}
 
@@ -73,11 +73,11 @@ public class Main {
 				public void handleBroadcast(final DatagramPacket packet) {
 					final String ip = packet.getAddress().getHostAddress();
 					final String username = new String(packet.getData(), 1, packet.getLength() - 1);
-
+					System.out.println(username + ": " + ip);
 					if (!users.containsKey(ip)) {
 						users.put(ip, new User(username, ip, gui, model));
 					}
-					
+
 					final User user = users.get(ip);
 					if (!user.isOnline()) {
 						model.addUser(user);
