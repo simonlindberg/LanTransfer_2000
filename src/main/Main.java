@@ -12,6 +12,9 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import user.User;
+import user.UserTable;
+import user.UserTableModel;
 import GUI.Gui;
 import broadcast.BroadcastListener;
 import broadcast.BroadcastResponseHandler;
@@ -56,7 +59,7 @@ public class Main {
 					final User user = users.get(ip);
 
 					if (user == null) {
-						System.out.println("Unknow user tried to connect a chat!");
+						System.out.println("Unknow user tried to connect a chat: " + ip);
 						return;
 					}
 
@@ -74,7 +77,7 @@ public class Main {
 					if (!users.containsKey(ip)) {
 						users.put(ip, new User(username, ip, gui, model));
 					}
-					
+
 					final User user = users.get(ip);
 					if (!user.isOnline()) {
 						model.addUser(user);

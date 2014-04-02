@@ -3,6 +3,8 @@ package main;
 import java.util.Iterator;
 import java.util.Map;
 
+import user.User;
+import user.UserTable;
 import GUI.Gui;
 
 public class OfflineCheckerThread extends Thread implements Runnable {
