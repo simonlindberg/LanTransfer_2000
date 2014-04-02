@@ -12,6 +12,9 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import user.User;
+import user.UserTable;
+import user.UserTableModel;
 import GUI.Gui;
 import broadcast.BroadcastListener;
 import broadcast.BroadcastResponseHandler;

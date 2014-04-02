@@ -1,4 +1,4 @@
-package main;
+package user;
 
 import java.io.IOException;
 import java.net.Socket;

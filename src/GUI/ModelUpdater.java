@@ -1,4 +1,4 @@
-package main;
+package GUI;
 
 public interface ModelUpdater {
 	public void update();

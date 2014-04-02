@@ -19,9 +19,9 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 
+import user.User;
+import user.UserTable;
 import main.Main;
-import main.User;
-import main.UserTable;
 
 @SuppressWarnings("serial")
 public class Gui extends JFrame {

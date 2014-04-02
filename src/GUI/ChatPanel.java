@@ -23,8 +23,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import user.User;
 import main.Main;
-import main.User;
 import net.miginfocom.swing.MigLayout;
 
 @SuppressWarnings("serial")

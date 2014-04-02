@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import main.User;
+import user.User;
 
 public class ChatReciver extends Thread implements Runnable {
 
