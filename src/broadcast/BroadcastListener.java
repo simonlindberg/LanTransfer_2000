@@ -28,7 +28,7 @@ public class BroadcastListener extends BroadcastThread implements Runnable {
 			for (;;) {
 				reciveSocket.receive(recivePacket);
 
-//				if (!InetAddress.getLocalHost().equals(recivePacket.getAddress())) {
+				if (!InetAddress.getLocalHost().equals(recivePacket.getAddress())) {
 					if (data[0] == GOING_OFFLINE) {
 						handler.handleOfflineMessage(recivePacket);
 					} else {
@@ -37,7 +37,7 @@ public class BroadcastListener extends BroadcastThread implements Runnable {
 						}
 						handler.handleBroadcast(recivePacket);
 					}
-//				}
+				}
 			}
 		} catch (IOException e) {
 			Gui.showError("Critical error", e.getMessage() + "\n\nProgram will now exit.");
