@@ -116,8 +116,10 @@ public class ChatPanel extends JPanel {
 				long fileSize = f.length();
 				totalSize += fileSize;
 
-				final JPanel fileContents = new JPanel(new MigLayout("insets 0, gap rel 0", "16[]10", "[][]10"));
-				fileContents.add(new JLabel(f.getName()), "wrap 1");
+				final JPanel fileContents = new JPanel(new MigLayout("insets 0, gap rel 0", "16[]10", "[][]5"));
+				final JLabel fileName = new JLabel(f.getName());
+				fileName.setFont(BOLD);
+				fileContents.add(fileName, "wrap 1");
 				fileContents.add(new JLabel(readableFileSize(fileSize)), "wrap 1");
 				
 				
@@ -126,23 +128,22 @@ public class ChatPanel extends JPanel {
 				addToLog(messageContents);
 			}
 
-			final JPanel submitPanel = new JPanel(new MigLayout("insets 0, gap rel 0", "[]5[]5[]2[]", "[]10[]"));
+			final JPanel submitPanel = new JPanel(new MigLayout("insets 0, gap rel 0", "[][][]", "[]10[]"));
 			final JButton saveAs = new JButton("Save as..");
 			final JButton cancel = new JButton("Cancel");
 			
 			final JLabel fileInfo = new JLabel();
 			fileInfo.setText(user.getUsername() + " wants to send " + files.size() + " file(s) (" + readableFileSize(totalSize) + ")");
-
+			fileInfo.setAlignmentX(Component.LEFT_ALIGNMENT);
+			
 			JProgressBar fileProgress = new JProgressBar(0, 100);
 			fileProgress.setValue(20);
-			fileProgress.setStringPainted(true);
-			fileProgress.setPreferredSize(new Dimension(100, 5));
 
-			submitPanel.add(sendFileImage);
+//			submitPanel.add(sendFileImage);
 			submitPanel.add(fileInfo);
 			submitPanel.add(saveAs);
 			submitPanel.add(cancel, "wrap");
-			submitPanel.add(fileProgress, "pushx, growx, span 4");
+			submitPanel.add(fileProgress, "pushx, growx, spanx 4, height 5");
 
 			final JPanel submitContents = createMessagePanel(true, false, submitPanel);
 
