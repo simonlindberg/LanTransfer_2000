@@ -9,7 +9,7 @@ import user.User;
 
 public class FileTransferServer extends Thread implements Runnable {
 
-	public static final int FILETRANSFER_PORT = 10000;
+	public static final int FILETRANSFER_PORT = 10001;
 	private Map<String, User> users;
 
 	public FileTransferServer(final Map<String, User> users) {
@@ -23,7 +23,7 @@ public class FileTransferServer extends Thread implements Runnable {
 			ss = new ServerSocket(FILETRANSFER_PORT);
 
 			final Socket socket = ss.accept();
-			
+			System.out.println(socket.getInetAddress().getHostAddress());
 			new FileTransferReciver(socket, users.get(socket.getInetAddress().getHostAddress())).start();
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -30,6 +30,7 @@ import javax.swing.SwingUtilities;
 import main.Main;
 import net.miginfocom.swing.MigLayout;
 import user.User;
+import fileTransfer.FileTransferSender;
 import fileTransfer.Utils;
 
 @SuppressWarnings("serial")
@@ -153,7 +154,7 @@ public class ChatPanel extends JPanel {
 		// final JProgressBar fileProgress = createSubmitPanel(files.size(),
 		// totalSize, false, null);
 
-		createSubmitPanel(files.size(), totalSize, true, new ActionListener() {
+		final JProgressBar progressBar = createSubmitPanel(files.size(), totalSize, true, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -170,7 +171,7 @@ public class ChatPanel extends JPanel {
 			}
 		});
 
-		// new FileTransferSender(files, user.getIP(), fileProgress).start();
+		new FileTransferSender(files, user.getIP(), progressBar).start();
 	}
 
 	/**
