@@ -4,6 +4,11 @@ import java.io.File;
 import java.text.DecimalFormat;
 
 public class Utils {
+
+	public static void createParentFolders(final File file) {
+		file.getParentFile().mkdirs();
+	}
+
 	public static long fileSize(final File file) {
 		if (file.isFile()) {
 			return file.length();
@@ -30,5 +35,4 @@ public class Utils {
 		final int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
 		return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
 	}
-
 }
