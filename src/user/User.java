@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.JProgressBar;
@@ -209,7 +210,7 @@ public class User {
 		}
 	}
 
-	public JProgressBar promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace) {
-		return chatPanel.promptFileTransfer(fileNames, fileSizes, savePlace);
+	public JProgressBar promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace, final CountDownLatch latch) {
+		return chatPanel.promptFileTransfer(fileNames, fileSizes, savePlace, latch);
 	}
 }

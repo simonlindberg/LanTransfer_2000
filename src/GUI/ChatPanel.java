@@ -14,6 +14,7 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.JButton;
@@ -78,7 +79,8 @@ public class ChatPanel extends JPanel {
 		scrollChatLog.getVerticalScrollBar().setUnitIncrement(16);
 	}
 
-	public JProgressBar promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace) {
+	public JProgressBar promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace,
+			final CountDownLatch latch) {
 		long totalSize = 0;
 		for (int i = 0; i < fileSizes.size(); i++) {
 			totalSize += fileSizes.get(i);
@@ -91,12 +93,14 @@ public class ChatPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser chooser = new JFileChooser();
+				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				final int returnValue = chooser.showSaveDialog(null);
 
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
 					final File saveFile = chooser.getSelectedFile();
-					System.out.println("chosen: " + saveFile);
+					System.out.println("CHOSEN!: " + saveFile);
 					savePlace.set(saveFile);
+					latch.countDown();
 				}
 			}
 		});
@@ -150,9 +154,6 @@ public class ChatPanel extends JPanel {
 
 			createFilePanel(fileSize, f.getName());
 		}
-
-		// final JProgressBar fileProgress = createSubmitPanel(files.size(),
-		// totalSize, false, null);
 
 		final JProgressBar progressBar = createSubmitPanel(files.size(), totalSize, true, new ActionListener() {
 

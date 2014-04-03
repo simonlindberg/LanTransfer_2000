@@ -55,12 +55,13 @@ public class FileTransferReciver extends Thread implements Runnable {
 			final CountDownLatch latch = new CountDownLatch(1);
 			final AtomicReference<File> savePlace = new AtomicReference<>(null);
 
-			final JProgressBar progressBar = user.promptFileTransfer(fileNames, fileSizes, savePlace);
+			final JProgressBar progressBar = user.promptFileTransfer(fileNames, fileSizes, savePlace, latch);
 
-			latch.await(); // Wait for OKEY!
+			latch.await(); // Wait for user interaction!
 
 			final File folder = savePlace.get();
 
+			// User canceld.
 			if (folder == null) {
 				socket.close();
 				return;
@@ -68,6 +69,8 @@ public class FileTransferReciver extends Thread implements Runnable {
 
 			// Send OKEY!
 			socket.getOutputStream().write(1);
+
+			// Total amount recived.
 			int recived = 0;
 			for (;;) {
 				final String filename = input.readUTF();
@@ -75,8 +78,9 @@ public class FileTransferReciver extends Thread implements Runnable {
 
 				final byte[] buffer = new byte[2048];
 
-				final File file = new File(filename);
-
+				final File file = new File(folder, filename);
+			Utils.createParentFolders(file);
+				
 				final OutputStream fos = new BufferedOutputStream(new FileOutputStream(file));
 
 				int read = 0;
@@ -93,6 +97,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 			}
 
 		} catch (IOException | InterruptedException e) {
+			System.out.println("it's okey. No more files.");
 			e.printStackTrace();
 		}
 
