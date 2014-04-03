@@ -8,13 +8,19 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.util.List;
 
+import javax.swing.JProgressBar;
+
 public class FileTransferSender extends Thread implements Runnable {
 
 	private final List<File> files;
 	private final String ip;
+	private final JProgressBar progressBar;
+	private long totalSize;
+	private long sent;
 	private DataOutputStream output;
 
-	public FileTransferSender(final List<File> files, final String ip) {
+	public FileTransferSender(final List<File> files, final String ip, final JProgressBar fileProgress) {
+		this.progressBar = fileProgress;
 		this.files = files;
 		this.ip = ip;
 	}
@@ -36,8 +42,10 @@ public class FileTransferSender extends Thread implements Runnable {
 			output.writeLong(files.size());
 
 			for (final File file : files) {
+				final long size = Utils.fileSize(file);
 				output.writeUTF(file.getName());
-				output.writeLong(fileSize(file));
+				output.writeLong(size);
+				totalSize += size;
 			}
 
 			// Wait for OKEY!
@@ -79,20 +87,10 @@ public class FileTransferSender extends Thread implements Runnable {
 			final int n = in.read(buffer, 0, toRead);
 			output.write(buffer, 0, n);
 			read = read + n;
+			sent += n;
+			progressBar.setValue((int) (100 * (sent / (double) totalSize)));
 		}
 
 		in.close();
-	}
-
-	private static long fileSize(final File file) {
-		if (file.isFile()) {
-			return file.length();
-		} else {
-			long sum = 0;
-			for (final File childFile : file.listFiles()) {
-				sum = sum + fileSize(childFile);
-			}
-			return sum;
-		}
 	}
 }

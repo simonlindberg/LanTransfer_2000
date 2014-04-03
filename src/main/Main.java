@@ -22,6 +22,7 @@ import broadcast.BroadcastSender;
 import broadcast.BroadcastThread;
 import chat.ChatInitiator;
 import chat.ChatServerThread;
+import fileTransfer.FileTransferServer;
 
 public class Main {
 
@@ -104,10 +105,10 @@ public class Main {
 
 			new BroadcastSender(sendSocket, sendPacket).start();
 
-			new OfflineCheckerThread(users, model).start();
-
 			sendForce(model, users, sendSocket, message, sendPacket);
 
+			new FileTransferServer(users).start();
+			
 			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 
 				@Override
@@ -119,6 +120,7 @@ public class Main {
 					}
 				}
 			}));
+			new OfflineCheckerThread(users, model).start();
 		} catch (SocketException e) {
 			Gui.showError("CRITICAL ERROR", e.getMessage() + "\n\nShuting down.");
 			System.exit(-1);

@@ -1,7 +1,12 @@
 package user;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.swing.JProgressBar;
 
 import GUI.ChatPanel;
 import GUI.Gui;
@@ -202,5 +207,9 @@ public class User {
 		synchronized (messageLock) {
 			return unreadMessages;
 		}
+	}
+
+	public JProgressBar promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace) {
+		return chatPanel.promptFileTransfer(fileNames, fileSizes, savePlace);
 	}
 }

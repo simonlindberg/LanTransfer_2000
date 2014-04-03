@@ -7,14 +7,23 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.swing.JProgressBar;
+
+import user.User;
 
 public class FileTransferReciver extends Thread implements Runnable {
 
 	private final Socket socket;
+	private final User user;
 
-	public FileTransferReciver(final Socket socket) {
+	public FileTransferReciver(final Socket socket, final User user) {
 		this.socket = socket;
-		System.out.println("construct");
+		this.user = user;
 	}
 
 	@Override
@@ -30,18 +39,36 @@ public class FileTransferReciver extends Thread implements Runnable {
 		try {
 			final DataInputStream input = new DataInputStream(socket.getInputStream());
 
-			final long numberOfFiles = input.readLong();
+			final long numberOfTopLevelFiles = input.readLong();
 
-			for (int i = 0; i < numberOfFiles; i++) {
-				System.out.println(input.readUTF()); // Filename
-				System.out.println(input.readLong()); // File size
+			final List<String> fileNames = new ArrayList<>();
+			final List<Long> fileSizes = new ArrayList<>();
+
+			for (int i = 0; i < numberOfTopLevelFiles; i++) {
+				fileNames.add(input.readUTF());// Filename
+				fileSizes.add(input.readLong()); // File size
 			}
 
+			final long totalSize = sum(fileSizes);
+
 			// Prompt user...
+			final CountDownLatch latch = new CountDownLatch(1);
+			final AtomicReference<File> savePlace = new AtomicReference<>(null);
+
+			final JProgressBar progressBar = user.promptFileTransfer(fileNames, fileSizes, savePlace);
+
+			latch.await(); // Wait for OKEY!
+
+			final File folder = savePlace.get();
+
+			if (folder == null) {
+				socket.close();
+				return;
+			}
 
 			// Send OKEY!
 			socket.getOutputStream().write(1);
-
+			int recived = 0;
 			for (;;) {
 				final String filename = input.readUTF();
 				final int size = input.readInt();
@@ -58,14 +85,24 @@ public class FileTransferReciver extends Thread implements Runnable {
 					final int n = input.read(buffer, 0, toRead);
 					fos.write(buffer, 0, n);
 					read = read + n;
+					recived += n;
+					progressBar.setValue((int) (100 * (recived / (double) totalSize)));
 				}
 
 				fos.close();
 			}
 
-		} catch (IOException e) {
+		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		}
 
+	}
+
+	private long sum(final List<Long> fileSizes) {
+		long sum = 0;
+		for (final long s : fileSizes) {
+			sum += s;
+		}
+		return sum;
 	}
 }

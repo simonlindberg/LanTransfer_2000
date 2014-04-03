@@ -9,19 +9,16 @@ import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -33,6 +30,7 @@ import javax.swing.SwingUtilities;
 import main.Main;
 import net.miginfocom.swing.MigLayout;
 import user.User;
+import fileTransfer.Utils;
 
 @SuppressWarnings("serial")
 public class ChatPanel extends JPanel {
@@ -57,8 +55,6 @@ public class ChatPanel extends JPanel {
 	private final JPanel chatLog = new JPanel(new MigLayout("gap rel 0, wrap 1, insets 0"));
 	private final JScrollPane scrollChatLog = new JScrollPane(chatLog);
 
-	private final JLabel sendFileImage;
-
 	public ChatPanel(final User user) {
 		this.user = user;
 		input = new HintTextField(0, "Write a message to " + user.getUsername() + "!");
@@ -79,34 +75,9 @@ public class ChatPanel extends JPanel {
 
 		// Set scroll speed
 		scrollChatLog.getVerticalScrollBar().setUnitIncrement(16);
-
-		// Add upload icon
-		BufferedImage uploadImage = null;
-		try {
-			uploadImage = ImageIO.read(new File("src/gfx/upload.png"));
-		} catch (IOException e) {
-			System.out.println("Unable to locate upload icon..");
-			e.printStackTrace();
-		}
-		sendFileImage = new JLabel(new ImageIcon(uploadImage));
 	}
 
-	/**
-	 * http://stackoverflow.com/a/5599842
-	 * 
-	 * @param size
-	 * @return
-	 */
-	private String readableFileSize(final long size) {
-		if (size <= 0) {
-			return "0";
-		}
-		final String[] units = new String[] { "B", "KB", "MB", "GB", "TB" };
-		final int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
-		return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
-	}
-
-	private void receiveFiles(final List<Long> fileSizes, final List<String> fileNames) {
+	public JProgressBar promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace) {
 		long totalSize = 0;
 		for (int i = 0; i < fileSizes.size(); i++) {
 			totalSize += fileSizes.get(i);
@@ -114,7 +85,21 @@ public class ChatPanel extends JPanel {
 			createFilePanel(fileSizes.get(i), fileNames.get(i));
 		}
 
-		createSubmitPanel(fileSizes.size(), totalSize, true);
+		return createSubmitPanel(fileSizes.size(), totalSize, true, new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser chooser = new JFileChooser();
+				final int returnValue = chooser.showSaveDialog(null);
+
+				if (returnValue == JFileChooser.APPROVE_OPTION) {
+					final File saveFile = chooser.getSelectedFile();
+					System.out.println("chosen: " + saveFile);
+					savePlace.set(saveFile);
+				}
+			}
+		});
+
 	}
 
 	private void createFilePanel(long size, String name) {
@@ -122,28 +107,28 @@ public class ChatPanel extends JPanel {
 		final JLabel fileName = new JLabel(name);
 		fileName.setFont(BOLD);
 		fileContents.add(fileName, "wrap 1");
-		fileContents.add(new JLabel(readableFileSize(size)), "wrap 1");
+		fileContents.add(new JLabel(Utils.readableFileSize(size)), "wrap 1");
 
 		final JPanel messageContents = createMessagePanel(true, false, fileContents);
 
 		addToLog(messageContents);
 	}
 
-	private void createSubmitPanel(int numOfFiles, long totalSize, boolean receiving) {
+	private JProgressBar createSubmitPanel(int numOfFiles, long totalSize, boolean receiving, ActionListener saveAsAction) {
 		final JPanel submitPanel = new JPanel(new MigLayout("insets 0, gap rel 0", "[][][]", "[]10[]"));
 		final JButton cancel = new JButton("Cancel");
 
 		final JLabel fileInfo = new JLabel();
-		fileInfo.setText(user.getUsername() + " wants to send " + numOfFiles + " file(s) (" + readableFileSize(totalSize) + ")");
+		fileInfo.setText(user.getUsername() + " wants to send " + numOfFiles + " file(s) (" + Utils.readableFileSize(totalSize) + ")");
 
 		JProgressBar fileProgress = new JProgressBar(0, 100);
 		fileProgress.setValue(0);
 		fileProgress.setStringPainted(true);
 
-		// submitPanel.add(sendFileImage);
 		submitPanel.add(fileInfo);
 		if (receiving) {
 			final JButton saveAs = new JButton("Save as..");
+			saveAs.addActionListener(saveAsAction);
 			submitPanel.add(saveAs);
 		}
 		submitPanel.add(cancel, "wrap");
@@ -152,6 +137,8 @@ public class ChatPanel extends JPanel {
 		final JPanel submitContents = createMessagePanel(true, false, submitPanel);
 
 		addToLog(submitContents);
+
+		return fileProgress;
 	}
 
 	private void sendFiles(final List<File> files) {
@@ -163,7 +150,27 @@ public class ChatPanel extends JPanel {
 			createFilePanel(fileSize, f.getName());
 		}
 
-		createSubmitPanel(files.size(), totalSize, true);
+		// final JProgressBar fileProgress = createSubmitPanel(files.size(),
+		// totalSize, false, null);
+
+		createSubmitPanel(files.size(), totalSize, true, new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser chooser = new JFileChooser();
+
+				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+				final int returnValue = chooser.showSaveDialog(null);
+
+				if (returnValue == JFileChooser.APPROVE_OPTION) {
+					final File saveFile = chooser.getSelectedFile();
+					System.out.println(saveFile);
+				}
+			}
+		});
+
+		// new FileTransferSender(files, user.getIP(), fileProgress).start();
 	}
 
 	/**
