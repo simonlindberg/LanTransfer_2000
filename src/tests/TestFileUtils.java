@@ -12,7 +12,7 @@ import java.util.Random;
 
 import org.junit.Test;
 
-import fileTransfer.Utils;
+import fileTransfer.FileUtils;
 
 public class TestFileUtils {
 
@@ -22,7 +22,7 @@ public class TestFileUtils {
 		final File b = new File(a, "b");
 		final File c = new File(b, "c");
 		final File dFile = new File(c, "d");
-		Utils.createParentFolders(dFile);
+		FileUtils.createParentFolders(dFile);
 
 		assertTrue(a.exists());
 		assertTrue(b.exists());
@@ -51,7 +51,7 @@ public class TestFileUtils {
 				fos.write(random.nextInt());
 			}
 			System.out.println(size);
-			assertEquals(Utils.fileSize(f), size);
+			assertEquals(FileUtils.fileSize(f), size);
 
 		} catch (IOException e) {
 			fail(e.getMessage());

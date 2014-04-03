@@ -43,7 +43,7 @@ public class FileTransferSender extends Thread implements Runnable {
 			output.writeLong(files.size());
 
 			for (final File file : files) {
-				final long size = Utils.fileSize(file);
+				final long size = FileUtils.fileSize(file);
 				output.writeUTF(file.getName());
 				output.writeLong(size);
 				totalSize += size;

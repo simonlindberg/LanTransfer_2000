@@ -32,7 +32,7 @@ import main.Main;
 import net.miginfocom.swing.MigLayout;
 import user.User;
 import fileTransfer.FileTransferSender;
-import fileTransfer.Utils;
+import fileTransfer.FileUtils;
 
 @SuppressWarnings("serial")
 public class ChatPanel extends JPanel {
@@ -118,7 +118,7 @@ public class ChatPanel extends JPanel {
 		final JLabel fileName = new JLabel(name);
 		fileName.setFont(BOLD);
 		fileContents.add(fileName, "wrap 1");
-		fileContents.add(new JLabel(Utils.readableFileSize(size)), "wrap 1");
+		fileContents.add(new JLabel(FileUtils.readableFileSize(size)), "wrap 1");
 
 		final JPanel messageContents = createMessagePanel(true, false, fileContents);
 
@@ -131,14 +131,14 @@ public class ChatPanel extends JPanel {
 		final JPanel submitPanel = new JPanel(new MigLayout("insets 0, gap rel 0", "[][][]", "[]10[]"));
 
 		final JLabel fileInfo = new JLabel();
-		fileInfo.setText(user.getUsername() + " wants to send " + numOfFiles + " file(s) (" + Utils.readableFileSize(totalSize) + ")");
+		fileInfo.setText(user.getUsername() + " wants to send " + numOfFiles + " file(s) (" + FileUtils.readableFileSize(totalSize) + ")");
 
 		final JProgressBar fileProgress = new JProgressBar(0, 100);
 		fileProgress.setValue(0);
 		fileProgress.setStringPainted(true);
 
-		submitPanel.add(fileInfo);
 		if (receiving) {
+			submitPanel.add(fileInfo);
 			final JButton cancel = new JButton("Cancel");
 			cancel.addActionListener(cancelAction);
 
@@ -147,6 +147,8 @@ public class ChatPanel extends JPanel {
 
 			submitPanel.add(saveAs);
 			submitPanel.add(cancel, "wrap");
+		} else {
+			submitPanel.add(fileInfo, "wrap");
 		}
 		// submitPanel.add(new JLabel("1.2 GB/s"));
 		submitPanel.add(fileProgress, "pushx, growx, spanx 4, height 5");

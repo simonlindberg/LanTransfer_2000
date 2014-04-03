@@ -81,7 +81,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 
 				final File file = new File(folder, filename);
 
-				Utils.createParentFolders(file);
+				FileUtils.createParentFolders(file);
 
 				final OutputStream fos = new BufferedOutputStream(new FileOutputStream(file));
 

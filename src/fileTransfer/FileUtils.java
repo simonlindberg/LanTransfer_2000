@@ -3,7 +3,7 @@ package fileTransfer;
 import java.io.File;
 import java.text.DecimalFormat;
 
-public class Utils {
+public class FileUtils {
 
 	public static void createParentFolders(final File file) {
 		file.getParentFile().mkdirs();
