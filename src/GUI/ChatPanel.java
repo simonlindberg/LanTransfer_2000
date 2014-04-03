@@ -88,7 +88,7 @@ public class ChatPanel extends JPanel {
 			createFilePanel(fileSizes.get(i), fileNames.get(i));
 		}
 
-		return createSubmitPanel(fileSizes.size(), totalSize, true, new ActionListener() {
+		return createTransferPanel(fileSizes.size(), totalSize, true, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -102,6 +102,12 @@ public class ChatPanel extends JPanel {
 					savePlace.set(saveFile);
 					latch.countDown();
 				}
+			}
+		}, new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				latch.countDown();
 			}
 		});
 
@@ -119,24 +125,30 @@ public class ChatPanel extends JPanel {
 		addToLog(messageContents);
 	}
 
-	private JProgressBar createSubmitPanel(int numOfFiles, long totalSize, boolean receiving, ActionListener saveAsAction) {
+	private JProgressBar createTransferPanel(int numOfFiles, long totalSize, boolean receiving, ActionListener saveAsAction,
+			ActionListener cancelAction) {
+
 		final JPanel submitPanel = new JPanel(new MigLayout("insets 0, gap rel 0", "[][][]", "[]10[]"));
-		final JButton cancel = new JButton("Cancel");
 
 		final JLabel fileInfo = new JLabel();
 		fileInfo.setText(user.getUsername() + " wants to send " + numOfFiles + " file(s) (" + Utils.readableFileSize(totalSize) + ")");
 
-		JProgressBar fileProgress = new JProgressBar(0, 100);
+		final JProgressBar fileProgress = new JProgressBar(0, 100);
 		fileProgress.setValue(0);
 		fileProgress.setStringPainted(true);
 
 		submitPanel.add(fileInfo);
 		if (receiving) {
+			final JButton cancel = new JButton("Cancel");
+			cancel.addActionListener(cancelAction);
+
 			final JButton saveAs = new JButton("Save as..");
 			saveAs.addActionListener(saveAsAction);
+
 			submitPanel.add(saveAs);
+			submitPanel.add(cancel, "wrap");
 		}
-		submitPanel.add(cancel, "wrap");
+		// submitPanel.add(new JLabel("1.2 GB/s"));
 		submitPanel.add(fileProgress, "pushx, growx, spanx 4, height 5");
 
 		final JPanel submitContents = createMessagePanel(true, false, submitPanel);
@@ -155,22 +167,7 @@ public class ChatPanel extends JPanel {
 			createFilePanel(fileSize, f.getName());
 		}
 
-		final JProgressBar progressBar = createSubmitPanel(files.size(), totalSize, true, new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				JFileChooser chooser = new JFileChooser();
-
-				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
-				final int returnValue = chooser.showSaveDialog(null);
-
-				if (returnValue == JFileChooser.APPROVE_OPTION) {
-					final File saveFile = chooser.getSelectedFile();
-					System.out.println(saveFile);
-				}
-			}
-		});
+		final JProgressBar progressBar = createTransferPanel(files.size(), totalSize, false, null, null);
 
 		new FileTransferSender(files, user.getIP(), progressBar).start();
 	}

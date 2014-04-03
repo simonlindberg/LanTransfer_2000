@@ -196,6 +196,10 @@ public class User {
 	public void newMessage(final String msg) {
 		chatPanel.showMessage(msg);
 
+		updateUI();
+	}
+
+	private void updateUI() {
 		synchronized (messageLock) {
 			if (!chatPanel.isVisible() && !unreadMessages) {
 				unreadMessages = true;
@@ -210,7 +214,11 @@ public class User {
 		}
 	}
 
-	public JProgressBar promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace, final CountDownLatch latch) {
-		return chatPanel.promptFileTransfer(fileNames, fileSizes, savePlace, latch);
+	public JProgressBar promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace,
+			final CountDownLatch latch) {
+		final JProgressBar bar = chatPanel.promptFileTransfer(fileNames, fileSizes, savePlace, latch);
+
+		updateUI();
+		return bar;
 	}
 }

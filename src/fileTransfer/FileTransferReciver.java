@@ -72,6 +72,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 
 			// Total amount recived.
 			int recived = 0;
+			final long start = System.currentTimeMillis(); 
 			for (;;) {
 				final String filename = input.readUTF();
 				final int size = input.readInt();
@@ -92,6 +93,9 @@ public class FileTransferReciver extends Thread implements Runnable {
 					read = read + n;
 					recived += n;
 					progressBar.setValue((int) (100 * (recived / (double) totalSize)));
+					
+					long bytesPerMs = recived / (System.currentTimeMillis() - start);
+					progressBar.setString(bytesPerMs + " kb/s");
 				}
 
 				fos.close();
@@ -100,6 +104,11 @@ public class FileTransferReciver extends Thread implements Runnable {
 		} catch (IOException | InterruptedException e) {
 			System.out.println("it's okey. No more files.");
 			e.printStackTrace();
+		} finally{
+			try {
+				socket.close();
+			} catch (IOException e) {
+			}
 		}
 
 	}

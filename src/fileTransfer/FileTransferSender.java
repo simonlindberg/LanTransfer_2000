@@ -18,6 +18,7 @@ public class FileTransferSender extends Thread implements Runnable {
 	private long totalSize;
 	private long sent;
 	private DataOutputStream output;
+	private long start;
 
 	public FileTransferSender(final List<File> files, final String ip, final JProgressBar fileProgress) {
 		this.progressBar = fileProgress;
@@ -54,6 +55,8 @@ public class FileTransferSender extends Thread implements Runnable {
 			// Send actual file data
 			sendFiles(files.toArray(new File[0]), "");
 
+			progressBar.setString("Done!");
+			
 			// End of files --> end of stream.
 			socket.close();
 		} catch (IOException e) {
@@ -89,6 +92,9 @@ public class FileTransferSender extends Thread implements Runnable {
 			read = read + n;
 			sent += n;
 			progressBar.setValue((int) (100 * (sent / (double) totalSize)));
+
+			long bytesPerMs = sent / (System.currentTimeMillis() - start);
+			progressBar.setString(bytesPerMs + " kb/s");
 		}
 
 		in.close();
