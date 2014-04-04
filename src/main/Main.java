@@ -29,103 +29,135 @@ public class Main {
 	public static final String myUsername = System.getProperty("user.name");
 	public static final String myIP = getMyIP();
 
+	private static final Map<String, User> users = new ConcurrentHashMap<String, User>();
+	private static final UserTable model = new UserTableModel();
+	private static final byte[] message = createMessage();
+	private static final DatagramPacket sendPacket = new DatagramPacket(message, message.length);
+
 	public static void main(final String[] args) {
 		try {
-			final Map<String, User> users = new ConcurrentHashMap<String, User>();
+			final DatagramSocket sendSocket = createBroadcastSendSocket();
 
-			final UserTable model = new UserTableModel();
+			final Gui gui = createGUI(sendSocket);
 
-			final DatagramSocket sendSocket = new DatagramSocket();
-			sendSocket.setBroadcast(true); // Behövs defacto inte, men why not.
-			sendSocket.connect(BroadcastThread.getBroadcastAddress(), BroadcastThread.BROADCAST_PORT);
+			startChatServer();
 
-			final byte[] message = createMessage();
+			startBroadcastListener(sendSocket, gui);
 
-			final DatagramPacket sendPacket = new DatagramPacket(message, message.length);
-
-			final Gui gui = new Gui(model, users, new ActionListener() {
-
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					sendForce(model, users, sendSocket, message, sendPacket);
-				}
-			});
-
-			new ChatServerThread(new ChatInitiator() {
-
-				@Override
-				public void initChat(final Socket socket) throws IOException {
-					final String ip = socket.getInetAddress().getHostAddress();
-
-					final User user = users.get(ip);
-
-					if (user == null) {
-						System.out.println("Unknow user tried to connect a chat: " + ip);
-						return;
-					}
-
-					user.newChat(socket);
-				}
-			}).start();
-
-			new BroadcastListener(sendSocket, sendPacket, new BroadcastResponseHandler() {
-
-				@Override
-				public void handleBroadcast(final DatagramPacket packet) {
-					final String ip = packet.getAddress().getHostAddress();
-					final String username = new String(packet.getData(), 1, packet.getLength() - 1);
-
-					if (!users.containsKey(ip)) {
-						users.put(ip, new User(username, ip, gui, model));
-					}
-
-					final User user = users.get(ip);
-					if (!user.isOnline()) {
-						model.addUser(user);
-					}
-					user.setOnline();
-				}
-
-				@Override
-				public void handleOfflineMessage(final DatagramPacket packet) {
-					final String ip = packet.getAddress().getHostAddress();
-
-					final User user = users.get(ip);
-
-					if (user == null) {
-						System.out.println("Unknow user sent offline message!");
-						return;
-					}
-
-					user.setOffline();
-
-					model.removeUser(user);
-				}
-			}).start();
-
-			new BroadcastSender(sendSocket, sendPacket).start();
+			startBroadcastSender(sendSocket);
 
 			sendForce(model, users, sendSocket, message, sendPacket);
 
-			new FileTransferServer(users).start();
-			
-			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			startTransferServer();
 
-				@Override
-				public void run() {
-					message[0] = BroadcastThread.GOING_OFFLINE;
-					try {
-						sendSocket.send(sendPacket);
-					} catch (IOException e) {
-					}
-				}
-			}));
-			new OfflineCheckerThread(users, model).start();
+			addShutdownHook(sendSocket);
+
+			startOfflineChecker();
 		} catch (SocketException e) {
 			Gui.showError("CRITICAL ERROR", e.getMessage() + "\n\nShuting down.");
 			System.exit(-1);
 		}
 
+	}
+
+	private static DatagramSocket createBroadcastSendSocket() throws SocketException {
+		final DatagramSocket sendSocket = new DatagramSocket();
+		sendSocket.setBroadcast(true); // Behövs defacto inte, men why not.
+		sendSocket.connect(BroadcastThread.getBroadcastAddress(), BroadcastThread.BROADCAST_PORT);
+		return sendSocket;
+	}
+
+	private static void startOfflineChecker() {
+		new OfflineCheckerThread(users, model).start();
+	}
+
+	private static void startTransferServer() {
+		new FileTransferServer(users).start();
+	}
+
+	private static void addShutdownHook(final DatagramSocket sendSocket) {
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				message[0] = BroadcastThread.GOING_OFFLINE;
+				try {
+					sendSocket.send(sendPacket);
+				} catch (IOException e) {
+				}
+			}
+		}));
+	}
+
+	private static void startBroadcastSender(final DatagramSocket sendSocket) {
+		new BroadcastSender(sendSocket, sendPacket).start();
+	}
+
+	private static void startBroadcastListener(final DatagramSocket sendSocket, final Gui gui) {
+		new BroadcastListener(sendSocket, sendPacket, new BroadcastResponseHandler() {
+
+			@Override
+			public void handleBroadcast(final DatagramPacket packet) {
+				final String ip = packet.getAddress().getHostAddress();
+				final String username = new String(packet.getData(), 1, packet.getLength() - 1);
+
+				if (!users.containsKey(ip)) {
+					users.put(ip, new User(username, ip, gui, model));
+				}
+
+				final User user = users.get(ip);
+				if (!user.isOnline()) {
+					model.addUser(user);
+				}
+				user.setOnline();
+			}
+
+			@Override
+			public void handleOfflineMessage(final DatagramPacket packet) {
+				final String ip = packet.getAddress().getHostAddress();
+
+				final User user = users.get(ip);
+
+				if (user == null) {
+					System.out.println("Unknow user sent offline message!");
+					return;
+				}
+
+				user.setOffline();
+
+				model.removeUser(user);
+			}
+		}).start();
+	}
+
+	private static void startChatServer() {
+		new ChatServerThread(new ChatInitiator() {
+
+			@Override
+			public void initChat(final Socket socket) throws IOException {
+				final String ip = socket.getInetAddress().getHostAddress();
+
+				final User user = users.get(ip);
+
+				if (user == null) {
+					System.out.println("Unknow user tried to connect a chat: " + ip);
+					return;
+				}
+
+				user.newChat(socket);
+			}
+		}).start();
+	}
+
+	private static Gui createGUI(final DatagramSocket sendSocket) {
+		final Gui gui = new Gui(model, users, new ActionListener() {
+
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				sendForce(model, users, sendSocket, message, sendPacket);
+			}
+		});
+		return gui;
 	}
 
 	private static String getMyIP() {
