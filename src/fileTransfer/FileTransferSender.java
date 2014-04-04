@@ -31,11 +31,14 @@ public class FileTransferSender extends Thread implements Runnable {
 		/*
 		 * 1. Skicka antal
 		 * 2. För alla filer: skica filnamn och storlek.
-		 * 3. Vänta på JA
-		 * 4. För alla filer: skicka filnamn, storlek OCH data.
+		 * 3. Vänta på svar
+		 * 4a. Om NEJ (0), stäng ner.
+		 * 4b. Om OKEY (1), fortsätt och börja skicka.
+		 * 5. För alla filer: skicka filnamn, storlek OCH data.
 		 */
+		Socket socket = null;
 		try {
-			final Socket socket = new Socket(ip, FileTransferServer.FILETRANSFER_PORT);
+			socket = new Socket(ip, FileTransferServer.FILETRANSFER_PORT);
 			final InputStream input = socket.getInputStream();
 			output = new DataOutputStream(socket.getOutputStream());
 
@@ -50,17 +53,28 @@ public class FileTransferSender extends Thread implements Runnable {
 			}
 
 			// Wait for OKEY!
-			input.read();
+			final int response = input.read();
+
+			if (response == 0) {
+				// cancelled
+				progressBar.setString("transfer cancelled");
+				return;
+			}
 
 			// Send actual file data
 			sendFiles(files.toArray(new File[0]), "");
 
 			progressBar.setString("Done!");
-			
+
 			// End of files --> end of stream.
 			socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				socket.close();
+			} catch (IOException e) {
+			}
 		}
 	}
 

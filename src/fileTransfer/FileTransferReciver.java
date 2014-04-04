@@ -32,8 +32,8 @@ public class FileTransferReciver extends Thread implements Runnable {
 		 * 1. Ta emot antal
 		 * 2. För alla filer: ta emot filnamn och storlek.
 		 * 3. Fråga användaren JA/NEJ
-		 * 4a. (NEJ) Stäng socket.
-		 * 4b. (JA) Skicka OKEY.
+		 * 4a. (NEJ) Skicka NEJ (0).
+		 * 4b. (JA) Skicka OKEY (1).
 		 * 5. För alla filer: ta emot filnamn, storlek OCH data.
 		 */
 		try {
@@ -61,9 +61,10 @@ public class FileTransferReciver extends Thread implements Runnable {
 
 			final File folder = savePlace.get();
 
-			// User canceld.
+			// User cancelled.
 			if (folder == null) {
-				socket.close();
+				socket.getOutputStream().write(0);
+				progressBar.setString("transfer cancelled");
 				return;
 			}
 
@@ -72,7 +73,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 
 			// Total amount recived.
 			int recived = 0;
-			final long start = System.currentTimeMillis(); 
+			final long start = System.currentTimeMillis();
 			for (;;) {
 				final String filename = input.readUTF();
 				final int size = input.readInt();
@@ -93,7 +94,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 					read = read + n;
 					recived += n;
 					progressBar.setValue((int) (100 * (recived / (double) totalSize)));
-					
+
 					long bytesPerMs = recived / (System.currentTimeMillis() - start);
 					progressBar.setString(bytesPerMs + " kb/s");
 				}
@@ -104,7 +105,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 		} catch (IOException | InterruptedException e) {
 			System.out.println("it's okey. No more files.");
 			e.printStackTrace();
-		} finally{
+		} finally {
 			try {
 				socket.close();
 			} catch (IOException e) {
