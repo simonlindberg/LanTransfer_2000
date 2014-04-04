@@ -41,10 +41,7 @@ public class Main {
 			startChatServer();
 
 			startBroadcastListener(sendSocket, gui);
-
 			startBroadcastSender(sendSocket);
-
-			sendForce(model, users, sendSocket, message, sendPacket);
 
 			startTransferServer();
 
@@ -88,7 +85,7 @@ public class Main {
 	}
 
 	private static void startBroadcastSender(final DatagramSocket sendSocket) {
-		new BroadcastSender(sendSocket, sendPacket).start();
+		new BroadcastSender(sendSocket, sendPacket, message).start();
 	}
 
 	private static void startBroadcastListener(final DatagramSocket sendSocket, final Gui gui) {
@@ -161,25 +158,10 @@ public class Main {
 		}
 	}
 
-	private static void sendForce(final UserTable model, final Map<String, User> users, final DatagramSocket sendSocket,
-			final byte[] message, final DatagramPacket sendPacket) {
-		try {
-			message[0] = BroadcastThread.FORCED; // FORCE ON!
-			sendSocket.send(sendPacket);
-			model.clear();
-			users.clear();
-		} catch (IOException e) {
-			System.out.println("Tried to send broadcast but failed.");
-			e.printStackTrace();
-		} finally {
-			message[0] = BroadcastThread.NORMAL; // FORCE OFF!
-		}
-	}
-
 	private static byte[] createMessage() {
 		final byte[] nameBytes = myUsername.getBytes();
 		final byte[] message = new byte[nameBytes.length + 1];
-		message[0] = 0; // NOT FORCED!
+		message[0] = BroadcastThread.NORMAL; // NOT FORCED!
 		System.arraycopy(nameBytes, 0, message, 1, nameBytes.length);
 		return message;
 	}
