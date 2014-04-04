@@ -1,7 +1,5 @@
 package main;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -38,7 +36,7 @@ public class Main {
 		try {
 			final DatagramSocket sendSocket = createBroadcastSendSocket();
 
-			final Gui gui = createGUI(sendSocket);
+			final Gui gui = createGUI();
 
 			startChatServer();
 
@@ -149,15 +147,8 @@ public class Main {
 		}).start();
 	}
 
-	private static Gui createGUI(final DatagramSocket sendSocket) {
-		final Gui gui = new Gui(model, users, new ActionListener() {
-
-			@Override
-			public void actionPerformed(final ActionEvent e) {
-				sendForce(model, users, sendSocket, message, sendPacket);
-			}
-		});
-		return gui;
+	private static Gui createGUI() {
+		return new Gui(model, users);
 	}
 
 	private static String getMyIP() {
