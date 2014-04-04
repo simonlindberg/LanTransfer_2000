@@ -35,19 +35,17 @@ public class Main {
 	public static void main(final String[] args) {
 		try {
 			final DatagramSocket sendSocket = createBroadcastSendSocket();
-
 			final Gui gui = createGUI();
 
 			startChatServer();
+			startTransferServer();
+
+			startOfflineChecker();
 
 			startBroadcastListener(sendSocket, gui);
 			startBroadcastSender(sendSocket);
 
-			startTransferServer();
-
 			addShutdownHook(sendSocket);
-
-			startOfflineChecker();
 		} catch (SocketException e) {
 			Gui.showError("CRITICAL ERROR", e.getMessage() + "\n\nShuting down.");
 			System.exit(-1);
