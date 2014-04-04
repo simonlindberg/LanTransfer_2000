@@ -10,7 +10,7 @@ import GUI.Gui;
 public class BroadcastListener extends BroadcastThread implements Runnable {
 
 	private final BroadcastResponseHandler handler;
-	private static final int BUFFER_SIZE = 20;
+	private static final int BUFFER_SIZE = 200;
 
 	public BroadcastListener(final DatagramSocket sendSocket, final DatagramPacket sendPacket, final BroadcastResponseHandler handler) {
 		super(sendSocket, sendPacket);
