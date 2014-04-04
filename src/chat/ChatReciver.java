@@ -26,8 +26,7 @@ public class ChatReciver extends Thread implements Runnable {
 				line = br.readLine();
 			}
 		} catch (IOException e) {
-			// Connection is dead, i.e. user is offline, let thread die.
-			user.setOffline();
+			// Connection is dead, User might be offline. Connection might just dropped.
 			System.out.println("Connection has died in ChatReceiver...");
 		}
 	}
