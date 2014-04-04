@@ -20,9 +20,8 @@ public class FileTransferServer extends Thread implements Runnable {
 	public void run() {
 		ServerSocket ss = null;
 		try {
+			ss = new ServerSocket(FILETRANSFER_PORT);
 			for (;;) {
-				ss = new ServerSocket(FILETRANSFER_PORT);
-
 				final Socket socket = ss.accept();
 				System.out.println(socket.getInetAddress().getHostAddress());
 				new FileTransferReciver(socket, users.get(socket.getInetAddress().getHostAddress())).start();
