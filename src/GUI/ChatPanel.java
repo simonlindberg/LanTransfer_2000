@@ -69,7 +69,6 @@ public class ChatPanel extends JPanel {
 
 			@Override
 			public void handleFiles(final List<File> files) {
-				// File.isDirectory()
 				System.out.println("senging files " + files);
 				sendFiles(files);
 			}
@@ -88,10 +87,10 @@ public class ChatPanel extends JPanel {
 			createFilePanel(fileSizes.get(i), fileNames.get(i));
 		}
 
-		return createTransferPanel(fileSizes.size(), totalSize, true, new ActionListener() {
+		final JProgressBar progressBar = createTransferPanel(false, fileSizes.size(), totalSize, true, new ActionListener() {
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {
 				JFileChooser chooser = new JFileChooser();
 				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				final int returnValue = chooser.showSaveDialog(null);
@@ -111,22 +110,24 @@ public class ChatPanel extends JPanel {
 			}
 		});
 
+		return progressBar;
+
 	}
 
-	private void createFilePanel(long size, String name) {
+	private void createFilePanel(final long fileSize, final String fileName) {
 		final JPanel fileContents = new JPanel(new MigLayout("insets 0, gap rel 0", "16[]10", "[][]5"));
-		final JLabel fileName = new JLabel(name);
-		fileName.setFont(BOLD);
-		fileContents.add(fileName, "wrap 1");
-		fileContents.add(new JLabel(FileUtils.readableFileSize(size)), "wrap 1");
+		final JLabel nameLabel = new JLabel(fileName);
+		nameLabel.setFont(BOLD);
+		fileContents.add(nameLabel, "wrap 1");
+		fileContents.add(new JLabel(FileUtils.readableFileSize(fileSize)), "wrap 1");
 
 		final JPanel messageContents = createMessagePanel(true, false, fileContents);
 
 		addToLog(messageContents);
 	}
 
-	private JProgressBar createTransferPanel(int numOfFiles, long totalSize, boolean receiving, ActionListener saveAsAction,
-			ActionListener cancelAction) {
+	private JProgressBar createTransferPanel(final boolean fromMe, final int numOfFiles, final long totalSize, final boolean receiving,
+			final ActionListener saveAsAction, final ActionListener cancelAction) {
 
 		final JPanel submitPanel = new JPanel(new MigLayout("insets 0, gap rel 0", "[][][]", "[]10[]"));
 
@@ -139,21 +140,30 @@ public class ChatPanel extends JPanel {
 
 		if (receiving) {
 			submitPanel.add(fileInfo);
-			final JButton cancel = new JButton("Cancel");
-			cancel.addActionListener(cancelAction);
 
 			final JButton saveAs = new JButton("Save as..");
 			saveAs.addActionListener(saveAsAction);
+
+			final JButton cancel = new JButton("Cancel");
+			cancel.addActionListener(cancelAction);
+			cancel.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					saveAs.setVisible(false);
+					cancel.setVisible(false);
+					System.out.println("Transfer Cancelled!");
+				}
+			});
 
 			submitPanel.add(saveAs);
 			submitPanel.add(cancel, "wrap");
 		} else {
 			submitPanel.add(fileInfo, "wrap");
 		}
-		// submitPanel.add(new JLabel("1.2 GB/s"));
 		submitPanel.add(fileProgress, "pushx, growx, spanx 4, height 5");
 
-		final JPanel submitContents = createMessagePanel(true, false, submitPanel);
+		final JPanel submitContents = createMessagePanel(fromMe, false, submitPanel);
 
 		addToLog(submitContents);
 
@@ -169,7 +179,7 @@ public class ChatPanel extends JPanel {
 			createFilePanel(fileSize, f.getName());
 		}
 
-		final JProgressBar progressBar = createTransferPanel(files.size(), totalSize, false, null, null);
+		final JProgressBar progressBar = createTransferPanel(true, files.size(), totalSize, false, null, null);
 
 		new FileTransferSender(files, user.getIP(), progressBar).start();
 	}
