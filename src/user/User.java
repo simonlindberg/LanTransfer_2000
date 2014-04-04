@@ -189,11 +189,6 @@ public class User {
 
 		sender.send(text);
 		
-		try {
-			socket.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public void newMessage(final String msg) {
