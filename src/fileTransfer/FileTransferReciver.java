@@ -18,6 +18,9 @@ import user.User;
 
 public class FileTransferReciver extends Thread implements Runnable {
 
+	public static final int CANCEL = 0;
+	public static final int ACCEPT = 1;
+
 	private final Socket socket;
 	private final User user;
 
@@ -63,13 +66,13 @@ public class FileTransferReciver extends Thread implements Runnable {
 
 			// User cancelled.
 			if (folder == null) {
-				socket.getOutputStream().write(0);
+				socket.getOutputStream().write(CANCEL);
 				progressBar.setString("transfer cancelled");
 				return;
 			}
 
 			// Send OKEY!
-			socket.getOutputStream().write(1);
+			socket.getOutputStream().write(ACCEPT);
 
 			// Total amount recived.
 			int recived = 0;

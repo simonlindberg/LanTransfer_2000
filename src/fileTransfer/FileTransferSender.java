@@ -55,7 +55,7 @@ public class FileTransferSender extends Thread implements Runnable {
 			// Wait for OKEY!
 			final int response = input.read();
 
-			if (response == 0) {
+			if (response == FileTransferReciver.CANCEL) {
 				// cancelled
 				progressBar.setString("transfer cancelled");
 				return;
@@ -110,7 +110,6 @@ public class FileTransferSender extends Thread implements Runnable {
 			long bytesPerMs = sent / (System.currentTimeMillis() - start);
 			progressBar.setString(bytesPerMs + " kb/s");
 		}
-
 		in.close();
 	}
 }
