@@ -99,7 +99,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 					progressBar.setValue((int) (100 * (recived / (double) totalSize)));
 
 					long bytesPerMs = recived / (System.currentTimeMillis() - start);
-					progressBar.setString(bytesPerMs + " kb/s");
+					progressBar.setString(filename + "  " + bytesPerMs + " kb/s");
 				}
 
 				fos.close();

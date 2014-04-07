@@ -108,7 +108,7 @@ public class FileTransferSender extends Thread implements Runnable {
 			progressBar.setValue((int) (100 * (sent / (double) totalSize)));
 
 			long bytesPerMs = sent / (System.currentTimeMillis() - start);
-			progressBar.setString(bytesPerMs + " kb/s");
+			progressBar.setString(filename + "  " + bytesPerMs + " kb/s");
 		}
 		in.close();
 	}
