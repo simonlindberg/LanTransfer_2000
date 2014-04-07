@@ -75,7 +75,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 			socket.getOutputStream().write(ACCEPT);
 
 			// Total amount recived.
-			int recived = 0;
+			int totalRecived = 0;
 			final long start = System.currentTimeMillis();
 			for (;;) {
 				final String filename = input.readUTF();
@@ -95,10 +95,12 @@ public class FileTransferReciver extends Thread implements Runnable {
 					final int n = input.read(buffer, 0, toRead);
 					fos.write(buffer, 0, n);
 					read = read + n;
-					recived += n;
-					progressBar.setValue((int) (100 * (recived / (double) totalSize)));
+					totalRecived += n;
 
-					long bytesPerMs = recived / (System.currentTimeMillis() - start);
+					final int percentage = (int) (100 * (totalRecived / (double) totalSize));
+					final long bytesPerMs = totalRecived / (System.currentTimeMillis() - start);
+
+					progressBar.setValue(percentage);
 					progressBar.setString(filename + "  " + bytesPerMs + " kb/s");
 				}
 

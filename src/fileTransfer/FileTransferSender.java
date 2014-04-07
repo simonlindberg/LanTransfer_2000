@@ -16,7 +16,7 @@ public class FileTransferSender extends Thread implements Runnable {
 	private final String ip;
 	private final JProgressBar progressBar;
 	private long totalSize;
-	private long sent;
+	private long totalSent;
 	private DataOutputStream output;
 	private long start;
 
@@ -61,6 +61,8 @@ public class FileTransferSender extends Thread implements Runnable {
 				return;
 			}
 
+			// -1 since division by zero.
+			start = System.currentTimeMillis() - 1;
 			// Send actual file data
 			sendFiles(files.toArray(new File[0]), "");
 
@@ -104,10 +106,12 @@ public class FileTransferSender extends Thread implements Runnable {
 			final int n = in.read(buffer, 0, toRead);
 			output.write(buffer, 0, n);
 			read = read + n;
-			sent += n;
-			progressBar.setValue((int) (100 * (sent / (double) totalSize)));
+			totalSent += n;
 
-			long bytesPerMs = sent / (System.currentTimeMillis() - start);
+			final int percentage = (int) (100 * (totalSent / (double) totalSize));
+			final long bytesPerMs = totalSent / (System.currentTimeMillis() - start);
+
+			progressBar.setValue(percentage);
 			progressBar.setString(filename + "  " + bytesPerMs + " kb/s");
 		}
 		in.close();
