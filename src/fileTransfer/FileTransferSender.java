@@ -57,7 +57,7 @@ public class FileTransferSender extends Thread implements Runnable {
 
 			if (response == FileTransferReciver.CANCEL) {
 				// cancelled
-				progressBar.setString("transfer cancelled");
+				progressBar.setString("Transfer cancelled!");
 				return;
 			}
 
