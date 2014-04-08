@@ -262,6 +262,8 @@ public class ChatPanel extends JPanel {
 			author.setFont(BOLD);
 			messageContents.add(author, "wrap 1, gapy 0 10");
 			lastFromMe = fromMe;
+			
+			firstMsg = false;
 		}
 
 		// Width required for bug with textarea and linewrap.
@@ -315,8 +317,6 @@ public class ChatPanel extends JPanel {
 		final int height = (int) (chatLog.getPreferredSize().getHeight() + messageContents.getPreferredSize().getHeight());
 		Rectangle rect = new Rectangle(0, height, 10, 10);
 		scrollChatLog.scrollRectToVisible(rect);
-
-		firstMsg = false;
 	}
 
 	public void showMessage(final String msg) {

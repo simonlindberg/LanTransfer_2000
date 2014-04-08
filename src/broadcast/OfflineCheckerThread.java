@@ -1,4 +1,4 @@
-package main;
+package broadcast;
 
 import java.util.Iterator;
 import java.util.Map;

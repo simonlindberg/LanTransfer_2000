@@ -18,6 +18,7 @@ import broadcast.BroadcastListener;
 import broadcast.BroadcastResponseHandler;
 import broadcast.BroadcastSender;
 import broadcast.BroadcastThread;
+import broadcast.OfflineCheckerThread;
 import chat.ChatInitiator;
 import chat.ChatServerThread;
 import fileTransfer.FileTransferServer;
