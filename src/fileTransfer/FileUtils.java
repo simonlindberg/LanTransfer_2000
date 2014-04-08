@@ -9,8 +9,12 @@ public class FileUtils {
 		file.getParentFile().mkdirs();
 	}
 
+	public static boolean isFile(final File f) {
+		return f.isFile() || !f.isDirectory();
+	}
+	
 	public static long fileSize(final File file) {
-		if (file.isFile()) {
+		if (isFile(file)) {
 			return file.length();
 		} else {
 			long sum = 0;
@@ -32,7 +36,7 @@ public class FileUtils {
 			return "0";
 		}
 		final String[] units = new String[] { "B", "KB", "MB", "GB", "TB" };
-		final int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
-		return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
+		final int digitGroups = (int) (Math.log10(size) / Math.log10(1000));
+		return new DecimalFormat("#,##0.#").format(size / Math.pow(1000, digitGroups)) + " " + units[digitGroups];
 	}
 }

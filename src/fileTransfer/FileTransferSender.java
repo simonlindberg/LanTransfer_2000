@@ -60,7 +60,7 @@ public class FileTransferSender extends Thread implements Runnable {
 
 			if (response == FileTransferReciver.CANCEL) {
 				// cancelled
-				intermediary.setString("Transfer cancelled!");
+				intermediary.cancel();
 				return;
 			}
 
@@ -86,7 +86,7 @@ public class FileTransferSender extends Thread implements Runnable {
 
 	private void sendFiles(final File[] files, final String root) throws IOException {
 		for (final File file : files) {
-			if (file.isFile()) {
+			if (FileUtils.isFile(file)) {
 				sendFile(file, root + file.getName());
 			} else {
 				sendFiles(file.listFiles(), root + file.getName() + "/");
@@ -95,29 +95,30 @@ public class FileTransferSender extends Thread implements Runnable {
 	}
 
 	private void sendFile(final File file, final String filename) throws IOException {
-		final int size = (int) file.length();
+		try (final InputStream in = new FileInputStream(file)) {
 
-		output.writeUTF(filename); // Send file name!
-		output.writeInt(size); // Send file size!
+			final int size = (int) file.length();
 
-		final InputStream in = new FileInputStream(file);
+			output.writeUTF(filename); // Send file name!
+			output.writeInt(size); // Send file size!
 
-		final byte[] buffer = new byte[2048];
+			final byte[] buffer = new byte[2048];
 
-		int read = 0;
-		while (read != size) {
-			final int toRead = (size - read) > buffer.length ? buffer.length : size - read;
-			final int n = in.read(buffer, 0, toRead);
-			output.write(buffer, 0, n);
-			read = read + n;
-			totalSent += n;
+			int read = 0;
+			while (read != size) {
+				final int toRead = (size - read) > buffer.length ? buffer.length : size - read;
+				final int n = in.read(buffer, 0, toRead);
+				output.write(buffer, 0, n);
+				read = read + n;
+				totalSent += n;
 
-			final int percentage = (int) (100 * (totalSent / (double) totalSize));
-			final long bytesPerMs = totalSent / (System.currentTimeMillis() - start);
+				final int percentage = (int) (100 * (totalSent / (double) totalSize));
+				final long bytesPerMs = totalSent / (System.currentTimeMillis() - start);
 
-			intermediary.setValue(percentage);
-			intermediary.setString(filename + "  " + bytesPerMs + " kb/s");
+				intermediary.setValue(percentage);
+				intermediary.setString(filename + "  " + bytesPerMs + " kb/s");
+			}
+
 		}
-		in.close();
 	}
 }

@@ -83,15 +83,15 @@ public class ChatPanel extends JPanel {
 	}
 
 	public Intermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace,
-			final CountDownLatch latch,final Socket socket) {
+			final CountDownLatch latch, final Socket socket) {
 		long totalSize = 0;
 		for (int i = 0; i < fileSizes.size(); i++) {
 			totalSize += fileSizes.get(i);
 
 			createFilePanel(fileSizes.get(i), fileNames.get(i), false);
 		}
-
-		final Intermediary intermediary = createTransferPanel(false, fileSizes.size(), totalSize, true, new ActionListener() {
+		final JButton saveAs = new JButton("Save ass..");
+		saveAs.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(final ActionEvent e) {
@@ -104,9 +104,11 @@ public class ChatPanel extends JPanel {
 					System.out.println("CHOSEN!: " + saveFile);
 					savePlace.set(saveFile);
 					latch.countDown();
+					saveAs.setVisible(false);
 				}
 			}
-		}, new ActionListener() {
+		});
+		final Intermediary intermediary = createTransferPanel(false, fileSizes.size(), totalSize, saveAs, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -135,8 +137,8 @@ public class ChatPanel extends JPanel {
 		addToLog(messageContents);
 	}
 
-	private Intermediary createTransferPanel(final boolean fromMe, final int numOfFiles, final long totalSize, final boolean receiving,
-			final ActionListener saveAsAction, final ActionListener cancelAction) {
+	private Intermediary createTransferPanel(final boolean fromMe, final int numOfFiles, final long totalSize, final JButton saveAs,
+			final ActionListener cancelAction) {
 
 		final JPanel submitPanel = new JPanel(new MigLayout("insets 0, gap rel 0", "[][][]", "[]10[]"));
 
@@ -150,14 +152,6 @@ public class ChatPanel extends JPanel {
 
 		submitPanel.add(fileInfo);
 
-		final JButton saveAs = new JButton("Save as..");
-		if (receiving) {
-
-			saveAs.addActionListener(saveAsAction);
-
-			submitPanel.add(saveAs);
-		}
-
 		final JButton cancel = new JButton("Cancel");
 		cancel.addActionListener(cancelAction);
 		cancel.addActionListener(new ActionListener() {
@@ -169,7 +163,9 @@ public class ChatPanel extends JPanel {
 				System.out.println("Transfer Cancelled!");
 			}
 		});
-
+		if (saveAs != null) {
+			submitPanel.add(saveAs);
+		}
 		submitPanel.add(cancel, "wrap");
 		submitPanel.add(fileProgress, "pushx, growx, spanx 4, height 5");
 
@@ -182,15 +178,15 @@ public class ChatPanel extends JPanel {
 
 	private void sendFiles(final List<File> files) {
 		long totalSize = 0;
-		for (File f : files) {
-			long fileSize = f.length();
+		for (final File f : files) {
+			long fileSize = FileUtils.fileSize(f);
 			totalSize += fileSize;
 
 			createFilePanel(fileSize, f.getName(), true);
 		}
 
 		final Socket socket = new Socket();
-		final Intermediary intermediary = createTransferPanel(true, files.size(), totalSize, false, null, new ActionListener() {
+		final Intermediary intermediary = createTransferPanel(true, files.size(), totalSize, null, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {

@@ -24,4 +24,9 @@ public class Intermediary {
 		cancel.setVisible(false);
 		bar.setString("transfer failed (" + e.getMessage() + ")");
 	}
+
+	public void cancel() {
+		bar.setString("Transfer cancelled!");
+		cancel.setVisible(false);
+	}
 }

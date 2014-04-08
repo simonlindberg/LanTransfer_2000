@@ -39,6 +39,9 @@ public class FileTransferReciver extends Thread implements Runnable {
 		 * 5. För alla filer: ta emot filnamn, storlek OCH data.
 		 */
 		Intermediary intermediary = null;
+		File currentFile = null;
+		OutputStream fos = null;
+		
 		try {
 			final DataInputStream input = new DataInputStream(socket.getInputStream());
 
@@ -67,7 +70,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 			// User cancelled.
 			if (folder == null) {
 				socket.getOutputStream().write(CANCEL);
-				intermediary.setString("Transfer cancelled!");
+				intermediary.cancel();
 				return;
 			}
 
@@ -83,11 +86,11 @@ public class FileTransferReciver extends Thread implements Runnable {
 
 				final byte[] buffer = new byte[2048];
 
-				final File file = new File(folder, filename);
+				currentFile = new File(folder, filename);
 
-				FileUtils.createParentFolders(file);
+				FileUtils.createParentFolders(currentFile);
 
-				final OutputStream fos = new BufferedOutputStream(new FileOutputStream(file));
+				fos = new BufferedOutputStream(new FileOutputStream(currentFile));
 
 				int read = 0;
 				while (read != size) {
@@ -112,12 +115,21 @@ public class FileTransferReciver extends Thread implements Runnable {
 			}
 
 		} catch (IOException | InterruptedException e) {
-			intermediary.fail(e);
+			if (intermediary != null) {
+				intermediary.fail(e);
+			}
+
+			if (currentFile != null) {
+				currentFile.delete();
+			}
 			e.printStackTrace();
 		} finally {
 			try {
 				socket.close();
-			} catch (IOException e) {
+				if (fos != null) {
+					fos.close();
+				}
+			} catch (Exception e) {
 			}
 		}
 
