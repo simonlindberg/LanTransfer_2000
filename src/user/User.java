@@ -7,10 +7,9 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.swing.JProgressBar;
-
 import GUI.ChatPanel;
 import GUI.Gui;
+import GUI.Intermediary;
 import chat.ChatReciver;
 import chat.ChatSender;
 import chat.ChatServerThread;
@@ -188,7 +187,7 @@ public class User {
 		}
 
 		sender.send(text);
-		
+
 	}
 
 	public void newMessage(final String msg) {
@@ -212,11 +211,11 @@ public class User {
 		}
 	}
 
-	public JProgressBar promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace,
-			final CountDownLatch latch) {
-		final JProgressBar bar = chatPanel.promptFileTransfer(fileNames, fileSizes, savePlace, latch);
+	public Intermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace,
+			final CountDownLatch latch, final Socket socket) {
+		final Intermediary intermediary = chatPanel.promptFileTransfer(fileNames, fileSizes, savePlace, latch, socket);
 
 		updateUI();
-		return bar;
+		return intermediary;
 	}
 }

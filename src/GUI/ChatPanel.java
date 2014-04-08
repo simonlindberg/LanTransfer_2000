@@ -82,8 +82,8 @@ public class ChatPanel extends JPanel {
 		scrollChatLog.getVerticalScrollBar().setUnitIncrement(16);
 	}
 
-	public JProgressBar promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace,
-			final CountDownLatch latch) {
+	public Intermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace,
+			final CountDownLatch latch,final Socket socket) {
 		long totalSize = 0;
 		for (int i = 0; i < fileSizes.size(); i++) {
 			totalSize += fileSizes.get(i);
@@ -91,7 +91,7 @@ public class ChatPanel extends JPanel {
 			createFilePanel(fileSizes.get(i), fileNames.get(i), false);
 		}
 
-		final JProgressBar progressBar = createTransferPanel(false, fileSizes.size(), totalSize, true, new ActionListener() {
+		final Intermediary intermediary = createTransferPanel(false, fileSizes.size(), totalSize, true, new ActionListener() {
 
 			@Override
 			public void actionPerformed(final ActionEvent e) {
@@ -111,10 +111,15 @@ public class ChatPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				latch.countDown();
+				try {
+					socket.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 
-		return progressBar;
+		return intermediary;
 
 	}
 
@@ -130,7 +135,7 @@ public class ChatPanel extends JPanel {
 		addToLog(messageContents);
 	}
 
-	private JProgressBar createTransferPanel(final boolean fromMe, final int numOfFiles, final long totalSize, final boolean receiving,
+	private Intermediary createTransferPanel(final boolean fromMe, final int numOfFiles, final long totalSize, final boolean receiving,
 			final ActionListener saveAsAction, final ActionListener cancelAction) {
 
 		final JPanel submitPanel = new JPanel(new MigLayout("insets 0, gap rel 0", "[][][]", "[]10[]"));
@@ -172,7 +177,7 @@ public class ChatPanel extends JPanel {
 
 		addToLog(submitContents);
 
-		return fileProgress;
+		return new Intermediary(cancel, fileProgress);
 	}
 
 	private void sendFiles(final List<File> files) {
@@ -185,7 +190,7 @@ public class ChatPanel extends JPanel {
 		}
 
 		final Socket socket = new Socket();
-		final JProgressBar progressBar = createTransferPanel(true, files.size(), totalSize, false, null, new ActionListener() {
+		final Intermediary intermediary = createTransferPanel(true, files.size(), totalSize, false, null, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -198,7 +203,7 @@ public class ChatPanel extends JPanel {
 			}
 		});
 
-		new FileTransferSender(files, user.getIP(), progressBar, socket).start();
+		new FileTransferSender(files, user.getIP(), intermediary, socket).start();
 	}
 
 	/**

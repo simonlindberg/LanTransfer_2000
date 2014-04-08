@@ -9,21 +9,21 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.List;
 
-import javax.swing.JProgressBar;
+import GUI.Intermediary;
 
 public class FileTransferSender extends Thread implements Runnable {
 
 	private final List<File> files;
 	private final String ip;
-	private final JProgressBar progressBar;
+	private final Intermediary intermediary;
 	private long totalSize;
 	private long totalSent;
 	private DataOutputStream output;
 	private long start;
 	private final Socket socket;
 
-	public FileTransferSender(final List<File> files, final String ip, final JProgressBar fileProgress, final Socket socket) {
-		this.progressBar = fileProgress;
+	public FileTransferSender(final List<File> files, final String ip, final Intermediary intermediary, final Socket socket) {
+		this.intermediary = intermediary;
 		this.socket = socket;
 		this.files = files;
 		this.ip = ip;
@@ -41,7 +41,7 @@ public class FileTransferSender extends Thread implements Runnable {
 		 */
 		try {
 			socket.connect(new InetSocketAddress(ip, FileTransferServer.FILETRANSFER_PORT));
-			
+
 			final InputStream input = socket.getInputStream();
 			output = new DataOutputStream(socket.getOutputStream());
 
@@ -60,7 +60,7 @@ public class FileTransferSender extends Thread implements Runnable {
 
 			if (response == FileTransferReciver.CANCEL) {
 				// cancelled
-				progressBar.setString("Transfer cancelled!");
+				intermediary.setString("Transfer cancelled!");
 				return;
 			}
 
@@ -69,12 +69,12 @@ public class FileTransferSender extends Thread implements Runnable {
 			// Send actual file data
 			sendFiles(files.toArray(new File[0]), "");
 
-			progressBar.setString("done");
+			intermediary.setString("done");
 
 			// End of files --> end of stream.
 			socket.close();
 		} catch (IOException e) {
-			progressBar.setString("transfer failed");
+			intermediary.fail(e);
 			e.printStackTrace();
 		} finally {
 			try {
@@ -115,8 +115,8 @@ public class FileTransferSender extends Thread implements Runnable {
 			final int percentage = (int) (100 * (totalSent / (double) totalSize));
 			final long bytesPerMs = totalSent / (System.currentTimeMillis() - start);
 
-			progressBar.setValue(percentage);
-			progressBar.setString(filename + "  " + bytesPerMs + " kb/s");
+			intermediary.setValue(percentage);
+			intermediary.setString(filename + "  " + bytesPerMs + " kb/s");
 		}
 		in.close();
 	}

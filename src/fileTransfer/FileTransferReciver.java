@@ -12,9 +12,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.swing.JProgressBar;
-
 import user.User;
+import GUI.Intermediary;
 
 public class FileTransferReciver extends Thread implements Runnable {
 
@@ -39,7 +38,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 		 * 4b. (JA) Skicka OKEY (1).
 		 * 5. För alla filer: ta emot filnamn, storlek OCH data.
 		 */
-		JProgressBar progressBar = null;
+		Intermediary intermediary = null;
 		try {
 			final DataInputStream input = new DataInputStream(socket.getInputStream());
 
@@ -59,7 +58,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 			final CountDownLatch latch = new CountDownLatch(1);
 			final AtomicReference<File> savePlace = new AtomicReference<>(null);
 
-			progressBar = user.promptFileTransfer(fileNames, fileSizes, savePlace, latch);
+			intermediary = user.promptFileTransfer(fileNames, fileSizes, savePlace, latch, socket);
 
 			latch.await(); // Wait for user interaction!
 
@@ -68,7 +67,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 			// User cancelled.
 			if (folder == null) {
 				socket.getOutputStream().write(CANCEL);
-				progressBar.setString("Transfer cancelled!");
+				intermediary.setString("Transfer cancelled!");
 				return;
 			}
 
@@ -101,19 +100,19 @@ public class FileTransferReciver extends Thread implements Runnable {
 					final int percentage = (int) (100 * (totalRecived / (double) totalSize));
 					final long bytesPerMs = totalRecived / (System.currentTimeMillis() - start);
 
-					progressBar.setValue(percentage);
-					progressBar.setString(filename + "  " + bytesPerMs + " kb/s");
+					intermediary.setValue(percentage);
+					intermediary.setString(filename + "  " + bytesPerMs + " kb/s");
 				}
 				fos.close();
 
 				if (totalRecived == totalSize) {
-					progressBar.setString("done");
+					intermediary.setString("done");
 					return;
 				}
 			}
 
 		} catch (IOException | InterruptedException e) {
-			progressBar.setString("transfer failed");
+			intermediary.fail(e);
 			e.printStackTrace();
 		} finally {
 			try {
