@@ -67,7 +67,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 			// User cancelled.
 			if (folder == null) {
 				socket.getOutputStream().write(CANCEL);
-				progressBar.setString("transfer cancelled");
+				progressBar.setString("Transfer cancelled!");
 				return;
 			}
 
