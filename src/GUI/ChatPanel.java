@@ -84,7 +84,7 @@ public class ChatPanel extends JPanel {
 		for (int i = 0; i < fileSizes.size(); i++) {
 			totalSize += fileSizes.get(i);
 
-			createFilePanel(fileSizes.get(i), fileNames.get(i));
+			createFilePanel(fileSizes.get(i), fileNames.get(i), false);
 		}
 
 		final JProgressBar progressBar = createTransferPanel(false, fileSizes.size(), totalSize, true, new ActionListener() {
@@ -114,14 +114,14 @@ public class ChatPanel extends JPanel {
 
 	}
 
-	private void createFilePanel(final long fileSize, final String fileName) {
+	private void createFilePanel(final long fileSize, final String fileName, boolean fromMe) {
 		final JPanel fileContents = new JPanel(new MigLayout("insets 0, gap rel 0", "16[]10", "[][]5"));
 		final JLabel nameLabel = new JLabel(fileName);
 		nameLabel.setFont(BOLD);
 		fileContents.add(nameLabel, "wrap 1");
 		fileContents.add(new JLabel(FileUtils.readableFileSize(fileSize)), "wrap 1");
 
-		final JPanel messageContents = createMessagePanel(true, false, fileContents);
+		final JPanel messageContents = createMessagePanel(fromMe, false, fileContents);
 
 		addToLog(messageContents);
 	}
@@ -132,7 +132,7 @@ public class ChatPanel extends JPanel {
 		final JPanel submitPanel = new JPanel(new MigLayout("insets 0, gap rel 0", "[][][]", "[]10[]"));
 
 		final JLabel fileInfo = new JLabel();
-		fileInfo.setText(user.getUsername() + " wants to send " + numOfFiles + " file(s) (" + FileUtils.readableFileSize(totalSize) + ")");
+		fileInfo.setText((fromMe ? "You want" : user.getUsername() + " wants") + " to send " + numOfFiles + " file(s) (" + FileUtils.readableFileSize(totalSize) + ")");
 
 		final JProgressBar fileProgress = new JProgressBar(0, 100);
 		fileProgress.setValue(0);
@@ -176,7 +176,7 @@ public class ChatPanel extends JPanel {
 			long fileSize = f.length();
 			totalSize += fileSize;
 
-			createFilePanel(fileSize, f.getName());
+			createFilePanel(fileSize, f.getName(), true);
 		}
 
 		final JProgressBar progressBar = createTransferPanel(true, files.size(), totalSize, false, null, null);
