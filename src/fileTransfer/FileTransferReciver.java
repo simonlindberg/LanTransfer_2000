@@ -30,17 +30,14 @@ public class FileTransferReciver extends Thread implements Runnable {
 	@Override
 	public void run() {
 		/*
-		 * 1. Ta emot antal
-		 * 2. För alla filer: ta emot filnamn och storlek.
-		 * 3. Fråga användaren JA/NEJ
-		 * 4a. (NEJ) Skicka NEJ (0).
-		 * 4b. (JA) Skicka OKEY (1).
-		 * 5. För alla filer: ta emot filnamn, storlek OCH data.
+		 * 1. Ta emot antal 2. För alla filer: ta emot filnamn och storlek. 3.
+		 * Fråga användaren JA/NEJ 4a. (NEJ) Skicka NEJ (0). 4b. (JA) Skicka
+		 * OKEY (1). 5. För alla filer: ta emot filnamn, storlek OCH data.
 		 */
 		Intermediary intermediary = null;
 		File currentFile = null;
 		OutputStream fos = null;
-		
+
 		try {
 			final DataInputStream input = new DataInputStream(socket.getInputStream());
 
@@ -100,10 +97,10 @@ public class FileTransferReciver extends Thread implements Runnable {
 					totalRecived += n;
 
 					final int percentage = (int) (100 * (totalRecived / (double) totalSize));
-					final long bytesPerMs = totalRecived / (System.currentTimeMillis() - start);
-
+					final long bytesPerMs = totalRecived / (System.currentTimeMillis() - start) * 1000;
+					
 					intermediary.setValue(percentage);
-					intermediary.setString(filename + "  " + bytesPerMs + " kb/s");
+					intermediary.setString(filename + "  " + FileUtils.readbleTransferSpeed(bytesPerMs));
 				}
 				fos.close();
 
@@ -113,7 +110,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 				}
 			}
 
-		} catch (IOException | InterruptedException e) {
+		} catch (IOException | InterruptedException | IndexOutOfBoundsException e) {
 			if (intermediary != null) {
 				intermediary.fail(e);
 			}
