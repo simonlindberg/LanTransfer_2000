@@ -69,8 +69,10 @@ public class ChatPanel extends JPanel {
 
 			@Override
 			public void handleFiles(final List<File> files) {
-				System.out.println("senging files " + files);
-				sendFiles(files);
+				if (user.isOnline()) {
+					System.out.println("senging files " + files);
+					sendFiles(files);
+				}
 			}
 		}));
 
