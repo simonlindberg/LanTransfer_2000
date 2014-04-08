@@ -102,7 +102,7 @@ public class FileTransferSender extends Thread implements Runnable {
 			output.writeUTF(filename); // Send file name!
 			output.writeInt(size); // Send file size!
 
-			final byte[] buffer = new byte[2048];
+			final byte[] buffer = new byte[32768];
 
 			int read = 0;
 			while (read != size) {
@@ -113,10 +113,10 @@ public class FileTransferSender extends Thread implements Runnable {
 				totalSent += n;
 
 				final int percentage = (int) (100 * (totalSent / (double) totalSize));
-				final long bytesPerMs = totalSent / (System.currentTimeMillis() - start);
+				final long bytesPerMs = totalSent / (System.currentTimeMillis() - start) * 1000;
 
 				intermediary.setValue(percentage);
-				intermediary.setString(filename + "  " + bytesPerMs + " kb/s");
+				intermediary.setString(filename + "  " + FileUtils.readbleTransferSpeed(bytesPerMs));
 			}
 
 		}

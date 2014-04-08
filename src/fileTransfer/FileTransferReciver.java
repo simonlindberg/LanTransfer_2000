@@ -1,6 +1,5 @@
 package fileTransfer;
 
-import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -84,13 +83,13 @@ public class FileTransferReciver extends Thread implements Runnable {
 				final String filename = input.readUTF();
 				final int size = input.readInt();
 
-				final byte[] buffer = new byte[2048];
+				final byte[] buffer = new byte[32768];
 
 				currentFile = new File(folder, filename);
 
 				FileUtils.createParentFolders(currentFile);
 
-				fos = new BufferedOutputStream(new FileOutputStream(currentFile));
+				fos = new FileOutputStream(currentFile);
 
 				int read = 0;
 				while (read != size) {

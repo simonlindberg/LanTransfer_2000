@@ -158,7 +158,9 @@ public class ChatPanel extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				saveAs.setVisible(false);
+				if (saveAs != null) {
+					saveAs.setVisible(false);
+				}
 				cancel.setVisible(false);
 				System.out.println("Transfer Cancelled!");
 			}
