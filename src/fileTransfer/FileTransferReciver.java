@@ -39,6 +39,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 		 * 4b. (JA) Skicka OKEY (1).
 		 * 5. För alla filer: ta emot filnamn, storlek OCH data.
 		 */
+		JProgressBar progressBar = null;
 		try {
 			final DataInputStream input = new DataInputStream(socket.getInputStream());
 
@@ -58,7 +59,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 			final CountDownLatch latch = new CountDownLatch(1);
 			final AtomicReference<File> savePlace = new AtomicReference<>(null);
 
-			final JProgressBar progressBar = user.promptFileTransfer(fileNames, fileSizes, savePlace, latch);
+			progressBar = user.promptFileTransfer(fileNames, fileSizes, savePlace, latch);
 
 			latch.await(); // Wait for user interaction!
 
@@ -103,12 +104,16 @@ public class FileTransferReciver extends Thread implements Runnable {
 					progressBar.setValue(percentage);
 					progressBar.setString(filename + "  " + bytesPerMs + " kb/s");
 				}
-
 				fos.close();
+
+				if (totalRecived == totalSize) {
+					progressBar.setString("done");
+					return;
+				}
 			}
 
 		} catch (IOException | InterruptedException e) {
-			System.out.println("it's okey. No more files.");
+			progressBar.setString("transfer failed");
 			e.printStackTrace();
 		} finally {
 			try {

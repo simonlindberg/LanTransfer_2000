@@ -10,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.IOException;
+import java.net.Socket;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -134,35 +136,36 @@ public class ChatPanel extends JPanel {
 		final JPanel submitPanel = new JPanel(new MigLayout("insets 0, gap rel 0", "[][][]", "[]10[]"));
 
 		final JLabel fileInfo = new JLabel();
-		fileInfo.setText((fromMe ? "You want" : user.getUsername() + " wants") + " to send " + numOfFiles + " file(s) (" + FileUtils.readableFileSize(totalSize) + ")");
+		fileInfo.setText((fromMe ? "You want" : user.getUsername() + " wants") + " to send " + numOfFiles + " file(s) ("
+				+ FileUtils.readableFileSize(totalSize) + ")");
 
 		final JProgressBar fileProgress = new JProgressBar(0, 100);
 		fileProgress.setValue(0);
 		fileProgress.setStringPainted(true);
 
-		if (receiving) {
-			submitPanel.add(fileInfo);
+		submitPanel.add(fileInfo);
 
-			final JButton saveAs = new JButton("Save as..");
+		final JButton saveAs = new JButton("Save as..");
+		if (receiving) {
+
 			saveAs.addActionListener(saveAsAction);
 
-			final JButton cancel = new JButton("Cancel");
-			cancel.addActionListener(cancelAction);
-			cancel.addActionListener(new ActionListener() {
-
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					saveAs.setVisible(false);
-					cancel.setVisible(false);
-					System.out.println("Transfer Cancelled!");
-				}
-			});
-
 			submitPanel.add(saveAs);
-			submitPanel.add(cancel, "wrap");
-		} else {
-			submitPanel.add(fileInfo, "wrap");
 		}
+
+		final JButton cancel = new JButton("Cancel");
+		cancel.addActionListener(cancelAction);
+		cancel.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveAs.setVisible(false);
+				cancel.setVisible(false);
+				System.out.println("Transfer Cancelled!");
+			}
+		});
+
+		submitPanel.add(cancel, "wrap");
 		submitPanel.add(fileProgress, "pushx, growx, spanx 4, height 5");
 
 		final JPanel submitContents = createMessagePanel(fromMe, false, submitPanel);
@@ -181,9 +184,21 @@ public class ChatPanel extends JPanel {
 			createFilePanel(fileSize, f.getName(), true);
 		}
 
-		final JProgressBar progressBar = createTransferPanel(true, files.size(), totalSize, false, null, null);
+		final Socket socket = new Socket();
+		final JProgressBar progressBar = createTransferPanel(true, files.size(), totalSize, false, null, new ActionListener() {
 
-		new FileTransferSender(files, user.getIP(), progressBar).start();
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("CANCEL");
+				try {
+					socket.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+
+		new FileTransferSender(files, user.getIP(), progressBar, socket).start();
 	}
 
 	/**
@@ -264,7 +279,6 @@ public class ChatPanel extends JPanel {
 			author.setFont(BOLD);
 			messageContents.add(author, "wrap 1, gapy 0 10");
 			lastFromMe = fromMe;
-			
 			firstMsg = false;
 		}
 

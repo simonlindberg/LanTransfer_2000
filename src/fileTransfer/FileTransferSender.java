@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.List;
 
@@ -19,9 +20,11 @@ public class FileTransferSender extends Thread implements Runnable {
 	private long totalSent;
 	private DataOutputStream output;
 	private long start;
+	private final Socket socket;
 
-	public FileTransferSender(final List<File> files, final String ip, final JProgressBar fileProgress) {
+	public FileTransferSender(final List<File> files, final String ip, final JProgressBar fileProgress, final Socket socket) {
 		this.progressBar = fileProgress;
+		this.socket = socket;
 		this.files = files;
 		this.ip = ip;
 	}
@@ -36,9 +39,9 @@ public class FileTransferSender extends Thread implements Runnable {
 		 * 4b. Om OKEY (1), fortsätt och börja skicka.
 		 * 5. För alla filer: skicka filnamn, storlek OCH data.
 		 */
-		Socket socket = null;
 		try {
-			socket = new Socket(ip, FileTransferServer.FILETRANSFER_PORT);
+			socket.connect(new InetSocketAddress(ip, FileTransferServer.FILETRANSFER_PORT));
+			
 			final InputStream input = socket.getInputStream();
 			output = new DataOutputStream(socket.getOutputStream());
 
@@ -66,11 +69,12 @@ public class FileTransferSender extends Thread implements Runnable {
 			// Send actual file data
 			sendFiles(files.toArray(new File[0]), "");
 
-			progressBar.setString("Done!");
+			progressBar.setString("done");
 
 			// End of files --> end of stream.
 			socket.close();
 		} catch (IOException e) {
+			progressBar.setString("transfer failed");
 			e.printStackTrace();
 		} finally {
 			try {
