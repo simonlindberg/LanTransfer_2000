@@ -36,7 +36,7 @@ public class Gui extends JFrame {
 
 		addComponents(model);
 
-		setTitle("LANTRANSFER_2000 (ALPHA)");
+		setTitle("LANTRANSFER_2000 (ALPHA) - " + Main.myUsername + " (" + Main.myIP + ")");
 		setSize(800, 400);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setMinimumSize(new Dimension(500, 300));
@@ -45,7 +45,7 @@ public class Gui extends JFrame {
 	}
 
 	private void addComponents(final UserTable model) {
-		final JComponent top = createTop();
+		final JComponent top = new JPanel(new BorderLayout());
 		final JComponent clientTable = createClientTable(model);
 
 		final JPanel leftContainer = new JPanel(new BorderLayout());
@@ -70,19 +70,6 @@ public class Gui extends JFrame {
 		introLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
 		return introLabel;
-	}
-
-	/**
-	 * Refresh + name
-	 */
-	private JComponent createTop() {
-		final JComponent topPane = new JPanel(new BorderLayout());
-
-		final JLabel nameLabel = new JLabel(Main.myUsername + " (" + Main.myIP + ")");
-
-		topPane.add(nameLabel, BorderLayout.WEST);
-
-		return topPane;
 	}
 
 	/**
