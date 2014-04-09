@@ -30,9 +30,12 @@ public class FileTransferReciver extends Thread implements Runnable {
 	@Override
 	public void run() {
 		/*
-		 * 1. Ta emot antal 2. För alla filer: ta emot filnamn och storlek. 3.
-		 * Fråga användaren JA/NEJ 4a. (NEJ) Skicka NEJ (0). 4b. (JA) Skicka
-		 * OKEY (1). 5. För alla filer: ta emot filnamn, storlek OCH data.
+		 * 1. Ta emot antal
+		 * 2. För alla filer: ta emot filnamn och storlek.
+		 * 3. Fråga användaren JA/NEJ
+		 * 4a. (NEJ) Skicka NEJ (0)
+		 * 4b. (JA) Skicka OKEY (1)
+		 * 5. För alla filer: ta emot filnamn, storlek OCH data.
 		 */
 		Intermediary intermediary = null;
 		File currentFile = null;
