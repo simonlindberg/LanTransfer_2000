@@ -1,11 +1,12 @@
 package fileTransfer;
 
 import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -38,7 +39,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 		 * 5. För alla filer: ta emot filnamn, storlek OCH data.
 		 */
 		Intermediary intermediary = null;
-		File currentFile = null;
+		Path currentFile = null;
 		OutputStream fos = null;
 
 		try {
@@ -58,13 +59,13 @@ public class FileTransferReciver extends Thread implements Runnable {
 
 			// Prompt user...
 			final CountDownLatch latch = new CountDownLatch(1);
-			final AtomicReference<File> savePlace = new AtomicReference<>(null);
+			final AtomicReference<String> savePlace = new AtomicReference<>(null);
 
 			intermediary = user.promptFileTransfer(fileNames, fileSizes, savePlace, latch, socket);
 
 			latch.await(); // Wait for user interaction!
 
-			final File folder = savePlace.get();
+			final String folder = savePlace.get();
 
 			// User cancelled.
 			if (folder == null) {
@@ -85,11 +86,11 @@ public class FileTransferReciver extends Thread implements Runnable {
 
 				final byte[] buffer = new byte[32768];
 
-				currentFile = new File(folder, filename);
+				currentFile = Paths.get(folder, filename);
 
 				FileUtils.createParentFolders(currentFile);
 
-				fos = new FileOutputStream(currentFile);
+				fos = Files.newOutputStream(currentFile);
 
 				long read = 0;
 				while (read != size) {
@@ -101,7 +102,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 
 					final int percentage = (int) (100 * (totalRecived / (double) totalSize));
 					final long bytesPerMs = totalRecived / (System.currentTimeMillis() - start) * 1000;
-					
+
 					intermediary.setValue(percentage);
 					intermediary.setString(FileUtils.shorten(filename) + "  " + FileUtils.readbleTransferSpeed(bytesPerMs));
 				}
@@ -119,7 +120,10 @@ public class FileTransferReciver extends Thread implements Runnable {
 			}
 
 			if (currentFile != null) {
-				currentFile.delete();
+				try {
+					Files.delete(currentFile);
+				} catch (IOException e1) {
+				}
 			}
 			e.printStackTrace();
 		} finally {

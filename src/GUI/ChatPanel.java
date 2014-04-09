@@ -83,7 +83,7 @@ public class ChatPanel extends JPanel {
 		scrollChatLog.getVerticalScrollBar().setUnitIncrement(16);
 	}
 
-	public Intermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace,
+	public Intermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<String> savePlace,
 			final CountDownLatch latch, final Socket socket) {
 		long totalSize = 0;
 		for (int i = 0; i < fileSizes.size(); i++) {
@@ -103,7 +103,7 @@ public class ChatPanel extends JPanel {
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
 					final File saveFile = chooser.getSelectedFile();
 					System.out.println("CHOSEN!: " + saveFile);
-					savePlace.set(saveFile);
+					savePlace.set(saveFile.getAbsolutePath());
 					latch.countDown();
 					saveAs.setVisible(false);
 				}

@@ -3,7 +3,8 @@ package tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -14,21 +15,22 @@ import fileTransfer.FileUtils;
 public class TestFileUtils {
 
 	@Test
-	public void testCreateParentFolders() {
-		final File a = new File("a");
-		final File b = new File(a, "b");
-		final File c = new File(b, "c");
-		final File dFile = new File(c, "d");
+	public void testCreateParentFolders() throws IOException {
+		final Path a = Paths.get("a");
+		final Path b = Paths.get("a", "b");
+		final Path c = Paths.get("b", "c");
+		final Path dFile = Paths.get("c", "d");
 		FileUtils.createParentFolders(dFile);
 
-		assertTrue(a.exists());
-		assertTrue(b.exists());
-		assertTrue(c.exists());
-		assertTrue(!dFile.exists());
+		assertTrue(Files.exists(a));
+		assertTrue(Files.exists(b));
+		assertTrue(Files.exists(c));
+		assertTrue(!Files.exists(dFile));
 
-		c.delete();
-		b.delete();
-		a.delete();
+		Files.delete(a);
+		Files.delete(b);
+		Files.delete(c);
+		Files.delete(dFile);
 	}
 
 	@Test

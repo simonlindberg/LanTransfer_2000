@@ -1,6 +1,5 @@
 package user;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
@@ -211,7 +210,7 @@ public class User {
 		}
 	}
 
-	public Intermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace,
+	public Intermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<String> savePlace,
 			final CountDownLatch latch, final Socket socket) {
 		final Intermediary intermediary = chatPanel.promptFileTransfer(fileNames, fileSizes, savePlace, latch, socket);
 

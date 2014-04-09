@@ -1,6 +1,5 @@
 package fileTransfer;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
@@ -15,8 +14,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class FileUtils {
 
-	public static void createParentFolders(final File file) {
-		file.getParentFile().mkdirs();
+	public static void createParentFolders(final Path currentFile) {
+		try {
+			Files.createDirectories(currentFile.getParent());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static boolean isFile(final Path file) {
