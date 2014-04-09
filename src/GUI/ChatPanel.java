@@ -175,7 +175,7 @@ public class ChatPanel extends JPanel {
 
 		addToLog(submitContents);
 
-		return new Intermediary(cancel, fileProgress);
+		return new Intermediary(cancel,saveAs, fileProgress);
 	}
 
 	private void sendFiles(final List<File> files) {
