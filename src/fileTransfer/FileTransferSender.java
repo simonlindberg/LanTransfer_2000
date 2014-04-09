@@ -106,8 +106,10 @@ public class FileTransferSender extends Thread implements Runnable {
 
 			long read = 0;
 			while (read != size) {
-				// Subtracting two longs and casting to int is bad, but it will only ever happen
-				// when the difference between the two is smaller than buffer.length, which fits in an int
+				// Subtracting two longs and casting to int is bad, but it will
+				// only ever happen
+				// when the difference between the two is smaller than
+				// buffer.length, which fits in an int
 				// So this should be fine...
 				final int toRead = (int) ((size - read) > buffer.length ? buffer.length : size - read);
 				final int n = in.read(buffer, 0, toRead);
@@ -119,7 +121,7 @@ public class FileTransferSender extends Thread implements Runnable {
 				final long bytesPerMs = totalSent / (System.currentTimeMillis() - start) * 1000;
 
 				intermediary.setValue(percentage);
-				intermediary.setString(filename + "  " + FileUtils.readbleTransferSpeed(bytesPerMs));
+				intermediary.setString(FileUtils.shorten(filename) + "  " + FileUtils.readbleTransferSpeed(bytesPerMs));
 			}
 
 		}

@@ -103,7 +103,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 					final long bytesPerMs = totalRecived / (System.currentTimeMillis() - start) * 1000;
 					
 					intermediary.setValue(percentage);
-					intermediary.setString(filename + "  " + FileUtils.readbleTransferSpeed(bytesPerMs));
+					intermediary.setString(FileUtils.shorten(filename) + "  " + FileUtils.readbleTransferSpeed(bytesPerMs));
 				}
 				fos.close();
 

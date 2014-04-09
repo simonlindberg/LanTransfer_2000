@@ -49,4 +49,11 @@ public class FileUtils {
 		final int digitGroups = (int) (Math.log10(val) / Math.log10(1000));
 		return new DecimalFormat("#,##0.#").format(val / Math.pow(1000, digitGroups)) + " " + units[digitGroups];
 	}
+
+	public static String shorten(final String filename) {
+		if (filename.length() < 40) {
+			return filename;
+		}
+		return filename.substring(0, 18) + "..." + filename.substring(filename.length() - 18, filename.length() - 1);
+	}
 }
