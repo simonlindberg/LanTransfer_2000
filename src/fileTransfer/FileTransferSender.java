@@ -97,16 +97,19 @@ public class FileTransferSender extends Thread implements Runnable {
 	private void sendFile(final File file, final String filename) throws IOException {
 		try (final InputStream in = new FileInputStream(file)) {
 
-			final int size = (int) file.length();
+			final long size = file.length();
 
 			output.writeUTF(filename); // Send file name!
-			output.writeInt(size); // Send file size!
+			output.writeLong(size); // Send file size!
 
 			final byte[] buffer = new byte[32768];
 
-			int read = 0;
+			long read = 0;
 			while (read != size) {
-				final int toRead = (size - read) > buffer.length ? buffer.length : size - read;
+				// Subtracting two longs and casting to int is bad, but it will only ever happen
+				// when the difference between the two is smaller than buffer.length, which fits in an int
+				// So this should be fine...
+				final int toRead = (int) ((size - read) > buffer.length ? buffer.length : size - read);
 				final int n = in.read(buffer, 0, toRead);
 				output.write(buffer, 0, n);
 				read = read + n;
