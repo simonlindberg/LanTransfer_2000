@@ -78,7 +78,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 			final long start = System.currentTimeMillis();
 			for (;;) {
 				final String filename = input.readUTF();
-				final int size = input.readInt();
+				final long size = input.readLong();
 
 				final byte[] buffer = new byte[32768];
 
@@ -88,9 +88,9 @@ public class FileTransferReciver extends Thread implements Runnable {
 
 				fos = new FileOutputStream(currentFile);
 
-				int read = 0;
+				long read = 0;
 				while (read != size) {
-					final int toRead = (size - read) > buffer.length ? buffer.length : size - read;
+					final int toRead = (int) ((size - read) > buffer.length ? buffer.length : size - read);
 					final int n = input.read(buffer, 0, toRead);
 					fos.write(buffer, 0, n);
 					read = read + n;
