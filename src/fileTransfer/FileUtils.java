@@ -1,7 +1,17 @@
 package fileTransfer;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class FileUtils {
 
@@ -9,20 +19,24 @@ public class FileUtils {
 		file.getParentFile().mkdirs();
 	}
 
-	public static boolean isFile(final File f) {
-		return f.isFile() || !f.isDirectory();
+	public static boolean isFile(final Path file) {
+		return !Files.isDirectory(file);
 	}
 
-	public static long fileSize(final File file) {
-		if (isFile(file)) {
-			return file.length();
-		} else {
-			long sum = 0;
-			for (final File childFile : file.listFiles()) {
-				sum = sum + fileSize(childFile);
-			}
-			return sum;
+	public static long fileSize(final Path path) {
+		final AtomicLong val = new AtomicLong(0);
+		try {
+			Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+					val.addAndGet(Files.size(file));
+					return FileVisitResult.CONTINUE;
+				}
+			});
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+		return val.get();
 	}
 
 	public static String readableFileSize(final long size) {
@@ -55,5 +69,16 @@ public class FileUtils {
 			return filename;
 		}
 		return filename.substring(0, 18) + "..." + filename.substring(filename.length() - 18, filename.length() - 1);
+	}
+
+	public static List<Path> folderContents(final Path directory) {
+		final List<Path> fileNames = new ArrayList<>();
+		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory)) {
+			for (Path path : directoryStream) {
+				fileNames.add(path);
+			}
+		} catch (IOException ex) {
+		}
+		return fileNames;
 	}
 }

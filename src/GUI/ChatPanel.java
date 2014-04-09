@@ -12,6 +12,7 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.file.Path;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -70,7 +71,7 @@ public class ChatPanel extends JPanel {
 		setDropTarget(new DropTarget(this, new FileDropHandler() {
 
 			@Override
-			public void handleFiles(final List<File> files) {
+			public void handleFiles(final List<Path> files) {
 				if (user.isOnline()) {
 					System.out.println("senging files " + files);
 					sendFiles(files);
@@ -179,17 +180,17 @@ public class ChatPanel extends JPanel {
 		return new Intermediary(cancel, saveAs, fileProgress);
 	}
 
-	private void sendFiles(final List<File> files) {
+	private void sendFiles(final List<Path> filePaths) {
 		long totalSize = 0;
-		for (final File f : files) {
-			final long fileSize = FileUtils.fileSize(f);
+		for (final Path path : filePaths) {
+			final long fileSize = FileUtils.fileSize(path);
 			totalSize += fileSize;
 
-			createFilePanel(fileSize, f.getName(), true);
+			createFilePanel(fileSize, path.getFileName().toString(), true);
 		}
 
 		final Socket socket = new Socket();
-		final Intermediary intermediary = createTransferPanel(true, files.size(), totalSize, null, new ActionListener() {
+		final Intermediary intermediary = createTransferPanel(true, filePaths.size(), totalSize, null, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -201,7 +202,7 @@ public class ChatPanel extends JPanel {
 			}
 		});
 
-		new FileTransferSender(files, user.getIP(), intermediary, socket).start();
+		new FileTransferSender(filePaths, user.getIP(), intermediary, socket).start();
 	}
 
 	/**

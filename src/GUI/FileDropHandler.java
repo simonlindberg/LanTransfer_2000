@@ -8,6 +8,9 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class FileDropHandler implements DropTargetListener {
@@ -35,8 +38,13 @@ public abstract class FileDropHandler implements DropTargetListener {
 			dtde.acceptDrop(1);
 			try {
 				final List<File> files = (List<File>) dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+				final List<Path> filePaths = new ArrayList<>(files.size());
 
-				handleFiles(files);
+				for (final File f : files) {
+					filePaths.add(FileSystems.getDefault().getPath(f.getAbsolutePath()));
+				}
+
+				handleFiles(filePaths);
 			} catch (UnsupportedFlavorException | IOException e) {
 				System.err.println("FILE DROP ERROR!\n\nWhat did you do???");
 				e.printStackTrace();
@@ -44,6 +52,6 @@ public abstract class FileDropHandler implements DropTargetListener {
 		}
 	}
 
-	public abstract void handleFiles(final List<File> files);
+	public abstract void handleFiles(final List<Path> files);
 
 }

@@ -1,19 +1,19 @@
 package fileTransfer;
 
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import GUI.Intermediary;
 
 public class FileTransferSender extends Thread implements Runnable {
 
-	private final List<File> files;
+	private final List<Path> filePaths;
 	private final String ip;
 	private final Intermediary intermediary;
 	private long totalSize;
@@ -22,10 +22,10 @@ public class FileTransferSender extends Thread implements Runnable {
 	private long start;
 	private final Socket socket;
 
-	public FileTransferSender(final List<File> files, final String ip, final Intermediary intermediary, final Socket socket) {
+	public FileTransferSender(final List<Path> filePaths, final String ip, final Intermediary intermediary, final Socket socket) {
 		this.intermediary = intermediary;
 		this.socket = socket;
-		this.files = files;
+		this.filePaths = filePaths;
 		this.ip = ip;
 	}
 
@@ -46,11 +46,11 @@ public class FileTransferSender extends Thread implements Runnable {
 			output = new DataOutputStream(socket.getOutputStream());
 
 			// Send number of files!
-			output.writeLong(files.size());
+			output.writeLong(filePaths.size());
 
-			for (final File file : files) {
+			for (final Path file : filePaths) {
 				final long size = FileUtils.fileSize(file);
-				output.writeUTF(file.getName());
+				output.writeUTF(file.getFileName().toString());
 				output.writeLong(size);
 				totalSize += size;
 			}
@@ -67,7 +67,7 @@ public class FileTransferSender extends Thread implements Runnable {
 			// -1 since division by zero.
 			start = System.currentTimeMillis() - 1;
 			// Send actual file data
-			sendFiles(files.toArray(new File[0]), "");
+			sendFiles(filePaths, "");
 
 			intermediary.done();
 
@@ -84,20 +84,21 @@ public class FileTransferSender extends Thread implements Runnable {
 		}
 	}
 
-	private void sendFiles(final File[] files, final String root) throws IOException {
-		for (final File file : files) {
+	private void sendFiles(final List<Path> paths, final String root) throws IOException {
+		for (final Path file : paths) {
 			if (FileUtils.isFile(file)) {
-				sendFile(file, root + file.getName());
+				sendFile(file, root + file.getFileName().toString());
 			} else {
-				sendFiles(file.listFiles(), root + file.getName() + "/");
+				sendFiles(FileUtils.folderContents(file), root + file.getFileName().toString() + "/");
 			}
 		}
 	}
 
-	private void sendFile(final File file, final String filename) throws IOException {
-		try (final InputStream in = new FileInputStream(file)) {
+	private void sendFile(final Path file, final String filename) throws IOException {
+		System.out.println("sending: " + file);
+		try (final InputStream in = Files.newInputStream(file)) {
 
-			final long size = file.length();
+			final long size = FileUtils.fileSize(file);
 
 			output.writeUTF(filename); // Send file name!
 			output.writeLong(size); // Send file size!

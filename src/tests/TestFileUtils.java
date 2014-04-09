@@ -2,13 +2,10 @@ package tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Random;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.junit.Test;
 
@@ -34,30 +31,14 @@ public class TestFileUtils {
 		a.delete();
 	}
 
-	@SuppressWarnings("resource")
 	@Test
 	public void testFileSize() {
-		final File f = new File("f");
-		try {
+		final Path folder = Paths.get("lib");
+		final Path file = Paths.get("lib", "miglayout-4.0.jar");
 
-			assertTrue(f.createNewFile());
+		assertEquals(203283, FileUtils.fileSize(folder));
+		assertEquals(203283, FileUtils.fileSize(file));
 
-			final OutputStream fos = new FileOutputStream(f);
-
-			final Random random = new Random();
-			final int size = random.nextInt(2000);
-
-			for (int i = 0; i < size; i++) {
-				fos.write(random.nextInt());
-			}
-			System.out.println(size);
-			assertEquals(FileUtils.fileSize(f), size);
-
-		} catch (IOException e) {
-			fail(e.getMessage());
-		}finally{
-			f.delete();
-		}
 	}
 
 }
