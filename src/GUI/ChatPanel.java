@@ -149,7 +149,8 @@ public class ChatPanel extends JPanel {
 		final JProgressBar fileProgress = new JProgressBar(0, 100);
 		fileProgress.setValue(0);
 		fileProgress.setStringPainted(true);
-
+		fileProgress.setString("waiting for response...");
+		
 		submitPanel.add(fileInfo);
 
 		final JButton cancel = new JButton("Cancel");
@@ -162,7 +163,7 @@ public class ChatPanel extends JPanel {
 					saveAs.setVisible(false);
 				}
 				cancel.setVisible(false);
-				System.out.println("Transfer Cancelled!");
+				System.out.println("transfer cancelled!");
 			}
 		});
 		if (saveAs != null) {
@@ -175,13 +176,13 @@ public class ChatPanel extends JPanel {
 
 		addToLog(submitContents);
 
-		return new Intermediary(cancel,saveAs, fileProgress);
+		return new Intermediary(cancel, saveAs, fileProgress);
 	}
 
 	private void sendFiles(final List<File> files) {
 		long totalSize = 0;
 		for (final File f : files) {
-			long fileSize = FileUtils.fileSize(f);
+			final long fileSize = FileUtils.fileSize(f);
 			totalSize += fileSize;
 
 			createFilePanel(fileSize, f.getName(), true);
@@ -192,7 +193,6 @@ public class ChatPanel extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("CANCEL");
 				try {
 					socket.close();
 				} catch (IOException e1) {
