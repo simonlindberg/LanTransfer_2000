@@ -29,4 +29,9 @@ public class Intermediary {
 		bar.setString("transfer cancelled!");
 		cancel.setVisible(false);
 	}
+
+	public void done() {
+		bar.setString("done");
+		cancel.setVisible(false);
+	}
 }

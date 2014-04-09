@@ -69,7 +69,7 @@ public class FileTransferSender extends Thread implements Runnable {
 			// Send actual file data
 			sendFiles(files.toArray(new File[0]), "");
 
-			intermediary.setString("done");
+			intermediary.done();
 
 			// End of files --> end of stream.
 			socket.close();

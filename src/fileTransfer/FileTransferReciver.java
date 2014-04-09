@@ -105,7 +105,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 				fos.close();
 
 				if (totalRecived == totalSize) {
-					intermediary.setString("done");
+					intermediary.done();
 					return;
 				}
 			}
