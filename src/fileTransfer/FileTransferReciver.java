@@ -74,7 +74,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 			socket.getOutputStream().write(ACCEPT);
 
 			// Total amount recived.
-			int totalRecived = 0;
+			long totalRecived = 0;
 			final long start = System.currentTimeMillis();
 			for (;;) {
 				final String filename = input.readUTF();
