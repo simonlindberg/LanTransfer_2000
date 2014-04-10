@@ -3,7 +3,6 @@ package chat;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 
 public class ChatSender {
 	private final DataOutputStream out;
