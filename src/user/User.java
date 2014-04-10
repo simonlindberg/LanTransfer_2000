@@ -186,7 +186,12 @@ public class User implements MessageReciver{
 			createNewChat();
 		}
 
-		sender.send(text);
+		//TA HAND OM DETTA KANSKE?!
+		try {
+			sender.send(text);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 	}
 
