@@ -9,11 +9,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import GUI.ChatPanel;
 import GUI.Gui;
 import GUI.Intermediary;
-import chat.ChatReciver;
+import chat.ChatReciverThread;
 import chat.ChatSender;
 import chat.ChatServerThread;
+import chat.MessageReciver;
 
-public class User {
+public class User implements MessageReciver{
 	public final static User NULL_USER = new User("", "");
 
 	private final String ip;
@@ -104,7 +105,7 @@ public class User {
 
 	private void initChat() throws IOException {
 		sender = new ChatSender(socket.getOutputStream());
-		new ChatReciver(socket.getInputStream(), this).start();
+		new ChatReciverThread(socket.getInputStream(), this).start();
 	}
 
 	/**

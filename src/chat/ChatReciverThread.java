@@ -5,14 +5,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import user.User;
-
-public class ChatReciver extends Thread implements Runnable {
+public class ChatReciverThread extends Thread implements Runnable {
 
 	private final BufferedReader br;
-	private final User user;
+	private final MessageReciver user;
 
-	public ChatReciver(final InputStream inputStream, final User user) {
+	public ChatReciverThread(final InputStream inputStream, final MessageReciver user) {
 		this.br = new BufferedReader(new InputStreamReader(inputStream));
 		this.user = user;
 	}
