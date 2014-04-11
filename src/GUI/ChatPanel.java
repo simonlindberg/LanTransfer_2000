@@ -52,7 +52,7 @@ public class ChatPanel extends JPanel {
 	private boolean lastFromMe;
 	// firstMsg determines if we should show the name of the user or not. Always
 	// show the name of the first message.
-	private boolean firstMsg = true;
+	private boolean forceName = true;
 
 	private final User user;
 
@@ -86,6 +86,9 @@ public class ChatPanel extends JPanel {
 
 	public FileTransferIntermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<String> savePlace,
 			final CountDownLatch latch, final Socket socket) {
+		// Sätter detta så namnet syns nästa gång man skriver
+		forceName = true;
+		
 		long totalSize = 0;
 		for (int i = 0; i < fileSizes.size(); i++) {
 			totalSize += fileSizes.get(i);
@@ -134,14 +137,14 @@ public class ChatPanel extends JPanel {
 		fileContents.add(nameLabel, "wrap 1");
 		fileContents.add(new JLabel(FileUtils.readableFileSize(fileSize)), "wrap 1");
 
-		final JPanel messageContents = createMessagePanel(fromMe, false, fileContents);
+		final JPanel messageContents = createMessagePanel(fromMe, false, fileContents, false);
 
 		addToLog(messageContents);
 	}
 
 	private FileTransferIntermediary createTransferPanel(final boolean fromMe, final int numOfFiles, final long totalSize, final JButton saveAs,
 			final ActionListener cancelAction) {
-
+		
 		final JPanel submitPanel = new JPanel(new MigLayout("insets 0, gap rel 0", "[][][]", "[]10[]"));
 
 		final JLabel fileInfo = new JLabel();
@@ -174,14 +177,19 @@ public class ChatPanel extends JPanel {
 		submitPanel.add(cancel, "wrap");
 		submitPanel.add(fileProgress, "pushx, growx, spanx 4, height 5");
 
-		final JPanel submitContents = createMessagePanel(fromMe, false, submitPanel);
+		final JPanel submitContents = createMessagePanel(fromMe, false, submitPanel, true);
 
 		addToLog(submitContents);
+		
+		// Sätter detta så namnet syns nästa gång man skriver
+		forceName = true;
 
 		return new Intermediary(cancel, saveAs, fileProgress);
 	}
 
 	private void sendFiles(final List<Path> filePaths) {
+		// Sätter detta så namnet syns nästa gång man skriver
+		forceName = true;
 		long totalSize = 0;
 		for (final Path path : filePaths) {
 			final long fileSize = FileUtils.fileSize(path);
@@ -264,7 +272,7 @@ public class ChatPanel extends JPanel {
 	 *            panel.
 	 * @return
 	 */
-	private JPanel createMessagePanel(final boolean fromMe, final boolean notice, final JComponent contents) {
+	private JPanel createMessagePanel(final boolean fromMe, final boolean notice, final JComponent contents, boolean displayTime) {
 		final JPanel messageContents = new JPanel(new MigLayout("insets 0, gap rel 0", "10[]10[]10[]10", "5[]5"));
 
 		if (fromMe) {
@@ -278,18 +286,20 @@ public class ChatPanel extends JPanel {
 		final JLabel time = new JLabel(timeFormat.format(Calendar.getInstance().getTime()));
 		time.setForeground(INFO_TXT);
 
-		if ((fromMe != lastFromMe || firstMsg) && !notice) {
+		if ((fromMe != lastFromMe || forceName) && !notice) {
 			final JLabel author = new JLabel(fromMe ? Main.myUsername : user.getUsername());
 			author.setForeground(INFO_TXT);
 			author.setFont(BOLD);
 			messageContents.add(author, "wrap 1, gapy 0 10");
 			lastFromMe = fromMe;
-			firstMsg = false;
+			forceName = false;
 		}
 
 		// Width required for bug with textarea and linewrap.
 		messageContents.add(contents, "width 10:50:, pushx, growx");
-		messageContents.add(time);
+		if (displayTime) {
+			messageContents.add(time);
+		}
 
 		return messageContents;
 	}
@@ -313,7 +323,7 @@ public class ChatPanel extends JPanel {
 				contents.setOpaque(true);
 				contents.setForeground(color);
 
-				final JPanel messageContents = createMessagePanel(fromMe, notice, contents);
+				final JPanel messageContents = createMessagePanel(fromMe, notice, contents, true);
 
 				addToLog(messageContents);
 			}
@@ -349,6 +359,8 @@ public class ChatPanel extends JPanel {
 	}
 
 	private void showNotice(final String text) {
+		// Sätter detta så namnet syns nästa gång man skriver
+		forceName = true;
 		showMessage(text, NOTICE_COLOR, false, true);
 	}
 
