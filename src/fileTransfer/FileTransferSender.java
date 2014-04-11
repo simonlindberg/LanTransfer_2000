@@ -93,7 +93,6 @@ public class FileTransferSender extends Thread implements Runnable {
 	}
 
 	private void sendFile(final Path file, final String filename) throws IOException {
-		System.out.println("sending: " + file);
 		try (final InputStream in = Files.newInputStream(file)) {
 
 			final long size = FileUtils.fileSize(file);

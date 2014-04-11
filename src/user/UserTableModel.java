@@ -76,7 +76,6 @@ public class UserTableModel extends DefaultTableModel implements UserTable {
 	@Override
 	public void updateUser(final User user) {
 		final int index = users.indexOf(user);
-		System.out.println("update: " + index);
 		if (index >= 0) {
 			super.fireTableCellUpdated(index, 0);
 			super.fireTableCellUpdated(index, 1);
