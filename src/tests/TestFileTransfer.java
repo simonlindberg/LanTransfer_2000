@@ -19,14 +19,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import network.Initiator;
+import network.NetworkUtils;
+
 import org.junit.Test;
 
-import fileTransfer.FileTransferInitiator;
 import fileTransfer.FileTransferIntermediary;
 import fileTransfer.FileTransferPrompter;
 import fileTransfer.FileTransferReciver;
 import fileTransfer.FileTransferSender;
-import fileTransfer.FileTransferServer;
 
 public class TestFileTransfer {
 
@@ -116,10 +117,10 @@ public class TestFileTransfer {
 	}
 
 	private void startServer(final AtomicBoolean cancelled, final AtomicBoolean failed, final AtomicBoolean done, final AtomicInteger val) {
-		new FileTransferServer(new FileTransferInitiator() {
+		NetworkUtils.startFileTransferServer(new Initiator() {
 
 			@Override
-			public void initFileTransfer(Socket socket) {
+			public void init(final Socket socket) {
 				new FileTransferReciver(socket, new FileTransferPrompter() {
 
 					@Override
@@ -160,7 +161,7 @@ public class TestFileTransfer {
 					}
 				}).start();
 			}
-		}).start();
+		});
 	}
 
 	private static List<Path> createRandomFile(final byte[] senderCont) throws IOException {

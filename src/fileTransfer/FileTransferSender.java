@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import network.NetworkUtils;
+
 public class FileTransferSender extends Thread implements Runnable {
 
 	private final List<Path> filePaths;
@@ -38,7 +40,7 @@ public class FileTransferSender extends Thread implements Runnable {
 		 * 5. För alla filer: skicka filnamn, storlek OCH data.
 		 */
 		try {
-			socket.connect(new InetSocketAddress(ip, FileTransferServer.FILETRANSFER_PORT));
+			socket.connect(new InetSocketAddress(ip, NetworkUtils.FILETRANSFER_PORT));
 
 			final InputStream input = socket.getInputStream();
 			output = new DataOutputStream(socket.getOutputStream());

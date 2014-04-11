@@ -1,18 +1,19 @@
 package tests;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.assertEquals;
+import network.Initiator;
+import network.NetworkUtils;
 
 import org.junit.Test;
 
-import chat.ChatInitiator;
 import chat.ChatReciverThread;
 import chat.ChatSender;
-import chat.ChatServerThread;
 import chat.MessageReciver;
 
 public class TestChat {
@@ -22,10 +23,10 @@ public class TestChat {
 		final String correctMessage = "this is a message!!\n\nThis is still the same message!!";
 		final AtomicReference<String> recived = new AtomicReference<String>();
 		final CountDownLatch latch = new CountDownLatch(1);
-		new ChatServerThread(new ChatInitiator() {
+		NetworkUtils.startChatServer(new Initiator() {
 
 			@Override
-			public void initChat(final Socket socket) throws IOException {
+			public void init(final Socket socket) throws IOException {
 				new ChatReciverThread(socket.getInputStream(), new MessageReciver() {
 
 					@Override
@@ -35,11 +36,11 @@ public class TestChat {
 					}
 				}).start();
 			}
-		}).start();
+		});
 
 		Thread.sleep(1); // Låt tråden starta i rätt ordning.
 
-		try (final Socket socket = new Socket("127.0.0.1", ChatServerThread.CHAT_PORT)) {
+		try (final Socket socket = new Socket("127.0.0.1", NetworkUtils.CHAT_PORT)) {
 			new ChatSender(socket.getOutputStream()).send(correctMessage);
 		}
 		latch.await();

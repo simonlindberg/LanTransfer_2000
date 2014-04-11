@@ -13,7 +13,6 @@ public abstract class BroadcastThread extends Thread {
 	public static final int FORCED = 1;
 	public static final int GOING_OFFLINE = 2;
 
-	public final static int BROADCAST_PORT = 31173;
 	private static InetAddress BROADCAST_ADDR;
 
 	// protected message;

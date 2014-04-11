@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import network.NetworkUtils;
 import GUI.Gui;
 
 public class BroadcastListener extends BroadcastThread implements Runnable {
@@ -22,7 +23,7 @@ public class BroadcastListener extends BroadcastThread implements Runnable {
 	public void run() {
 		final byte[] data = new byte[BUFFER_SIZE];
 		try {
-			final DatagramSocket reciveSocket = new DatagramSocket(BROADCAST_PORT);
+			final DatagramSocket reciveSocket = new DatagramSocket(NetworkUtils.BROADCAST_PORT);
 			final DatagramPacket recivePacket = new DatagramPacket(data, BUFFER_SIZE);
 
 			for (;;) {

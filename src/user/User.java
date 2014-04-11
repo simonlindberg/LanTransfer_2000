@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
+import network.NetworkUtils;
 import GUI.ChatPanel;
 import GUI.Gui;
 import chat.ChatReciverThread;
 import chat.ChatSender;
-import chat.ChatServerThread;
 import chat.MessageReciver;
 import fileTransfer.FileTransferIntermediary;
 import fileTransfer.FileTransferPrompter;
@@ -168,7 +168,7 @@ public class User implements MessageReciver, FileTransferPrompter {
 
 	private void createNewChat() {
 		try {
-			socket = new Socket(ip, ChatServerThread.CHAT_PORT);
+			socket = new Socket(ip, NetworkUtils.CHAT_PORT);
 			initChat();
 		} catch (IOException e) {
 			chatPanel.showMessage(e.getMessage());
