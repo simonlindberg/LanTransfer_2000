@@ -8,11 +8,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import GUI.ChatPanel;
 import GUI.Gui;
-import GUI.Intermediary;
 import chat.ChatReciverThread;
 import chat.ChatSender;
 import chat.ChatServerThread;
 import chat.MessageReciver;
+import fileTransfer.FileTransferIntermediary;
 
 public class User implements MessageReciver{
 	public final static User NULL_USER = new User("", "");
@@ -216,9 +216,9 @@ public class User implements MessageReciver{
 		}
 	}
 
-	public Intermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<String> savePlace,
+	public FileTransferIntermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<String> savePlace,
 			final CountDownLatch latch, final Socket socket) {
-		final Intermediary intermediary = chatPanel.promptFileTransfer(fileNames, fileSizes, savePlace, latch, socket);
+		final FileTransferIntermediary intermediary = chatPanel.promptFileTransfer(fileNames, fileSizes, savePlace, latch, socket);
 
 		updateUI();
 		return intermediary;

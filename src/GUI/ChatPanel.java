@@ -34,6 +34,7 @@ import javax.swing.SwingUtilities;
 import main.Main;
 import net.miginfocom.swing.MigLayout;
 import user.User;
+import fileTransfer.FileTransferIntermediary;
 import fileTransfer.FileTransferSender;
 import fileTransfer.FileUtils;
 
@@ -83,7 +84,7 @@ public class ChatPanel extends JPanel {
 		scrollChatLog.getVerticalScrollBar().setUnitIncrement(16);
 	}
 
-	public Intermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<String> savePlace,
+	public FileTransferIntermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<String> savePlace,
 			final CountDownLatch latch, final Socket socket) {
 		long totalSize = 0;
 		for (int i = 0; i < fileSizes.size(); i++) {
@@ -109,7 +110,7 @@ public class ChatPanel extends JPanel {
 				}
 			}
 		});
-		final Intermediary intermediary = createTransferPanel(false, fileSizes.size(), totalSize, saveAs, new ActionListener() {
+		final FileTransferIntermediary intermediary = createTransferPanel(false, fileSizes.size(), totalSize, saveAs, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -138,7 +139,7 @@ public class ChatPanel extends JPanel {
 		addToLog(messageContents);
 	}
 
-	private Intermediary createTransferPanel(final boolean fromMe, final int numOfFiles, final long totalSize, final JButton saveAs,
+	private FileTransferIntermediary createTransferPanel(final boolean fromMe, final int numOfFiles, final long totalSize, final JButton saveAs,
 			final ActionListener cancelAction) {
 
 		final JPanel submitPanel = new JPanel(new MigLayout("insets 0, gap rel 0", "[][][]", "[]10[]"));
@@ -190,7 +191,7 @@ public class ChatPanel extends JPanel {
 		}
 
 		final Socket socket = new Socket();
-		final Intermediary intermediary = createTransferPanel(true, filePaths.size(), totalSize, null, new ActionListener() {
+		final FileTransferIntermediary intermediary = createTransferPanel(true, filePaths.size(), totalSize, null, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {

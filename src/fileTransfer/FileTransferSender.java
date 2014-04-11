@@ -9,20 +9,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import GUI.Intermediary;
-
 public class FileTransferSender extends Thread implements Runnable {
 
 	private final List<Path> filePaths;
 	private final String ip;
-	private final Intermediary intermediary;
+	private final FileTransferIntermediary intermediary;
 	private long totalSize;
 	private long totalSent;
 	private DataOutputStream output;
 	private long start;
 	private final Socket socket;
 
-	public FileTransferSender(final List<Path> filePaths, final String ip, final Intermediary intermediary, final Socket socket) {
+	public FileTransferSender(final List<Path> filePaths, final String ip, final FileTransferIntermediary intermediary, final Socket socket) {
 		this.intermediary = intermediary;
 		this.socket = socket;
 		this.filePaths = filePaths;

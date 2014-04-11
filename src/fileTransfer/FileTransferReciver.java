@@ -13,7 +13,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import user.User;
-import GUI.Intermediary;
 
 public class FileTransferReciver extends Thread implements Runnable {
 
@@ -38,7 +37,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 		 * 4b. (JA) Skicka OKEY (1)
 		 * 5. För alla filer: ta emot filnamn, storlek OCH data.
 		 */
-		Intermediary intermediary = null;
+		FileTransferIntermediary intermediary = null;
 		Path currentFile = null;
 		OutputStream fos = null;
 
