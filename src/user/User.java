@@ -13,8 +13,9 @@ import chat.ChatSender;
 import chat.ChatServerThread;
 import chat.MessageReciver;
 import fileTransfer.FileTransferIntermediary;
+import fileTransfer.FileTransferPrompter;
 
-public class User implements MessageReciver{
+public class User implements MessageReciver, FileTransferPrompter {
 	public final static User NULL_USER = new User("", "");
 
 	private final String ip;
@@ -186,7 +187,7 @@ public class User implements MessageReciver{
 			createNewChat();
 		}
 
-		//TA HAND OM DETTA KANSKE?!
+		// TA HAND OM DETTA KANSKE?!
 		try {
 			sender.send(text);
 		} catch (IOException e) {
@@ -216,8 +217,8 @@ public class User implements MessageReciver{
 		}
 	}
 
-	public FileTransferIntermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<String> savePlace,
-			final CountDownLatch latch, final Socket socket) {
+	public FileTransferIntermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes,
+			final AtomicReference<String> savePlace, final CountDownLatch latch, final Socket socket) {
 		final FileTransferIntermediary intermediary = chatPanel.promptFileTransfer(fileNames, fileSizes, savePlace, latch, socket);
 
 		updateUI();

@@ -12,19 +12,17 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
-import user.User;
-
 public class FileTransferReciver extends Thread implements Runnable {
 
 	public static final int CANCEL = 0;
 	public static final int ACCEPT = 1;
 
 	private final Socket socket;
-	private final User user;
+	private final FileTransferPrompter ftp;
 
-	public FileTransferReciver(final Socket socket, final User user) {
+	public FileTransferReciver(final Socket socket, final FileTransferPrompter ftp) {
 		this.socket = socket;
-		this.user = user;
+		this.ftp = ftp;
 	}
 
 	@Override
@@ -60,7 +58,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 			final CountDownLatch latch = new CountDownLatch(1);
 			final AtomicReference<String> savePlace = new AtomicReference<>(null);
 
-			intermediary = user.promptFileTransfer(fileNames, fileSizes, savePlace, latch, socket);
+			intermediary = ftp.promptFileTransfer(fileNames, fileSizes, savePlace, latch, socket);
 
 			latch.await(); // Wait for user interaction!
 
