@@ -5,14 +5,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Map;
 
-import user.User;
-
 public class FileTransferServer extends Thread implements Runnable {
 
 	public static final int FILETRANSFER_PORT = 10001;
-	private Map<String, User> users;
+	private Map<String, ? extends FileTransferPrompter> users;
 
-	public FileTransferServer(final Map<String, User> users) {
+	public FileTransferServer(final Map<String, ? extends FileTransferPrompter> users) {
 		this.users = users;
 	}
 
