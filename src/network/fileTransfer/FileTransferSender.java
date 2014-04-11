@@ -57,12 +57,11 @@ public class FileTransferSender extends Thread implements Runnable {
 
 			// Wait for OKEY!
 			int response = input.read();
-			while(response == 2){
-				System.out.println(response);
+			while (response == NetworkUtils.NOTHING) {
 				response = input.read();
 			}
 
-			if (response == FileTransferReciver.CANCEL) {
+			if (response == NetworkUtils.CANCEL) {
 				// cancelled
 				intermediary.cancel();
 				return;

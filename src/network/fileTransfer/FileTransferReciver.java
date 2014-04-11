@@ -12,10 +12,9 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class FileTransferReciver extends Thread implements Runnable {
+import network.NetworkUtils;
 
-	public static final int CANCEL = 0;
-	public static final int ACCEPT = 1;
+public class FileTransferReciver extends Thread implements Runnable {
 
 	private final Socket socket;
 	private final FileTransferPrompter ftp;
@@ -65,16 +64,15 @@ public class FileTransferReciver extends Thread implements Runnable {
 				public void run() {
 					try {
 						while (!interrupted()) {
-							socket.getOutputStream().write(2);
+							socket.getOutputStream().write(NetworkUtils.NOTHING);
 							Thread.sleep(100);
 						}
 					} catch (Exception e) {
 						latch.countDown();
-						e.printStackTrace();
 					}
 				}
 			});
-			
+
 			thread.start();
 
 			latch.await(); // Wait for user interaction!
@@ -85,13 +83,13 @@ public class FileTransferReciver extends Thread implements Runnable {
 
 			// User cancelled.
 			if (folder == null) {
-				socket.getOutputStream().write(CANCEL);
+				socket.getOutputStream().write(NetworkUtils.CANCEL);
 				intermediary.cancel();
 				return;
 			}
 
 			// Send OKEY!
-			socket.getOutputStream().write(ACCEPT);
+			socket.getOutputStream().write(NetworkUtils.ACCEPT);
 
 			// Total amount recived.
 			long totalRecived = 0;
