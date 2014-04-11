@@ -56,7 +56,11 @@ public class FileTransferSender extends Thread implements Runnable {
 			}
 
 			// Wait for OKEY!
-			final int response = input.read();
+			int response = input.read();
+			while(response == 2){
+				System.out.println(response);
+				response = input.read();
+			}
 
 			if (response == FileTransferReciver.CANCEL) {
 				// cancelled

@@ -60,7 +60,26 @@ public class FileTransferReciver extends Thread implements Runnable {
 
 			intermediary = ftp.promptFileTransfer(fileNames, fileSizes, savePlace, latch, socket);
 
+			final Thread thread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						while (!interrupted()) {
+							socket.getOutputStream().write(2);
+							Thread.sleep(100);
+						}
+					} catch (Exception e) {
+						latch.countDown();
+						e.printStackTrace();
+					}
+				}
+			});
+			
+			thread.start();
+
 			latch.await(); // Wait for user interaction!
+
+			thread.interrupt();
 
 			final String folder = savePlace.get();
 
