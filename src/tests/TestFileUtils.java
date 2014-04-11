@@ -12,9 +12,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import network.fileTransfer.FileUtils;
 
-import fileTransfer.FileUtils;
+import org.junit.Test;
 
 public class TestFileUtils {
 

@@ -1,4 +1,4 @@
-package fileTransfer;
+package network.fileTransfer;
 
 import java.net.Socket;
 import java.util.List;

@@ -7,13 +7,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import network.NetworkUtils;
+import network.chat.ChatReciverThread;
+import network.chat.ChatSender;
+import network.chat.MessageReciver;
+import network.fileTransfer.FileTransferIntermediary;
+import network.fileTransfer.FileTransferPrompter;
 import GUI.ChatPanel;
 import GUI.Gui;
-import chat.ChatReciverThread;
-import chat.ChatSender;
-import chat.MessageReciver;
-import fileTransfer.FileTransferIntermediary;
-import fileTransfer.FileTransferPrompter;
 
 public class User implements MessageReciver, FileTransferPrompter {
 	public final static User NULL_USER = new User("", "");

@@ -21,13 +21,12 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import network.Initiator;
 import network.NetworkUtils;
+import network.fileTransfer.FileTransferIntermediary;
+import network.fileTransfer.FileTransferPrompter;
+import network.fileTransfer.FileTransferReciver;
+import network.fileTransfer.FileTransferSender;
 
 import org.junit.Test;
-
-import fileTransfer.FileTransferIntermediary;
-import fileTransfer.FileTransferPrompter;
-import fileTransfer.FileTransferReciver;
-import fileTransfer.FileTransferSender;
 
 public class TestFileTransfer {
 

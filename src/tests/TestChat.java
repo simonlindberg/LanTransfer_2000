@@ -9,12 +9,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import network.Initiator;
 import network.NetworkUtils;
+import network.chat.ChatReciverThread;
+import network.chat.ChatSender;
+import network.chat.MessageReciver;
 
 import org.junit.Test;
-
-import chat.ChatReciverThread;
-import chat.ChatSender;
-import chat.MessageReciver;
 
 public class TestChat {
 

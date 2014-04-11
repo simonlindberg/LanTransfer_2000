@@ -1,4 +1,4 @@
-package fileTransfer;
+package network.fileTransfer;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;

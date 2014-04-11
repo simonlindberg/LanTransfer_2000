@@ -33,10 +33,10 @@ import javax.swing.SwingUtilities;
 
 import main.Main;
 import net.miginfocom.swing.MigLayout;
+import network.fileTransfer.FileTransferIntermediary;
+import network.fileTransfer.FileTransferSender;
+import network.fileTransfer.FileUtils;
 import user.User;
-import fileTransfer.FileTransferIntermediary;
-import fileTransfer.FileTransferSender;
-import fileTransfer.FileUtils;
 
 @SuppressWarnings("serial")
 public class ChatPanel extends JPanel {

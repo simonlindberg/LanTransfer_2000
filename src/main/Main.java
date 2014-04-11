@@ -12,16 +12,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import network.Initiator;
 import network.NetworkUtils;
+import network.broadcast.BroadcastListener;
+import network.broadcast.BroadcastResponseHandler;
+import network.broadcast.BroadcastSender;
+import network.broadcast.BroadcastThread;
+import network.broadcast.OfflineCheckerThread;
+import network.fileTransfer.FileTransferReciver;
 import user.User;
 import user.UserTable;
 import user.UserTableModel;
 import GUI.Gui;
-import broadcast.BroadcastListener;
-import broadcast.BroadcastResponseHandler;
-import broadcast.BroadcastSender;
-import broadcast.BroadcastThread;
-import broadcast.OfflineCheckerThread;
-import fileTransfer.FileTransferReciver;
 
 public class Main {
 

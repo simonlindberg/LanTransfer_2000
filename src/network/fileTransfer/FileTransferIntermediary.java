@@ -1,4 +1,4 @@
-package fileTransfer;
+package network.fileTransfer;
 
 public interface FileTransferIntermediary {
 

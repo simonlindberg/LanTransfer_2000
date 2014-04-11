@@ -3,7 +3,7 @@ package GUI;
 import javax.swing.JButton;
 import javax.swing.JProgressBar;
 
-import fileTransfer.FileTransferIntermediary;
+import network.fileTransfer.FileTransferIntermediary;
 
 public class Intermediary implements FileTransferIntermediary {
 	private final JButton cancel;
