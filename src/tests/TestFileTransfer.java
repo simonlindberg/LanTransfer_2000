@@ -2,6 +2,7 @@ package tests;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -30,6 +31,7 @@ import fileTransfer.FileTransferServer;
 public class TestFileTransfer {
 
 	private static final String save = "folder";
+	private static final CountDownLatch globalLatch = new CountDownLatch(2);
 
 	@Test
 	public void test() throws IOException, InterruptedException {
@@ -50,16 +52,18 @@ public class TestFileTransfer {
 			final AtomicInteger senderVal = new AtomicInteger();
 
 			startServer(reciveCancelled, reciveFailed, reciveDone, reciveVal);
-			Thread.sleep(20);
+
+			Thread.sleep(10); // Låt trådarna starta i rätt ordning!
+
 			startFileSender(senderCancelled, senderFailed, senderDone, senderVal, senderfile);
 
-			Thread.sleep(300);
+			globalLatch.await();
 
-			assertTrue(!reciveCancelled.get());
-			assertTrue(!senderCancelled.get());
+			assertFalse(reciveCancelled.get());
+			assertFalse(senderCancelled.get());
 
-			assertTrue(!reciveFailed.get());
-			assertTrue(!senderFailed.get());
+			assertFalse(reciveFailed.get());
+			assertFalse(senderFailed.get());
 
 			assertTrue(reciveDone.get());
 			assertTrue(senderDone.get());
@@ -94,16 +98,19 @@ public class TestFileTransfer {
 			@Override
 			public void fail(Exception e) {
 				senderFailed.set(true);
+				globalLatch.countDown();
 			}
 
 			@Override
 			public void done() {
 				senderDone.set(true);
+				globalLatch.countDown();
 			}
 
 			@Override
 			public void cancel() {
 				senderCancelled.set(true);
+				globalLatch.countDown();
 			}
 		}, new Socket()).start();
 	}
@@ -133,16 +140,19 @@ public class TestFileTransfer {
 							@Override
 							public void fail(Exception e) {
 								failed.set(true);
+								globalLatch.countDown();
 							}
 
 							@Override
 							public void done() {
 								done.set(true);
+								globalLatch.countDown();
 							}
 
 							@Override
 							public void cancel() {
 								cancelled.set(true);
+								globalLatch.countDown();
 							}
 						};
 						latch.countDown();

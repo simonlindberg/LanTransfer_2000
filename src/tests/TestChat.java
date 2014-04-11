@@ -2,6 +2,7 @@ package tests;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
@@ -20,6 +21,7 @@ public class TestChat {
 	public void test() throws IOException, InterruptedException {
 		final String correctMessage = "this is a message!!\n\nThis is still the same message!!";
 		final AtomicReference<String> recived = new AtomicReference<String>();
+		final CountDownLatch latch = new CountDownLatch(1);
 		new ChatServerThread(new ChatInitiator() {
 
 			@Override
@@ -29,17 +31,19 @@ public class TestChat {
 					@Override
 					public void newMessage(final String msg) {
 						recived.set(msg);
+						latch.countDown();
 					}
 				}).start();
 			}
 		}).start();
-		Thread.sleep(50);
-		final Socket socket = new Socket("127.0.0.1", ChatServerThread.CHAT_PORT);
-		final ChatSender chatSender = new ChatSender(socket.getOutputStream());
-		chatSender.send(correctMessage);
 
-		Thread.sleep(100);
-		socket.close();
+		Thread.sleep(1); // Låt tråden starta i rätt ordning.
+
+		try (final Socket socket = new Socket("127.0.0.1", ChatServerThread.CHAT_PORT)) {
+			new ChatSender(socket.getOutputStream()).send(correctMessage);
+		}
+		latch.await();
+
 		assertEquals(correctMessage, recived.get());
 	}
 
