@@ -3,15 +3,14 @@ package fileTransfer;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Map;
 
 public class FileTransferServer extends Thread implements Runnable {
 
 	public static final int FILETRANSFER_PORT = 10001;
-	private Map<String, ? extends FileTransferPrompter> users;
+	private final FileTransferInitiator init;
 
-	public FileTransferServer(final Map<String, ? extends FileTransferPrompter> users) {
-		this.users = users;
+	public FileTransferServer(final FileTransferInitiator init) {
+		this.init = init;
 	}
 
 	@Override
@@ -22,7 +21,7 @@ public class FileTransferServer extends Thread implements Runnable {
 			for (;;) {
 				final Socket socket = ss.accept();
 				System.out.println(socket.getInetAddress().getHostAddress());
-				new FileTransferReciver(socket, users.get(socket.getInetAddress().getHostAddress())).start();
+				init.initFileTransfer(socket);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

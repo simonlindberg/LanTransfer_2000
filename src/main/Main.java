@@ -21,6 +21,8 @@ import broadcast.BroadcastThread;
 import broadcast.OfflineCheckerThread;
 import chat.ChatInitiator;
 import chat.ChatServerThread;
+import fileTransfer.FileTransferInitiator;
+import fileTransfer.FileTransferReciver;
 import fileTransfer.FileTransferServer;
 
 public class Main {
@@ -66,7 +68,13 @@ public class Main {
 	}
 
 	private static void startTransferServer() {
-		new FileTransferServer(users).start();
+		new FileTransferServer(new FileTransferInitiator() {
+
+			@Override
+			public void initFileTransfer(final Socket socket) {
+				new FileTransferReciver(socket, users.get(socket.getInetAddress().getHostAddress())).start();
+			}
+		}).start();
 	}
 
 	private static void addShutdownHook(final DatagramSocket sendSocket) {
