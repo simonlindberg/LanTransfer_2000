@@ -8,6 +8,7 @@ import java.awt.Rectangle;
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -73,10 +74,7 @@ public class ChatPanel extends JPanel {
 
 			@Override
 			public void handleFiles(final List<Path> files) {
-				if (user.isOnline()) {
-					System.out.println("senging files " + files);
-					sendFiles(files);
-				}
+				sendFiles(files);
 			}
 		}));
 
@@ -84,11 +82,10 @@ public class ChatPanel extends JPanel {
 		scrollChatLog.getVerticalScrollBar().setUnitIncrement(16);
 	}
 
-	public FileTransferIntermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<String> savePlace,
-			final CountDownLatch latch, final Socket socket) {
+	public FileTransferIntermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes,
+			final AtomicReference<String> savePlace, final CountDownLatch latch, final Socket socket) {
 		// Sätter detta så namnet syns nästa gång man skriver
 		forceName = true;
-		
 		long totalSize = 0;
 		for (int i = 0; i < fileSizes.size(); i++) {
 			totalSize += fileSizes.get(i);
@@ -142,9 +139,9 @@ public class ChatPanel extends JPanel {
 		addToLog(messageContents);
 	}
 
-	private FileTransferIntermediary createTransferPanel(final boolean fromMe, final int numOfFiles, final long totalSize, final JButton saveAs,
-			final ActionListener cancelAction) {
-		
+	private FileTransferIntermediary createTransferPanel(final boolean fromMe, final int numOfFiles, final long totalSize,
+			final JButton saveAs, final ActionListener cancelAction) {
+
 		final JPanel submitPanel = new JPanel(new MigLayout("insets 0, gap rel 0", "[][][]", "[]10[]"));
 
 		final JLabel fileInfo = new JLabel();
@@ -155,7 +152,7 @@ public class ChatPanel extends JPanel {
 		fileProgress.setValue(0);
 		fileProgress.setStringPainted(true);
 		fileProgress.setString("waiting for response...");
-		
+
 		submitPanel.add(fileInfo);
 
 		final JButton cancel = new JButton("Cancel");
@@ -180,7 +177,7 @@ public class ChatPanel extends JPanel {
 		final JPanel submitContents = createMessagePanel(fromMe, false, submitPanel, true);
 
 		addToLog(submitContents);
-		
+
 		// Sätter detta så namnet syns nästa gång man skriver
 		forceName = true;
 
@@ -188,8 +185,12 @@ public class ChatPanel extends JPanel {
 	}
 
 	private void sendFiles(final List<Path> filePaths) {
+		if (!user.isOnline()) {
+			return;
+		}
 		// Sätter detta så namnet syns nästa gång man skriver
 		forceName = true;
+		System.out.println("sending files: " + filePaths);
 		long totalSize = 0;
 		for (final Path path : filePaths) {
 			final long fileSize = FileUtils.fileSize(path);
@@ -322,6 +323,14 @@ public class ChatPanel extends JPanel {
 				contents.setAlignmentX(Component.LEFT_ALIGNMENT);
 				contents.setOpaque(true);
 				contents.setForeground(color);
+
+				contents.setDropTarget(new DropTarget(contents, new FileDropHandler() {
+
+					@Override
+					public void handleFiles(List<Path> files) {
+						sendFiles(files);
+					}
+				}));
 
 				final JPanel messageContents = createMessagePanel(fromMe, notice, contents, true);
 
