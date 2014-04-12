@@ -2,10 +2,8 @@ package GUI;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetAdapter;
 import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -13,23 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class FileDropHandler implements DropTargetListener {
-
-	@Override
-	public final void dragEnter(DropTargetDragEvent dtde) {
-	}
-
-	@Override
-	public final void dragOver(DropTargetDragEvent dtde) {
-	}
-
-	@Override
-	public final void dropActionChanged(DropTargetDragEvent dtde) {
-	}
-
-	@Override
-	public final void dragExit(DropTargetEvent dte) {
-	}
+public abstract class FileDropHandler extends DropTargetAdapter {
 
 	@Override
 	@SuppressWarnings("unchecked")
