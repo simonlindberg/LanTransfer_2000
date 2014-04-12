@@ -26,7 +26,7 @@ public class OfflineCheckerThread extends Thread implements Runnable {
 				final Iterator<User> itr = users.values().iterator();
 				while (itr.hasNext()) {
 					final User user = itr.next();
-					if ((System.currentTimeMillis() - user.getLatest()) > CHECKER_TIMEOUT) {
+					if (user.isOnline() && (System.currentTimeMillis() - user.getLatest()) > CHECKER_TIMEOUT) {
 						System.out.println("found: " + user.getUsername());
 						user.setOffline();
 						model.removeUser(user);
