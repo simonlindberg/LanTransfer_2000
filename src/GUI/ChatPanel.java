@@ -4,13 +4,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.Rectangle;
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.file.Path;
@@ -102,9 +100,7 @@ public class ChatPanel extends JPanel {
 				final int returnValue = chooser.showSaveDialog(null);
 
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
-					final File saveFile = chooser.getSelectedFile();
-					System.out.println("CHOSEN!: " + saveFile);
-					savePlace.set(saveFile.getAbsolutePath());
+					savePlace.set(chooser.getSelectedFile().getAbsolutePath());
 					latch.countDown();
 					saveAs.setVisible(false);
 				}
@@ -298,6 +294,7 @@ public class ChatPanel extends JPanel {
 
 		// Width required for bug with textarea and linewrap.
 		messageContents.add(contents, "width 10:50:, pushx, growx");
+
 		if (displayTime) {
 			messageContents.add(time);
 		}
@@ -353,10 +350,7 @@ public class ChatPanel extends JPanel {
 		chatLog.repaint();
 
 		// auto scroll
-		// Note that messageContents.getPref() might be unnecessary!
-		final int height = (int) (chatLog.getPreferredSize().getHeight() + messageContents.getPreferredSize().getHeight());
-		Rectangle rect = new Rectangle(0, height, 10, 10);
-		scrollChatLog.scrollRectToVisible(rect);
+		scrollChatLog.scrollRectToVisible(messageContents.getBounds());
 	}
 
 	public void showMessage(final String msg) {
