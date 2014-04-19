@@ -127,7 +127,7 @@ public class ChatPanel extends JPanel {
 
 	}
 
-	private void createFilePanel(final long fileSize, final String fileName, boolean fromMe) {
+	private void createFilePanel(final long fileSize, final String fileName, final boolean fromMe) {
 		final JPanel fileContents = new JPanel(new MigLayout("insets 0, gap rel 0", "16[]10", "[][]5"));
 		final JLabel nameLabel = new JLabel(fileName);
 		nameLabel.setFont(BOLD);
