@@ -67,8 +67,14 @@ public class Intermediary implements FileTransferIntermediary {
 	public void done() {
 		bar.setString("done");
 		hide();
-		saveAs.setVisible(true);
-		saveAs.setText("Open..");
+		activateOpen();
+	}
+
+	private void activateOpen() {
+		if (saveAs != null) {
+			saveAs.setVisible(true);
+			saveAs.setText("Open..");
+		}
 	}
 
 	private void hide() {
