@@ -16,7 +16,9 @@ public class Intermediary implements FileTransferIntermediary {
 		this.bar = fileProgress;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see GUI.FileTransferIntermediary#setString(java.lang.String)
 	 */
 	@Override
@@ -24,7 +26,9 @@ public class Intermediary implements FileTransferIntermediary {
 		bar.setString(string);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see GUI.FileTransferIntermediary#setValue(int)
 	 */
 	@Override
@@ -32,7 +36,9 @@ public class Intermediary implements FileTransferIntermediary {
 		bar.setValue(value);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see GUI.FileTransferIntermediary#fail(java.lang.Exception)
 	 */
 	@Override
@@ -41,7 +47,9 @@ public class Intermediary implements FileTransferIntermediary {
 		hide();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see GUI.FileTransferIntermediary#cancel()
 	 */
 	@Override
@@ -50,7 +58,9 @@ public class Intermediary implements FileTransferIntermediary {
 		hide();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see GUI.FileTransferIntermediary#done()
 	 */
 	@Override

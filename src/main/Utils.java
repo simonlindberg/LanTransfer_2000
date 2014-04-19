@@ -1,4 +1,4 @@
-package network.fileTransfer;
+package main;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class FileUtils {
+public class Utils {
 
 	public static void createParentFolders(final Path currentFile) {
 		try {
@@ -84,4 +84,15 @@ public class FileUtils {
 		}
 		return fileNames;
 	}
+
+	private static final String os = System.getProperty("os.name").toLowerCase();
+
+	public static boolean isMac() {
+		return os.contains("mac");
+	}
+
+	public static boolean isWindows() {
+		return os.contains("win");
+	}
+
 }

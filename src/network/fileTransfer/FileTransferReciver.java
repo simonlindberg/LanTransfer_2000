@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
+import main.Utils;
 import network.NetworkUtils;
 
 public class FileTransferReciver extends Thread implements Runnable {
@@ -102,7 +103,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 
 				currentFile = Paths.get(folder, filename);
 
-				FileUtils.createParentFolders(currentFile);
+				Utils.createParentFolders(currentFile);
 
 				fos = Files.newOutputStream(currentFile);
 
@@ -118,7 +119,7 @@ public class FileTransferReciver extends Thread implements Runnable {
 					final long bytesPerMs = totalRecived / (System.currentTimeMillis() - start) * 1000;
 
 					intermediary.setValue(percentage);
-					intermediary.setString(FileUtils.shorten(filename) + "  " + FileUtils.readbleTransferSpeed(bytesPerMs));
+					intermediary.setString(Utils.shorten(filename) + "  " + Utils.readbleTransferSpeed(bytesPerMs));
 				}
 				fos.close();
 

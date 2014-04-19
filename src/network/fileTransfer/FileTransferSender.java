@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import main.Utils;
 import network.NetworkUtils;
 
 public class FileTransferSender extends Thread implements Runnable {
@@ -49,7 +50,7 @@ public class FileTransferSender extends Thread implements Runnable {
 			output.writeLong(filePaths.size());
 
 			for (final Path file : filePaths) {
-				final long size = FileUtils.fileSize(file);
+				final long size = Utils.fileSize(file);
 				output.writeUTF(file.getFileName().toString());
 				output.writeLong(size);
 				totalSize += size;
@@ -89,10 +90,10 @@ public class FileTransferSender extends Thread implements Runnable {
 
 	private void sendFiles(final List<Path> paths, final String root) throws IOException {
 		for (final Path file : paths) {
-			if (FileUtils.isFile(file)) {
+			if (Utils.isFile(file)) {
 				sendFile(file, root + file.getFileName().toString());
 			} else {
-				sendFiles(FileUtils.folderContents(file), root + file.getFileName().toString() + "/");
+				sendFiles(Utils.folderContents(file), root + file.getFileName().toString() + "/");
 			}
 		}
 	}
@@ -100,7 +101,7 @@ public class FileTransferSender extends Thread implements Runnable {
 	private void sendFile(final Path file, final String filename) throws IOException {
 		try (final InputStream in = Files.newInputStream(file)) {
 
-			final long size = FileUtils.fileSize(file);
+			final long size = Utils.fileSize(file);
 
 			output.writeUTF(filename); // Send file name!
 			output.writeLong(size); // Send file size!
@@ -124,7 +125,7 @@ public class FileTransferSender extends Thread implements Runnable {
 				final long bytesPerMs = totalSent / (System.currentTimeMillis() - start) * 1000;
 
 				intermediary.setValue(percentage);
-				intermediary.setString(FileUtils.shorten(filename) + "  " + FileUtils.readbleTransferSpeed(bytesPerMs));
+				intermediary.setString(Utils.shorten(filename) + "  " + Utils.readbleTransferSpeed(bytesPerMs));
 			}
 
 		}

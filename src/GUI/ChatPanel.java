@@ -31,10 +31,10 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import main.Main;
+import main.Utils;
 import net.miginfocom.swing.MigLayout;
 import network.fileTransfer.FileTransferIntermediary;
 import network.fileTransfer.FileTransferSender;
-import network.fileTransfer.FileUtils;
 import user.User;
 
 @SuppressWarnings("serial")
@@ -90,7 +90,7 @@ public class ChatPanel extends JPanel {
 
 			createFilePanel(fileSizes.get(i), fileNames.get(i), false);
 		}
-		final JButton saveAs = new JButton("Save ass..");
+		final JButton saveAs = new JButton("Save as..");
 		saveAs.addActionListener(new ActionListener() {
 
 			@Override
@@ -128,7 +128,7 @@ public class ChatPanel extends JPanel {
 		final JLabel nameLabel = new JLabel(fileName);
 		nameLabel.setFont(BOLD);
 		fileContents.add(nameLabel, "wrap 1");
-		fileContents.add(new JLabel(FileUtils.readableFileSize(fileSize)), "wrap 1");
+		fileContents.add(new JLabel(Utils.readableFileSize(fileSize)), "wrap 1");
 
 		final JPanel messageContents = createMessagePanel(fromMe, false, fileContents, false);
 
@@ -142,7 +142,7 @@ public class ChatPanel extends JPanel {
 
 		final JLabel fileInfo = new JLabel();
 		fileInfo.setText((fromMe ? "You want" : user.getUsername() + " wants") + " to send " + numOfFiles + " file(s) ("
-				+ FileUtils.readableFileSize(totalSize) + ")");
+				+ Utils.readableFileSize(totalSize) + ")");
 
 		final JProgressBar fileProgress = new JProgressBar(0, 100);
 		fileProgress.setValue(0);
@@ -189,24 +189,25 @@ public class ChatPanel extends JPanel {
 		System.out.println("sending files: " + filePaths);
 		long totalSize = 0;
 		for (final Path path : filePaths) {
-			final long fileSize = FileUtils.fileSize(path);
+			final long fileSize = Utils.fileSize(path);
 			totalSize += fileSize;
 
 			createFilePanel(fileSize, path.getFileName().toString(), true);
 		}
 
 		final Socket socket = new Socket();
-		final FileTransferIntermediary intermediary = createTransferPanel(true, filePaths.size(), totalSize, null, new ActionListener() {
+		final FileTransferIntermediary intermediary = createTransferPanel(true, filePaths.size(), totalSize, null,
+				new ActionListener() {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					socket.close();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-			}
-		});
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						try {
+							socket.close();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					}
+				});
 
 		new FileTransferSender(filePaths, user.getIP(), intermediary, socket).start();
 	}

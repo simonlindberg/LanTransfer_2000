@@ -12,7 +12,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import network.fileTransfer.FileUtils;
+import main.Utils;
 
 import org.junit.Test;
 
@@ -25,7 +25,7 @@ public class TestFileUtils {
 		final Path c = Paths.get("a", "b", "c");
 		final Path dFile = Paths.get("a", "b", "c", "d");
 
-		FileUtils.createParentFolders(dFile);
+		Utils.createParentFolders(dFile);
 
 		assertTrue(Files.exists(a));
 		assertTrue(Files.exists(b));
@@ -42,8 +42,8 @@ public class TestFileUtils {
 		final Path folder = Paths.get("lib");
 		final Path file = Paths.get("lib", "miglayout-4.0.jar");
 
-		assertEquals(203283, FileUtils.fileSize(folder));
-		assertEquals(203283, FileUtils.fileSize(file));
+		assertEquals(203283, Utils.fileSize(folder));
+		assertEquals(203283, Utils.fileSize(file));
 	}
 
 	@Test
@@ -52,9 +52,9 @@ public class TestFileUtils {
 		final File folder = new File("ff");
 		try {
 			assertTrue(file.createNewFile());
-			assertTrue(FileUtils.isFile(Paths.get("f")));
+			assertTrue(Utils.isFile(Paths.get("f")));
 			assertTrue(folder.mkdir());
-			assertFalse(FileUtils.isFile(Paths.get("ff")));
+			assertFalse(Utils.isFile(Paths.get("ff")));
 		} finally {
 			file.delete();
 			folder.delete();
@@ -72,7 +72,7 @@ public class TestFileUtils {
 			new File(folder, i + "").createNewFile();
 			correct.add(Paths.get(foldername, i + ""));
 		}
-		assertEquals(correct, FileUtils.folderContents(Paths.get(foldername)));
+		assertEquals(correct, Utils.folderContents(Paths.get(foldername)));
 		for (int i = 0; i < 10; i++) {
 			new File(folder, i + "").delete();
 		}
@@ -85,14 +85,14 @@ public class TestFileUtils {
 
 		for (int i = 0; i < 1000; i++) {
 			sb.append('a');
-			assertTrue(FileUtils.shorten(sb.toString()).length() <= sb.length());
+			assertTrue(Utils.shorten(sb.toString()).length() <= sb.length());
 		}
 	}
 
 	@Test
 	public void testReadble() {
-		assertEquals("0", FileUtils.readableFileSize(-1));
-		assertEquals("1 kB", FileUtils.readableFileSize(1000));
-		assertEquals("1 kB/s", FileUtils.readbleTransferSpeed(1000));
+		assertEquals("0", Utils.readableFileSize(-1));
+		assertEquals("1 kB", Utils.readableFileSize(1000));
+		assertEquals("1 kB/s", Utils.readbleTransferSpeed(1000));
 	}
 }
