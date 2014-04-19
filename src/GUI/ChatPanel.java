@@ -95,14 +95,26 @@ public class ChatPanel extends JPanel {
 
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				JFileChooser chooser = new JFileChooser();
-				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-				final int returnValue = chooser.showSaveDialog(null);
+				if (savePlace.get() == null) { // Save as..
+					JFileChooser chooser = new JFileChooser();
+					chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					final int returnValue = chooser.showSaveDialog(null);
 
-				if (returnValue == JFileChooser.APPROVE_OPTION) {
-					savePlace.set(chooser.getSelectedFile().getAbsolutePath());
-					latch.countDown();
-					saveAs.setVisible(false);
+					if (returnValue == JFileChooser.APPROVE_OPTION) {
+						savePlace.set(chooser.getSelectedFile().getAbsolutePath());
+						latch.countDown();
+						saveAs.setVisible(false);
+					}
+				} else { // Open..
+					try {
+						if (Utils.isMac()) {
+							Runtime.getRuntime().exec("open " + savePlace.get());
+						} else if (Utils.isWindows()) {
+							Runtime.getRuntime().exec("Explorer.exe " + savePlace.get());
+						}
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
 				}
 			}
 		});
@@ -196,18 +208,17 @@ public class ChatPanel extends JPanel {
 		}
 
 		final Socket socket = new Socket();
-		final FileTransferIntermediary intermediary = createTransferPanel(true, filePaths.size(), totalSize, null,
-				new ActionListener() {
+		final FileTransferIntermediary intermediary = createTransferPanel(true, filePaths.size(), totalSize, null, new ActionListener() {
 
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						try {
-							socket.close();
-						} catch (IOException e1) {
-							e1.printStackTrace();
-						}
-					}
-				});
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					socket.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
 
 		new FileTransferSender(filePaths, user.getIP(), intermediary, socket).start();
 	}
