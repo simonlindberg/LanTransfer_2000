@@ -2,11 +2,15 @@ package user;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
+
+import javax.swing.JLabel;
 
 import network.NetworkUtils;
 import network.chat.ChatReciverThread;
@@ -37,6 +41,8 @@ public class User implements MessageReciver, FileTransferPrompter {
 
 	private final UserTable model;
 
+	private final Map<Integer, JLabel> myMessageStatuses;
+
 	private final Set<Integer> unseenMessages;
 
 	public User(final String username, final String ip, final Gui gui, final UserTable model) {
@@ -44,6 +50,7 @@ public class User implements MessageReciver, FileTransferPrompter {
 		this.username = username;
 		this.model = model;
 		this.chatPanel = new ChatPanel(this);
+		this.myMessageStatuses = new HashMap<>();
 		this.unseenMessages = new HashSet<>();
 		chatPanel.setVisible(false);
 
@@ -56,7 +63,8 @@ public class User implements MessageReciver, FileTransferPrompter {
 		this.ip = ip;
 		model = null;
 		this.chatPanel = null;
-		unseenMessages = null;
+		myMessageStatuses = null;
+		this.unseenMessages = new HashSet<>();
 	}
 
 	public String toString() {
@@ -171,6 +179,7 @@ public class User implements MessageReciver, FileTransferPrompter {
 				e.printStackTrace();
 			}
 		}
+		myMessageStatuses.clear();
 
 		synchronized (messageLock) {
 			if (unreadMessages) {
@@ -196,14 +205,15 @@ public class User implements MessageReciver, FileTransferPrompter {
 		}
 	}
 
-	public void sendMessage(final String text) {
+	public void sendMessage(final String text, final JLabel status) {
 		if (socket == null || socket.isClosed()) {
 			createNewChat();
 		}
 
 		// TA HAND OM DETTA KANSKE?!
 		try {
-			sender.sendMessage(text);
+			final int id = sender.sendMessage(text);
+			myMessageStatuses.put(id, status);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -236,18 +246,27 @@ public class User implements MessageReciver, FileTransferPrompter {
 	@Override
 	public void newMessage(final String msg, final int id) {
 		System.out.println("new: " + id);
-		chatPanel.showMessage(msg);
-		unseenMessages.add(id);
+		if (chatPanel.isVisible()) {
+			try {
+				sender.sendSeenConfirm(id);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			unseenMessages.add(id);
+		}
 		updateUI();
 	}
 
 	@Override
 	public void recivedMessage(final int id) {
+		myMessageStatuses.get(id).setText("recived");
 		System.out.println("recived: " + id);
 	}
 
 	@Override
 	public void seenMessage(final int id) {
+		myMessageStatuses.get(id).setText("seen");
 		System.out.println("seen: " + id);
 	}
 }

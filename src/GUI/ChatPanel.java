@@ -60,6 +60,14 @@ public class ChatPanel extends JPanel {
 	private final JPanel chatLog = new JPanel(new MigLayout("gap rel 0, wrap 1, insets 0"));
 	private final JScrollPane scrollChatLog = new JScrollPane(chatLog);
 
+	private final FileDropHandler dtl = new FileDropHandler() {
+
+		@Override
+		public void handleFiles(final List<Path> files) {
+			sendFiles(files);
+		}
+	};
+
 	public ChatPanel(final User user) {
 		this.user = user;
 		input = new HintTextField(0, "Write a message to " + user.getUsername() + "!");
@@ -68,13 +76,7 @@ public class ChatPanel extends JPanel {
 
 		createComponents();
 
-		setDropTarget(new DropTarget(this, new FileDropHandler() {
-
-			@Override
-			public void handleFiles(final List<Path> files) {
-				sendFiles(files);
-			}
-		}));
+		setDropTarget(new DropTarget(this, dtl));
 
 		// Set scroll speed
 		scrollChatLog.getVerticalScrollBar().setUnitIncrement(16);
@@ -260,14 +262,10 @@ public class ChatPanel extends JPanel {
 	private void handleMessage() {
 		final String text = input.getText();
 		if (!text.equals("")) {
-			sendMessage(text);
-			showMessage(Main.myUsername, text, true);
+			final JLabel status = showMessage(text, true, false);
+			user.sendMessage(text, status);
 			input.setText("");
 		}
-	}
-
-	private void sendMessage(final String text) {
-		user.sendMessage(text);
 	}
 
 	/**
@@ -322,7 +320,9 @@ public class ChatPanel extends JPanel {
 	 * @param fromMe
 	 * @param notice
 	 */
-	private void showMessage(final String text, final Color color, final boolean fromMe, final boolean notice) {
+	private JLabel showMessage(final String text, final boolean fromMe, final boolean notice) {
+		final Color color = notice ? NOTICE_COLOR : TXT_COLOR;
+		final JLabel status = new JLabel("sending..");
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				final JTextArea contents = new JTextArea(text);
@@ -333,20 +333,19 @@ public class ChatPanel extends JPanel {
 				contents.setOpaque(true);
 				contents.setForeground(color);
 
-				contents.setDropTarget(new DropTarget(contents, new FileDropHandler() {
-
-					@Override
-					public void handleFiles(List<Path> files) {
-						sendFiles(files);
-					}
-				}));
+				contents.setDropTarget(new DropTarget(contents, dtl));
 
 				final JPanel messageContents = createMessagePanel(fromMe, notice, contents, true);
 
+				if (!notice) {
+					messageContents.add(status);
+				}
 				addToLog(messageContents);
 			}
 
 		});
+
+		return status;
 	}
 
 	/**
@@ -365,18 +364,14 @@ public class ChatPanel extends JPanel {
 		scrollChatLog.scrollRectToVisible(messageContents.getBounds());
 	}
 
-	public void showMessage(final String msg) {
-		showMessage(user.getUsername(), msg, false);
-	}
-
-	private void showMessage(final String username, final String message, final boolean fromMe) {
-		showMessage(message, TXT_COLOR, fromMe, false);
+	public JLabel showMessage(final String msg) {
+		return showMessage(msg, false, false);
 	}
 
 	private void showNotice(final String text) {
 		// Sätter detta så namnet syns nästa gång man skriver
 		forceName = true;
-		showMessage(text, NOTICE_COLOR, false, true);
+		showMessage(text, false, true);
 	}
 
 	public void setOnline() {
