@@ -41,6 +41,7 @@ import user.User;
 public class ChatPanel extends JPanel {
 
 	private static final Font BOLD = new Font(new JLabel().getFont().getFontName(), Font.BOLD, new JLabel().getFont().getSize());
+	private static final Font STAUS_FONT = new Font(new JLabel().getFont().getFontName(), Font.ITALIC, new JLabel().getFont().getSize() - 2);
 	private static final Format timeFormat = new SimpleDateFormat("HH:mm:ss");
 	private static final Color MY_BACKGROUND = new Color(244, 244, 244);
 	private static final Color INFO_TXT = new Color(195, 195, 195);
@@ -338,7 +339,9 @@ public class ChatPanel extends JPanel {
 				final JPanel messageContents = createMessagePanel(fromMe, notice, contents, true);
 
 				if (!notice) {
-					messageContents.add(status);
+					status.setFont(STAUS_FONT);
+					status.setForeground(Color.GRAY);
+					messageContents.add(status, "newline");
 				}
 				addToLog(messageContents);
 			}
