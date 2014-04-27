@@ -27,10 +27,11 @@ public class ChatReciverThread extends Thread implements Runnable {
 			for (;;) {
 				System.out.println(reciver);
 				final String msg = in.readUTF();
-				final int id = Integer.parseInt(msg.substring(1));
 				if (msg.startsWith("r")) {
+					final int id = Integer.parseInt(msg.substring(1));
 					reciver.recivedMessage(id);
 				} else if (msg.startsWith("s")) {
+					final int id = Integer.parseInt(msg.substring(1));
 					reciver.seenMessage(id);
 				} else {
 					final String[] split = msg.split("\\.", 2);
