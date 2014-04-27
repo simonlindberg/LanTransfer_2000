@@ -338,7 +338,7 @@ public class ChatPanel extends JPanel {
 
 				final JPanel messageContents = createMessagePanel(fromMe, notice, contents, true);
 
-				if (!notice) {
+				if (!notice && !fromMe) {
 					status.setFont(STAUS_FONT);
 					status.setForeground(Color.GRAY);
 					messageContents.add(status, "newline");
