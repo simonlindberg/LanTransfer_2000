@@ -246,6 +246,7 @@ public class User implements MessageReciver, FileTransferPrompter {
 	@Override
 	public void newMessage(final String msg, final int id) {
 		System.out.println("new: " + id);
+		chatPanel.showMessage(msg);
 		if (chatPanel.isVisible()) {
 			try {
 				sender.sendSeenConfirm(id);
