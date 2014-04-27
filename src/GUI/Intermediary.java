@@ -3,6 +3,7 @@ package GUI;
 import javax.swing.JButton;
 import javax.swing.JProgressBar;
 
+import main.Utils;
 import network.fileTransfer.FileTransferIntermediary;
 
 public class Intermediary implements FileTransferIntermediary {
@@ -71,7 +72,7 @@ public class Intermediary implements FileTransferIntermediary {
 	}
 
 	private void activateOpen() {
-		if (saveAs != null) {
+		if (saveAs != null && (Utils.isMac() || Utils.isWindows())) {
 			saveAs.setVisible(true);
 			saveAs.setText("Open..");
 		}
