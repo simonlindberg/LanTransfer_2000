@@ -35,8 +35,8 @@ public class ChatReciverThread extends Thread implements Runnable {
 					reciver.seenMessage(id);
 				} else {
 					final String[] split = msg.split("\\.", 2);
-					reciver.newMessage(split[1], Integer.parseInt(split[0]));
 					out.writeUTF("r" + split[0]);
+					reciver.newMessage(split[1], Integer.parseInt(split[0]));
 				}
 			}
 		} catch (IOException e) {

@@ -22,7 +22,7 @@ import GUI.ChatPanel;
 import GUI.Gui;
 
 public class User implements MessageReciver, FileTransferPrompter {
-	public final static User NULL_USER = new User("", "");
+	public final static User NULL_USER = new User();
 
 	private final String ip;
 	private final String username;
@@ -45,6 +45,9 @@ public class User implements MessageReciver, FileTransferPrompter {
 
 	private final Set<Integer> unseenMessages;
 
+	private JLabel lastRecived = new JLabel();
+	private JLabel lastSeen = new JLabel();
+
 	public User(final String username, final String ip, final Gui gui, final UserTable model) {
 		this.ip = ip;
 		this.username = username;
@@ -58,13 +61,13 @@ public class User implements MessageReciver, FileTransferPrompter {
 		timestamp = System.currentTimeMillis();
 	}
 
-	private User(String username, String ip) {
-		this.username = username;
-		this.ip = ip;
+	public User() {
+		ip = null;
 		model = null;
-		this.chatPanel = null;
+		username = null;
+		chatPanel = null;
+		unseenMessages = null;
 		myMessageStatuses = null;
-		this.unseenMessages = new HashSet<>();
 	}
 
 	public String toString() {
@@ -179,7 +182,7 @@ public class User implements MessageReciver, FileTransferPrompter {
 				e.printStackTrace();
 			}
 		}
-		myMessageStatuses.clear();
+		unseenMessages.clear();
 
 		synchronized (messageLock) {
 			if (unreadMessages) {
@@ -261,13 +264,23 @@ public class User implements MessageReciver, FileTransferPrompter {
 
 	@Override
 	public void recivedMessage(final int id) {
-		myMessageStatuses.get(id).setText("recived");
+		final JLabel label = myMessageStatuses.get(id);
+		if (!label.equals(lastSeen)) {
+			label.setText("recived");
+			if (!lastRecived.equals(lastSeen)) {
+				lastRecived.setVisible(false);
+			}
+			lastRecived = label;
+		}
 		System.out.println("recived: " + id);
 	}
 
 	@Override
 	public void seenMessage(final int id) {
-		myMessageStatuses.get(id).setText("seen");
+		final JLabel label = myMessageStatuses.get(id);
+		label.setText("seen");
+		lastSeen.setVisible(false);
+		lastSeen = label;
 		System.out.println("seen: " + id);
 	}
 }
