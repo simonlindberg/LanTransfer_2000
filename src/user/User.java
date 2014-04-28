@@ -2,11 +2,11 @@ package user;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -24,6 +24,12 @@ import GUI.Gui;
 public class User implements MessageReciver, FileTransferPrompter {
 	public final static User NULL_USER = new User();
 
+	private static final String reciveString = "recived";
+	private static final String seenString = "seen";
+
+	private final Object messageLock = new Object();
+	private final Object onlineLock = new Object();
+
 	private final String ip;
 	private final String username;
 	private final ChatPanel chatPanel;
@@ -34,29 +40,22 @@ public class User implements MessageReciver, FileTransferPrompter {
 	private long timestamp;
 	private boolean isOnline;
 
-	private final Object onlineLock = new Object();
-	private final Object messageLock = new Object();
-
 	private boolean unreadMessages;
 
 	private final UserTable model;
 
-	private final Map<Integer, JLabel> myMessageStatuses;
-
-	private final Set<Integer> unseenMessages;
-
+	private final Map<Integer, JLabel> myMessageStatuses = new WeakHashMap<>();
+	private final Set<Integer> unseenMessages = new HashSet<>();
 	private JLabel lastRecived = new JLabel();
 	private JLabel lastSeen = new JLabel();
 
 	public User(final String username, final String ip, final Gui gui, final UserTable model) {
 		this.ip = ip;
-		this.username = username;
 		this.model = model;
+		this.username = username;
 		this.chatPanel = new ChatPanel(this);
-		this.myMessageStatuses = new HashMap<>();
-		this.unseenMessages = new HashSet<>();
-		chatPanel.setVisible(false);
 
+		chatPanel.setVisible(false);
 		gui.addChatPanel(chatPanel);
 		timestamp = System.currentTimeMillis();
 	}
@@ -66,30 +65,10 @@ public class User implements MessageReciver, FileTransferPrompter {
 		model = null;
 		username = null;
 		chatPanel = null;
-		unseenMessages = null;
-		myMessageStatuses = null;
 	}
 
 	public String toString() {
 		return username + " (" + ip + ")";
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((ip == null) ? 0 : ip.hashCode());
-		result = prime * result + ((username == null) ? 0 : username.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof User) {
-			User other = (User) obj;
-			return ip.equals(other.ip);
-		}
-		return false;
 	}
 
 	public String getUsername() {
@@ -248,7 +227,6 @@ public class User implements MessageReciver, FileTransferPrompter {
 
 	@Override
 	public void newMessage(final String msg, final int id) {
-		System.out.println("new: " + id);
 		chatPanel.showMessage(msg);
 		if (chatPanel.isVisible()) {
 			try {
@@ -266,21 +244,37 @@ public class User implements MessageReciver, FileTransferPrompter {
 	public void recivedMessage(final int id) {
 		final JLabel label = myMessageStatuses.get(id);
 		if (!label.equals(lastSeen)) {
-			label.setText("recived");
+			label.setText(reciveString);
 			if (!lastRecived.equals(lastSeen)) {
 				lastRecived.setVisible(false);
 			}
 			lastRecived = label;
 		}
-		System.out.println("recived: " + id);
 	}
 
 	@Override
 	public void seenMessage(final int id) {
 		final JLabel label = myMessageStatuses.get(id);
-		label.setText("seen");
+		label.setText(seenString);
 		lastSeen.setVisible(false);
 		lastSeen = label;
-		System.out.println("seen: " + id);
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((ip == null) ? 0 : ip.hashCode());
+		result = prime * result + ((username == null) ? 0 : username.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof User) {
+			User other = (User) obj;
+			return ip.equals(other.ip);
+		}
+		return false;
 	}
 }

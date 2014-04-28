@@ -18,25 +18,27 @@ public class ChatReciverThread extends Thread implements Runnable {
 		this.reciver = reciver;
 	}
 
+	private final String reciveString = "r";
+	private final String seenString = "s";
+
 	@Override
 	public void run() {
 		try {
 			// id+ ".msg" - new msg
-			// "r" + id"  - recived msg id
-			// "s" + id"  - seen msg id
+			// "r" + id" - recived msg id
+			// "s" + id" - seen msg id
 			for (;;) {
-				System.out.println(reciver);
 				final String msg = in.readUTF();
-				if (msg.startsWith("r")) {
-					final int id = Integer.parseInt(msg.substring(1));
-					reciver.recivedMessage(id);
-				} else if (msg.startsWith("s")) {
-					final int id = Integer.parseInt(msg.substring(1));
-					reciver.seenMessage(id);
+				if (msg.startsWith(reciveString)) {
+					reciver.recivedMessage(Integer.parseInt(msg.substring(1)));
 				} else {
-					final String[] split = msg.split("\\.", 2);
-					out.writeUTF("r" + split[0]);
-					reciver.newMessage(split[1], Integer.parseInt(split[0]));
+					if (msg.startsWith(seenString)) {
+						reciver.seenMessage(Integer.parseInt(msg.substring(1)));
+					} else {
+						final String[] split = msg.split("\\.", 2);
+						out.writeUTF(reciveString + split[0]);
+						reciver.newMessage(split[1], Integer.parseInt(split[0]));
+					}
 				}
 			}
 		} catch (IOException e) {
