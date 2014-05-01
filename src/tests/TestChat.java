@@ -43,7 +43,7 @@ public class TestChat {
 					}
 
 					@Override
-					public void recivedMessage(int id) {
+					public void sentMessage(int id) {
 						recived.set(true);
 						recivedLatch.countDown();
 					}

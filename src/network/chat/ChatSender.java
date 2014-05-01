@@ -14,12 +14,16 @@ public class ChatSender {
 
 	public int sendMessage(final String msg) throws IOException {
 		id++;
-		out.writeUTF(id + "." + msg);
+		out.write(ChatReciverThread.NEW_MSG);
+		out.writeInt(id);
+		out.writeUTF(msg);
 		out.flush();
 		return id;
 	}
 
 	public void sendSeenConfirm(final int id) throws IOException {
-		out.writeUTF("s" + id);
+		out.write(ChatReciverThread.SEEN_MSG);
+		out.writeInt(id);
+		out.flush();
 	}
 }

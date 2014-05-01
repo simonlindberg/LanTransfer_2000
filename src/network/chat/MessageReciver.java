@@ -14,7 +14,7 @@ public interface MessageReciver {
 	 * 
 	 * @param id
 	 */
-	public void recivedMessage(final int id);
+	public void sentMessage(final int id);
 
 	/**
 	 * a confirmation that a previously sent message has been seen by the user.

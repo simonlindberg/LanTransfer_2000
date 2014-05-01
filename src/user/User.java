@@ -24,7 +24,7 @@ import GUI.Gui;
 public class User implements MessageReciver, FileTransferPrompter {
 	public final static User NULL_USER = new User();
 
-	private static final String reciveString = "recived";
+	private static final String sentString = "sent";
 	private static final String seenString = "seen";
 
 	private final Object messageLock = new Object();
@@ -46,7 +46,7 @@ public class User implements MessageReciver, FileTransferPrompter {
 
 	private final Map<Integer, JLabel> myMessageStatuses = new WeakHashMap<>();
 	private final Set<Integer> unseenMessages = new HashSet<>();
-	private JLabel lastRecived = new JLabel();
+	private JLabel lastSent = new JLabel();
 	private JLabel lastSeen = new JLabel();
 
 	public User(final String username, final String ip, final Gui gui, final UserTable model) {
@@ -241,14 +241,14 @@ public class User implements MessageReciver, FileTransferPrompter {
 	}
 
 	@Override
-	public void recivedMessage(final int id) {
+	public void sentMessage(final int id) {
 		final JLabel label = myMessageStatuses.get(id);
 		if (!label.equals(lastSeen)) {
-			label.setText(reciveString);
-			if (!lastRecived.equals(lastSeen)) {
-				lastRecived.setVisible(false);
+			label.setText(sentString);
+			if (!lastSent.equals(lastSeen)) {
+				lastSent.setVisible(false);
 			}
-			lastRecived = label;
+			lastSent = label;
 		}
 	}
 

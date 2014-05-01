@@ -18,32 +18,33 @@ public class ChatReciverThread extends Thread implements Runnable {
 		this.reciver = reciver;
 	}
 
-	private final String reciveString = "r";
-	private final String seenString = "s";
+	public static final int NEW_MSG = 0;
+	public static final int SENT_MSG = 1;
+	public static final int SEEN_MSG = 2;
 
 	@Override
 	public void run() {
 		try {
-			// id+ ".msg" - new msg
-			// "r" + id" - recived msg id
-			// "s" + id" - seen msg id
+			// TYPE+ID+MSG? - new msg
 			for (;;) {
-				final String msg = in.readUTF();
-				if (msg.startsWith(reciveString)) {
-					reciver.recivedMessage(Integer.parseInt(msg.substring(1)));
-				} else {
-					if (msg.startsWith(seenString)) {
-						reciver.seenMessage(Integer.parseInt(msg.substring(1)));
-					} else {
-						final String[] split = msg.split("\\.", 2);
-						out.writeUTF(reciveString + split[0]);
-						reciver.newMessage(split[1], Integer.parseInt(split[0]));
-					}
+				final int type = in.read();
+				final int id = in.readInt();
+
+				if (type == NEW_MSG) {
+					final String msg = in.readUTF();
+
+					out.write(SENT_MSG);
+					out.writeInt(id);
+
+					reciver.newMessage(msg, id);
+				} else if (type == SENT_MSG) {
+					reciver.sentMessage(id);
+				} else if (type == SEEN_MSG) {
+					reciver.seenMessage(id);
 				}
 			}
 		} catch (IOException e) {
-			// Connection is dead, User might be offline. Connection might just
-			// dropped.
+			// Connection is dead, User might be offline. Connection might just dropped.
 			System.out.println("Connection has died in ChatReceiver...");
 		}
 	}
