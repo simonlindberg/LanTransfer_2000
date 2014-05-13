@@ -2,12 +2,10 @@ package GUI;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Map;
 
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -20,8 +18,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 
 import main.Main;
-import main.User;
-import main.UserTable;
+import user.User;
+import user.UserTable;
 
 @SuppressWarnings("serial")
 public class Gui extends JFrame {
@@ -31,14 +29,14 @@ public class Gui extends JFrame {
 	private final Map<String, User> users;
 	private JComponent introLabel;
 
-	public Gui(final UserTable model, final Map<String, User> users, final ActionListener refresher) {
+	public Gui(final UserTable model, final Map<String, User> users) {
 		rightContainer = new JPanel(new BorderLayout());
 		this.users = users;
 		setLayout(new BorderLayout());
 
-		addComponents(model, refresher);
+		addComponents(model);
 
-		setTitle("LANTRANSFER_2000 (ALPHA)");
+		setTitle("LANTRANSFER_2000 (ALPHA) - " + Main.myUsername + " (" + Main.myIP + ")");
 		setSize(800, 400);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setMinimumSize(new Dimension(500, 300));
@@ -46,8 +44,8 @@ public class Gui extends JFrame {
 		setVisible(true);
 	}
 
-	private void addComponents(final UserTable model, final ActionListener refresher) {
-		final JComponent top = createTop(refresher);
+	private void addComponents(final UserTable model) {
+		final JComponent top = new JPanel(new BorderLayout());
 		final JComponent clientTable = createClientTable(model);
 
 		final JPanel leftContainer = new JPanel(new BorderLayout());
@@ -72,22 +70,6 @@ public class Gui extends JFrame {
 		introLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
 		return introLabel;
-	}
-
-	/**
-	 * Refresh + name
-	 */
-	private JComponent createTop(final ActionListener refresher) {
-		final JComponent topPane = new JPanel(new BorderLayout());
-
-		final JLabel nameLabel = new JLabel(Main.myUsername + " (" + Main.myIP + ")");
-		final JButton refreshButton = new JButton("Refresh list");
-		refreshButton.addActionListener(refresher);
-
-		topPane.add(nameLabel, BorderLayout.WEST);
-		topPane.add(refreshButton, BorderLayout.EAST);
-
-		return topPane;
 	}
 
 	/**
