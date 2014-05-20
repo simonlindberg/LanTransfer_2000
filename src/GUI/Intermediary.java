@@ -72,7 +72,7 @@ public class Intermediary implements FileTransferIntermediary {
 	}
 
 	private void activateOpen() {
-		if (saveAs != null && (Utils.isMac() || Utils.isWindows())) {
+		if (saveAs != null) {
 			saveAs.setVisible(true);
 			saveAs.setText("Open..");
 		}

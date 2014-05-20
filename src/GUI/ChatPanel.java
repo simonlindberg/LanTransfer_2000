@@ -114,6 +114,8 @@ public class ChatPanel extends JPanel {
 							Runtime.getRuntime().exec("open " + savePlace.get());
 						} else if (Utils.isWindows()) {
 							Runtime.getRuntime().exec("Explorer.exe " + savePlace.get());
+						} else if (Utils.isLinux()){
+							Runtime.getRuntime().exec("gnome-open " + savePlace.get());
 						}
 					} catch (IOException e1) {
 						e1.printStackTrace();

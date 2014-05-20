@@ -94,5 +94,9 @@ public class Utils {
 	public static boolean isWindows() {
 		return os.contains("win");
 	}
+	
+	public static boolean isLinux() {
+		return (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0 || os.indexOf("aix") > 0);
+	}
 
 }
