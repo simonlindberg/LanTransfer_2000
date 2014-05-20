@@ -64,7 +64,7 @@ public class Gui extends JFrame {
 	}
 
 	private JComponent createWelcomeLabel() {
-		final String welcomeMessage = "Welcome to LANMASTER_2000!";
+		final String welcomeMessage = "Welcome to LANTRANSFER_2000!";
 		final JLabel introLabel = new JLabel(welcomeMessage);
 
 		introLabel.setHorizontalAlignment(SwingConstants.CENTER);
