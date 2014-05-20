@@ -4,12 +4,14 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.Rectangle;
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.File;
+import java.io.IOException;
+import java.net.Socket;
+import java.nio.file.Path;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -29,15 +31,17 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import main.Main;
+import main.Utils;
 import net.miginfocom.swing.MigLayout;
+import network.fileTransfer.FileTransferIntermediary;
+import network.fileTransfer.FileTransferSender;
 import user.User;
-import fileTransfer.FileTransferSender;
-import fileTransfer.FileUtils;
 
 @SuppressWarnings("serial")
 public class ChatPanel extends JPanel {
 
 	private static final Font BOLD = new Font(new JLabel().getFont().getFontName(), Font.BOLD, new JLabel().getFont().getSize());
+	private static final Font STAUS_FONT = new Font(new JLabel().getFont().getFontName(), Font.ITALIC, new JLabel().getFont().getSize() - 2);
 	private static final Format timeFormat = new SimpleDateFormat("HH:mm:ss");
 	private static final Color MY_BACKGROUND = new Color(244, 244, 244);
 	private static final Color INFO_TXT = new Color(195, 195, 195);
@@ -48,7 +52,7 @@ public class ChatPanel extends JPanel {
 	private boolean lastFromMe;
 	// firstMsg determines if we should show the name of the user or not. Always
 	// show the name of the first message.
-	private boolean firstMsg = true;
+	private boolean forceName = true;
 
 	private final User user;
 
@@ -56,6 +60,14 @@ public class ChatPanel extends JPanel {
 	private final JButton send = new JButton("Send");
 	private final JPanel chatLog = new JPanel(new MigLayout("gap rel 0, wrap 1, insets 0"));
 	private final JScrollPane scrollChatLog = new JScrollPane(chatLog);
+
+	private final FileDropHandler dtl = new FileDropHandler() {
+
+		@Override
+		public void handleFiles(final List<Path> files) {
+			sendFiles(files);
+		}
+	};
 
 	public ChatPanel(final User user) {
 		this.user = user;
@@ -65,125 +77,155 @@ public class ChatPanel extends JPanel {
 
 		createComponents();
 
-		setDropTarget(new DropTarget(this, new FileDropHandler() {
-
-			@Override
-			public void handleFiles(final List<File> files) {
-				if (user.isOnline()) {
-					System.out.println("senging files " + files);
-					sendFiles(files);
-				}
-			}
-		}));
+		setDropTarget(new DropTarget(this, dtl));
 
 		// Set scroll speed
 		scrollChatLog.getVerticalScrollBar().setUnitIncrement(16);
 	}
 
-	public JProgressBar promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace,
-			final CountDownLatch latch) {
+	public FileTransferIntermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes,
+			final AtomicReference<String> savePlace, final CountDownLatch latch, final Socket socket) {
+		// Sätter detta så namnet syns nästa gång man skriver
+		forceName = true;
 		long totalSize = 0;
 		for (int i = 0; i < fileSizes.size(); i++) {
 			totalSize += fileSizes.get(i);
 
 			createFilePanel(fileSizes.get(i), fileNames.get(i), false);
 		}
-
-		final JProgressBar progressBar = createTransferPanel(false, fileSizes.size(), totalSize, true, new ActionListener() {
+		final JButton saveAs = new JButton("Save as..");
+		saveAs.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				JFileChooser chooser = new JFileChooser();
-				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-				final int returnValue = chooser.showSaveDialog(null);
+				if (savePlace.get() == null) { // Save as..
+					JFileChooser chooser = new JFileChooser();
+					chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					final int returnValue = chooser.showSaveDialog(null);
 
-				if (returnValue == JFileChooser.APPROVE_OPTION) {
-					final File saveFile = chooser.getSelectedFile();
-					System.out.println("CHOSEN!: " + saveFile);
-					savePlace.set(saveFile);
-					latch.countDown();
+					if (returnValue == JFileChooser.APPROVE_OPTION) {
+						savePlace.set(chooser.getSelectedFile().getAbsolutePath());
+						latch.countDown();
+						saveAs.setVisible(false);
+					}
+				} else { // Open..
+					try {
+						if (Utils.isMac()) {
+							Runtime.getRuntime().exec("open " + savePlace.get());
+						} else if (Utils.isWindows()) {
+							Runtime.getRuntime().exec("Explorer.exe " + savePlace.get());
+						} else if (Utils.isLinux()){
+							Runtime.getRuntime().exec("gnome-open " + savePlace.get());
+						}
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
 				}
 			}
-		}, new ActionListener() {
+		});
+		final FileTransferIntermediary intermediary = createTransferPanel(false, fileSizes.size(), totalSize, saveAs, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				latch.countDown();
+				try {
+					socket.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 
-		return progressBar;
+		return intermediary;
 
 	}
 
-	private void createFilePanel(final long fileSize, final String fileName, boolean fromMe) {
+	private void createFilePanel(final long fileSize, final String fileName, final boolean fromMe) {
 		final JPanel fileContents = new JPanel(new MigLayout("insets 0, gap rel 0", "16[]10", "[][]5"));
 		final JLabel nameLabel = new JLabel(fileName);
 		nameLabel.setFont(BOLD);
 		fileContents.add(nameLabel, "wrap 1");
-		fileContents.add(new JLabel(FileUtils.readableFileSize(fileSize)), "wrap 1");
+		fileContents.add(new JLabel(Utils.readableFileSize(fileSize)), "wrap 1");
 
-		final JPanel messageContents = createMessagePanel(fromMe, false, fileContents);
+		final JPanel messageContents = createMessagePanel(fromMe, false, fileContents, false);
 
 		addToLog(messageContents);
 	}
 
-	private JProgressBar createTransferPanel(final boolean fromMe, final int numOfFiles, final long totalSize, final boolean receiving,
-			final ActionListener saveAsAction, final ActionListener cancelAction) {
+	private FileTransferIntermediary createTransferPanel(final boolean fromMe, final int numOfFiles, final long totalSize,
+			final JButton saveAs, final ActionListener cancelAction) {
 
 		final JPanel submitPanel = new JPanel(new MigLayout("insets 0, gap rel 0", "[][][]", "[]10[]"));
 
 		final JLabel fileInfo = new JLabel();
-		fileInfo.setText((fromMe ? "You want" : user.getUsername() + " wants") + " to send " + numOfFiles + " file(s) (" + FileUtils.readableFileSize(totalSize) + ")");
+		fileInfo.setText((fromMe ? "You want" : user.getUsername() + " wants") + " to send " + numOfFiles + " file(s) ("
+				+ Utils.readableFileSize(totalSize) + ")");
 
 		final JProgressBar fileProgress = new JProgressBar(0, 100);
 		fileProgress.setValue(0);
 		fileProgress.setStringPainted(true);
+		fileProgress.setString("waiting for response...");
 
-		if (receiving) {
-			submitPanel.add(fileInfo);
+		submitPanel.add(fileInfo);
 
-			final JButton saveAs = new JButton("Save as..");
-			saveAs.addActionListener(saveAsAction);
+		final JButton cancel = new JButton("Cancel");
+		cancel.addActionListener(cancelAction);
+		cancel.addActionListener(new ActionListener() {
 
-			final JButton cancel = new JButton("Cancel");
-			cancel.addActionListener(cancelAction);
-			cancel.addActionListener(new ActionListener() {
-
-				@Override
-				public void actionPerformed(ActionEvent e) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (saveAs != null) {
 					saveAs.setVisible(false);
-					cancel.setVisible(false);
-					System.out.println("Transfer Cancelled!");
 				}
-			});
-
+				cancel.setVisible(false);
+				System.out.println("transfer cancelled!");
+			}
+		});
+		if (saveAs != null) {
 			submitPanel.add(saveAs);
-			submitPanel.add(cancel, "wrap");
-		} else {
-			submitPanel.add(fileInfo, "wrap");
 		}
+		submitPanel.add(cancel, "wrap");
 		submitPanel.add(fileProgress, "pushx, growx, spanx 4, height 5");
 
-		final JPanel submitContents = createMessagePanel(fromMe, false, submitPanel);
+		final JPanel submitContents = createMessagePanel(fromMe, false, submitPanel, true);
 
 		addToLog(submitContents);
 
-		return fileProgress;
+		// Sätter detta så namnet syns nästa gång man skriver
+		forceName = true;
+
+		return new Intermediary(cancel, saveAs, fileProgress);
 	}
 
-	private void sendFiles(final List<File> files) {
+	private void sendFiles(final List<Path> filePaths) {
+		if (!user.isOnline()) {
+			return;
+		}
+		// Sätter detta så namnet syns nästa gång man skriver
+		forceName = true;
+		System.out.println("sending files: " + filePaths);
 		long totalSize = 0;
-		for (File f : files) {
-			long fileSize = f.length();
+		for (final Path path : filePaths) {
+			final long fileSize = Utils.fileSize(path);
 			totalSize += fileSize;
 
-			createFilePanel(fileSize, f.getName(), true);
+			createFilePanel(fileSize, path.getFileName().toString(), true);
 		}
 
-		final JProgressBar progressBar = createTransferPanel(true, files.size(), totalSize, false, null, null);
+		final Socket socket = new Socket();
+		final FileTransferIntermediary intermediary = createTransferPanel(true, filePaths.size(), totalSize, null, new ActionListener() {
 
-		new FileTransferSender(files, user.getIP(), progressBar).start();
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					socket.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+
+		new FileTransferSender(filePaths, user.getIP(), intermediary, socket).start();
 	}
 
 	/**
@@ -223,14 +265,10 @@ public class ChatPanel extends JPanel {
 	private void handleMessage() {
 		final String text = input.getText();
 		if (!text.equals("")) {
-			sendMessage(text);
-			showMessage(Main.myUsername, text, true);
+			final JLabel status = showMessage(text, true, false);
+			user.sendMessage(text, status);
 			input.setText("");
 		}
-	}
-
-	private void sendMessage(final String text) {
-		user.sendMessage(text);
 	}
 
 	/**
@@ -244,7 +282,7 @@ public class ChatPanel extends JPanel {
 	 *            panel.
 	 * @return
 	 */
-	private JPanel createMessagePanel(final boolean fromMe, final boolean notice, final JComponent contents) {
+	private JPanel createMessagePanel(final boolean fromMe, final boolean notice, final JComponent contents, boolean displayTime) {
 		final JPanel messageContents = new JPanel(new MigLayout("insets 0, gap rel 0", "10[]10[]10[]10", "5[]5"));
 
 		if (fromMe) {
@@ -258,19 +296,21 @@ public class ChatPanel extends JPanel {
 		final JLabel time = new JLabel(timeFormat.format(Calendar.getInstance().getTime()));
 		time.setForeground(INFO_TXT);
 
-		if ((fromMe != lastFromMe || firstMsg) && !notice) {
+		if ((fromMe != lastFromMe || forceName) && !notice) {
 			final JLabel author = new JLabel(fromMe ? Main.myUsername : user.getUsername());
 			author.setForeground(INFO_TXT);
 			author.setFont(BOLD);
 			messageContents.add(author, "wrap 1, gapy 0 10");
 			lastFromMe = fromMe;
-			
-			firstMsg = false;
+			forceName = false;
 		}
 
 		// Width required for bug with textarea and linewrap.
 		messageContents.add(contents, "width 10:50:, pushx, growx");
-		messageContents.add(time);
+
+		if (displayTime) {
+			messageContents.add(time);
+		}
 
 		return messageContents;
 	}
@@ -283,7 +323,9 @@ public class ChatPanel extends JPanel {
 	 * @param fromMe
 	 * @param notice
 	 */
-	private void showMessage(final String text, final Color color, final boolean fromMe, final boolean notice) {
+	private JLabel showMessage(final String text, final boolean fromMe, final boolean notice) {
+		final Color color = notice ? NOTICE_COLOR : TXT_COLOR;
+		final JLabel status = new JLabel("sending..");
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				final JTextArea contents = new JTextArea(text);
@@ -294,12 +336,21 @@ public class ChatPanel extends JPanel {
 				contents.setOpaque(true);
 				contents.setForeground(color);
 
-				final JPanel messageContents = createMessagePanel(fromMe, notice, contents);
+				contents.setDropTarget(new DropTarget(contents, dtl));
 
+				final JPanel messageContents = createMessagePanel(fromMe, notice, contents, true);
+
+				if (!notice && fromMe) {
+					status.setFont(STAUS_FONT);
+					status.setForeground(Color.GRAY);
+					messageContents.add(status, "newline");
+				}
 				addToLog(messageContents);
 			}
 
 		});
+
+		return status;
 	}
 
 	/**
@@ -315,22 +366,17 @@ public class ChatPanel extends JPanel {
 		chatLog.repaint();
 
 		// auto scroll
-		// Note that messageContents.getPref() might be unnecessary!
-		final int height = (int) (chatLog.getPreferredSize().getHeight() + messageContents.getPreferredSize().getHeight());
-		Rectangle rect = new Rectangle(0, height, 10, 10);
-		scrollChatLog.scrollRectToVisible(rect);
+		scrollChatLog.scrollRectToVisible(messageContents.getBounds());
 	}
 
-	public void showMessage(final String msg) {
-		showMessage(user.getUsername(), msg, false);
-	}
-
-	private void showMessage(final String username, final String message, final boolean fromMe) {
-		showMessage(message, TXT_COLOR, fromMe, false);
+	public JLabel showMessage(final String msg) {
+		return showMessage(msg, false, false);
 	}
 
 	private void showNotice(final String text) {
-		showMessage(text, NOTICE_COLOR, false, true);
+		// Sätter detta så namnet syns nästa gång man skriver
+		forceName = true;
+		showMessage(text, false, true);
 	}
 
 	public void setOnline() {

@@ -1,22 +1,34 @@
 package user;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.swing.JProgressBar;
+import javax.swing.JLabel;
 
+import network.NetworkUtils;
+import network.chat.ChatReciverThread;
+import network.chat.ChatSender;
+import network.chat.MessageReciver;
+import network.fileTransfer.FileTransferIntermediary;
+import network.fileTransfer.FileTransferPrompter;
 import GUI.ChatPanel;
 import GUI.Gui;
-import chat.ChatReciver;
-import chat.ChatSender;
-import chat.ChatServerThread;
 
-public class User {
-	public final static User NULL_USER = new User("", "");
+public class User implements MessageReciver, FileTransferPrompter {
+	public final static User NULL_USER = new User();
+
+	private static final String sentString = "sent";
+	private static final String seenString = "seen";
+
+	private final Object messageLock = new Object();
+	private final Object onlineLock = new Object();
 
 	private final String ip;
 	private final String username;
@@ -28,51 +40,35 @@ public class User {
 	private long timestamp;
 	private boolean isOnline;
 
-	private final Object onlineLock = new Object();
-	private final Object messageLock = new Object();
-
 	private boolean unreadMessages;
 
 	private final UserTable model;
 
+	private final Map<Integer, JLabel> myMessageStatuses = new WeakHashMap<>();
+	private final Set<Integer> unseenMessages = new HashSet<>();
+	private JLabel lastSent = new JLabel();
+	private JLabel lastSeen = new JLabel();
+
 	public User(final String username, final String ip, final Gui gui, final UserTable model) {
 		this.ip = ip;
-		this.username = username;
 		this.model = model;
+		this.username = username;
 		this.chatPanel = new ChatPanel(this);
-		chatPanel.setVisible(false);
 
+		chatPanel.setVisible(false);
 		gui.addChatPanel(chatPanel);
 		timestamp = System.currentTimeMillis();
 	}
 
-	private User(String username, String ip) {
-		this.username = username;
-		this.ip = ip;
+	public User() {
+		ip = null;
 		model = null;
-		this.chatPanel = null;
+		username = null;
+		chatPanel = null;
 	}
 
 	public String toString() {
 		return username + " (" + ip + ")";
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((ip == null) ? 0 : ip.hashCode());
-		result = prime * result + ((username == null) ? 0 : username.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof User) {
-			User other = (User) obj;
-			return ip.equals(other.ip);
-		}
-		return false;
 	}
 
 	public String getUsername() {
@@ -106,7 +102,7 @@ public class User {
 
 	private void initChat() throws IOException {
 		sender = new ChatSender(socket.getOutputStream());
-		new ChatReciver(socket.getInputStream(), this).start();
+		new ChatReciverThread(socket.getInputStream(), socket.getOutputStream(), this).start();
 	}
 
 	/**
@@ -158,6 +154,15 @@ public class User {
 	public void showChat() {
 		chatPanel.setVisible(true);
 
+		for (final int id : unseenMessages) {
+			try {
+				sender.sendSeenConfirm(id);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		unseenMessages.clear();
+
 		synchronized (messageLock) {
 			if (unreadMessages) {
 				unreadMessages = false;
@@ -168,7 +173,7 @@ public class User {
 
 	private void createNewChat() {
 		try {
-			socket = new Socket(ip, ChatServerThread.CHAT_PORT);
+			socket = new Socket(ip, NetworkUtils.CHAT_PORT);
 			initChat();
 		} catch (IOException e) {
 			chatPanel.showMessage(e.getMessage());
@@ -182,19 +187,19 @@ public class User {
 		}
 	}
 
-	public void sendMessage(final String text) {
+	public void sendMessage(final String text, final JLabel status) {
 		if (socket == null || socket.isClosed()) {
 			createNewChat();
 		}
 
-		sender.send(text);
-		
-	}
+		// TA HAND OM DETTA KANSKE?!
+		try {
+			final int id = sender.sendMessage(text);
+			myMessageStatuses.put(id, status);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-	public void newMessage(final String msg) {
-		chatPanel.showMessage(msg);
-
-		updateUI();
 	}
 
 	private void updateUI() {
@@ -212,11 +217,64 @@ public class User {
 		}
 	}
 
-	public JProgressBar promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes, final AtomicReference<File> savePlace,
-			final CountDownLatch latch) {
-		final JProgressBar bar = chatPanel.promptFileTransfer(fileNames, fileSizes, savePlace, latch);
+	public FileTransferIntermediary promptFileTransfer(final List<String> fileNames, final List<Long> fileSizes,
+			final AtomicReference<String> savePlace, final CountDownLatch latch, final Socket socket) {
+		final FileTransferIntermediary intermediary = chatPanel.promptFileTransfer(fileNames, fileSizes, savePlace, latch, socket);
 
 		updateUI();
-		return bar;
+		return intermediary;
+	}
+
+	@Override
+	public void newMessage(final String msg, final int id) {
+		chatPanel.showMessage(msg);
+		if (chatPanel.isVisible()) {
+			try {
+				sender.sendSeenConfirm(id);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			unseenMessages.add(id);
+		}
+		updateUI();
+	}
+
+	@Override
+	public void sentMessage(final int id) {
+		final JLabel label = myMessageStatuses.get(id);
+		if (!label.equals(lastSeen)) {
+			label.setText(sentString);
+			if (!lastSent.equals(lastSeen)) {
+				lastSent.setVisible(false);
+			}
+			lastSent = label;
+		}
+	}
+
+	@Override
+	public void seenMessage(final int id) {
+		final JLabel label = myMessageStatuses.get(id);
+		label.setText(seenString);
+		lastSeen.setVisible(false);
+		lastSeen = label;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((ip == null) ? 0 : ip.hashCode());
+		result = prime * result + ((username == null) ? 0 : username.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof User) {
+			User other = (User) obj;
+			return ip.equals(other.ip);
+		}
+		return false;
 	}
 }

@@ -10,18 +10,18 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import network.Initiator;
+import network.NetworkUtils;
+import network.broadcast.BroadcastListener;
+import network.broadcast.BroadcastResponseHandler;
+import network.broadcast.BroadcastSender;
+import network.broadcast.BroadcastThread;
+import network.broadcast.OfflineCheckerThread;
+import network.fileTransfer.FileTransferReciver;
 import user.User;
 import user.UserTable;
 import user.UserTableModel;
 import GUI.Gui;
-import broadcast.BroadcastListener;
-import broadcast.BroadcastResponseHandler;
-import broadcast.BroadcastSender;
-import broadcast.BroadcastThread;
-import broadcast.OfflineCheckerThread;
-import chat.ChatInitiator;
-import chat.ChatServerThread;
-import fileTransfer.FileTransferServer;
 
 public class Main {
 
@@ -57,7 +57,7 @@ public class Main {
 	private static DatagramSocket createBroadcastSendSocket() throws SocketException {
 		final DatagramSocket sendSocket = new DatagramSocket();
 		sendSocket.setBroadcast(true); // Behövs defacto inte, men why not.
-		sendSocket.connect(BroadcastThread.getBroadcastAddress(), BroadcastThread.BROADCAST_PORT);
+		sendSocket.connect(BroadcastThread.getBroadcastAddress(), NetworkUtils.BROADCAST_PORT);
 		return sendSocket;
 	}
 
@@ -66,7 +66,13 @@ public class Main {
 	}
 
 	private static void startTransferServer() {
-		new FileTransferServer(users).start();
+		NetworkUtils.startFileTransferServer(new Initiator() {
+
+			@Override
+			public void init(final Socket socket) {
+				new FileTransferReciver(socket, users.get(socket.getInetAddress().getHostAddress())).start();
+			}
+		});
 	}
 
 	private static void addShutdownHook(final DatagramSocket sendSocket) {
@@ -116,7 +122,7 @@ public class Main {
 					System.out.println("Unknow user sent offline message!");
 					return;
 				}
-
+				System.out.println("offline msg: " + user.getUsername());
 				user.setOffline();
 
 				model.removeUser(user);
@@ -125,10 +131,10 @@ public class Main {
 	}
 
 	private static void startChatServer() {
-		new ChatServerThread(new ChatInitiator() {
+		NetworkUtils.startChatServer(new Initiator() {
 
 			@Override
-			public void initChat(final Socket socket) throws IOException {
+			public void init(final Socket socket) throws IOException {
 				final String ip = socket.getInetAddress().getHostAddress();
 
 				final User user = users.get(ip);
@@ -140,7 +146,7 @@ public class Main {
 
 				user.newChat(socket);
 			}
-		}).start();
+		});
 	}
 
 	private static Gui createGUI() {
